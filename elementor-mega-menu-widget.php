@@ -158,9 +158,14 @@ final class Nova_Addons_Elementor {
 		add_action( 'elementor/element/after_section_end', [ $this, 'register_container_nova_settings' ], 10, 3 );
 		add_action( 'elementor/frontend/container/before_render', [ $this, 'apply_container_nova_settings' ] );
 
-		// Custom Post Type
+		// Custom Post Types
 		add_action( 'init', [ $this, 'register_mega_menu_cpt' ] );
+		add_action( 'init', [ $this, 'register_nova_templates_cpt' ], 20 );
 		add_filter( 'elementor/post_types/editable', [ $this, 'add_elementor_support_to_cpt' ] );
+
+		// Template override: substitute the active theme template by `full-page-override.php`
+		// when a nova_template (tagged Header / Footer / Single CPT) has been configured.
+		add_filter( 'template_include', [ $this, 'override_template' ], 99 );
 
 		// AJAX
 		add_action( 'wp_ajax_NOVA_get_menu_items', [ $this, 'ajax_get_menu_items' ] );
@@ -239,6 +244,8 @@ final class Nova_Addons_Elementor {
 		require_once NOVA_ADDONS_PLUGIN_DIR . 'includes/class-slider-news-widget.php';
 		// Nouveau widget : NOVA Tabs
 		require_once NOVA_ADDONS_PLUGIN_DIR . 'includes/class-tabs-widget.php';
+		// Nouveau widget : NOVA Filters (formulaire GET configurable)
+		require_once NOVA_ADDONS_PLUGIN_DIR . 'includes/class-filters-widget.php';
 
 		$widgets_manager->register( new \NOVA_Addons_Elementor\Mega_Menu_Widget() );
 		$widgets_manager->register( new \NOVA_Addons_Elementor\Icon_Menu_Widget() );
@@ -257,6 +264,7 @@ final class Nova_Addons_Elementor {
 		$widgets_manager->register( new \NOVA_Addons_Elementor\FAQ_Widget() );
 		$widgets_manager->register( new \NOVA_Addons_Elementor\Slider_News_Widget() );
 		$widgets_manager->register( new \NOVA_Addons_Elementor\Tabs_Widget() );
+		$widgets_manager->register( new \NOVA_Addons_Elementor\Filters_Widget() );
 	}
 
 	/**
@@ -488,7 +496,172 @@ final class Nova_Addons_Elementor {
 	 */
 	public function add_elementor_support_to_cpt( $post_types ) {
 		$post_types[] = 'mega_menu_content';
+		$post_types[] = 'nova_template';
 		return $post_types;
+	}
+
+	/**
+	 * Register the `nova_template` CPT (Header / Footer / Single CPT layouts)
+	 * and its associated `nova_template_type` taxonomy.
+	 */
+	public function register_nova_templates_cpt() {
+		$labels = [
+			'name'               => esc_html__( 'NOVA Templates', NOVA_ADDONS_TEXT_DOMAIN ),
+			'singular_name'      => esc_html__( 'NOVA Template', NOVA_ADDONS_TEXT_DOMAIN ),
+			'menu_name'          => esc_html__( 'NOVA Templates', NOVA_ADDONS_TEXT_DOMAIN ),
+			'name_admin_bar'     => esc_html__( 'NOVA Template', NOVA_ADDONS_TEXT_DOMAIN ),
+			'add_new'            => esc_html__( 'Add New', NOVA_ADDONS_TEXT_DOMAIN ),
+			'add_new_item'       => esc_html__( 'Add New NOVA Template', NOVA_ADDONS_TEXT_DOMAIN ),
+			'new_item'           => esc_html__( 'New NOVA Template', NOVA_ADDONS_TEXT_DOMAIN ),
+			'edit_item'          => esc_html__( 'Edit NOVA Template', NOVA_ADDONS_TEXT_DOMAIN ),
+			'view_item'          => esc_html__( 'View NOVA Template', NOVA_ADDONS_TEXT_DOMAIN ),
+			'all_items'          => esc_html__( 'All NOVA Templates', NOVA_ADDONS_TEXT_DOMAIN ),
+			'search_items'       => esc_html__( 'Search NOVA Templates', NOVA_ADDONS_TEXT_DOMAIN ),
+			'not_found'          => esc_html__( 'No NOVA Templates found.', NOVA_ADDONS_TEXT_DOMAIN ),
+			'not_found_in_trash' => esc_html__( 'No NOVA Templates found in Trash.', NOVA_ADDONS_TEXT_DOMAIN ),
+		];
+
+		register_post_type(
+			'nova_template',
+			[
+				'labels'              => $labels,
+				'public'              => true,
+				'publicly_queryable'  => true,
+				'show_ui'             => true,
+				'show_in_menu'        => true,
+				'query_var'           => true,
+				'rewrite'             => false,
+				'capability_type'     => 'post',
+				'has_archive'         => false,
+				'hierarchical'        => false,
+				'menu_position'       => 90,
+				'supports'            => [ 'title', 'editor', 'elementor' ],
+				'show_in_rest'        => true,
+				'menu_icon'           => 'dashicons-layout',
+				'exclude_from_search' => true,
+			]
+		);
+
+		register_taxonomy(
+			'nova_template_type',
+			'nova_template',
+			[
+				'label'             => esc_html__( 'Template Type', NOVA_ADDONS_TEXT_DOMAIN ),
+				'rewrite'           => [ 'slug' => 'nova-template-type' ],
+				'hierarchical'      => true,
+				'show_admin_column' => true,
+				'show_in_rest'      => true,
+			]
+		);
+
+		$this->pre_populate_template_types();
+	}
+
+	/**
+	 * Create the default Template Type terms the first time the taxonomy exists.
+	 */
+	public function pre_populate_template_types() {
+		$terms = [
+			'Header'     => 'header',
+			'Footer'     => 'footer',
+			'Single CPT' => 'single',
+			'Mega Menu'  => 'mega-menu',
+			'Archive'    => 'archive',
+			'Section'    => 'section',
+		];
+
+		foreach ( $terms as $term_name => $term_slug ) {
+			if ( ! term_exists( $term_slug, 'nova_template_type' ) ) {
+				wp_insert_term( $term_name, 'nova_template_type', [ 'slug' => $term_slug ] );
+			}
+		}
+	}
+
+	/**
+	 * Replace the active theme template by Nova's full-page override when at least
+	 * one nova_template (header, footer or single CPT layout) has been configured.
+	 */
+	public function override_template( $template ) {
+		if ( is_admin() ) {
+			return $template;
+		}
+
+		if ( \Elementor\Plugin::$instance->editor->is_edit_mode() || \Elementor\Plugin::$instance->preview->is_preview_mode() ) {
+			return $template;
+		}
+
+		$header_id = self::resolve_nova_template_id( 'header', 'nova_header_template' );
+		$footer_id = self::resolve_nova_template_id( 'footer', 'nova_footer_template' );
+
+		$single_template_id = 0;
+		if ( is_singular() ) {
+			$post_type          = get_post_type();
+			$single_template_id = self::resolve_nova_template_id( 'single', 'nova_single_' . $post_type . '_template', false );
+		}
+
+		if ( $header_id || $footer_id || $single_template_id ) {
+			return NOVA_ADDONS_PLUGIN_DIR . 'includes/templates/full-page-override.php';
+		}
+
+		return $template;
+	}
+
+	/**
+	 * Resolve the ID of a nova_template post for a given template type.
+	 *
+	 * Resolution order:
+	 *   1. Explicit override stored in $option_key (set via update_option).
+	 *   2. Latest published `nova_template` post associated with the
+	 *      `nova_template_type` taxonomy term matching $type_slug
+	 *      (only when $taxonomy_fallback is true).
+	 *
+	 * Results are cached per request to avoid repeated queries when the
+	 * template filter and the override template both call this method.
+	 *
+	 * @param string $type_slug          Taxonomy term slug (e.g. 'header', 'footer', 'single').
+	 * @param string $option_key         WP option holding an explicit override ID.
+	 * @param bool   $taxonomy_fallback  Whether to query by taxonomy when the option is missing.
+	 * @return int Template post ID or 0 when nothing matches.
+	 */
+	public static function resolve_nova_template_id( $type_slug, $option_key, $taxonomy_fallback = true ) {
+		static $cache = [];
+
+		$cache_key = $type_slug . '|' . $option_key;
+		if ( isset( $cache[ $cache_key ] ) ) {
+			return $cache[ $cache_key ];
+		}
+
+		$id = (int) get_option( $option_key );
+		if ( $id > 0 && get_post_status( $id ) === 'publish' ) {
+			return $cache[ $cache_key ] = $id;
+		}
+
+		if ( ! $taxonomy_fallback || ! taxonomy_exists( 'nova_template_type' ) ) {
+			return $cache[ $cache_key ] = 0;
+		}
+
+		$query = new \WP_Query(
+			[
+				'post_type'        => 'nova_template',
+				'post_status'      => 'publish',
+				'posts_per_page'   => 1,
+				'orderby'          => 'date',
+				'order'            => 'DESC',
+				'fields'           => 'ids',
+				'no_found_rows'    => true,
+				'suppress_filters' => true,
+				'tax_query'        => [
+					[
+						'taxonomy' => 'nova_template_type',
+						'field'    => 'slug',
+						'terms'    => $type_slug,
+					],
+				],
+			]
+		);
+
+		$found = ! empty( $query->posts ) ? (int) $query->posts[0] : 0;
+		return $cache[ $cache_key ] = $found;
 	}
 
 	/**
@@ -923,6 +1096,22 @@ final class Nova_Addons_Elementor {
 			'nova-tabs-script',
 			NOVA_ADDONS_PLUGIN_URL . 'assets/js/tabs.js',
 			[ 'jquery' ],
+			NOVA_ADDONS_VERSION,
+			true
+		);
+
+		// Filters Widget
+		wp_register_style(
+			'nova-filters-style',
+			NOVA_ADDONS_PLUGIN_URL . 'assets/css/filters-style.css',
+			[],
+			NOVA_ADDONS_VERSION
+		);
+
+		wp_register_script(
+			'nova-filters-script',
+			NOVA_ADDONS_PLUGIN_URL . 'assets/js/filters.js',
+			[],
 			NOVA_ADDONS_VERSION,
 			true
 		);
