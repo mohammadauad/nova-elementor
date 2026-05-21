@@ -1,0 +1,593 @@
+/**
+ * NOVA Stacking Cards 2 - Professional Two-Column Stacking Cards
+ * 
+ * Architecture (exactly like original stacking-cards):
+ * - Wrapper: just a container
+ * - Container: 100vh, overflow: hidden, pins and clips content
+ * - Cards: absolute, fill the card area, animated via yPercent
+ */
+
+/* ============================================
+   WRAPPER
+   ============================================ */
+
+.nova-stacking-cards-2-wrapper {
+	position: relative;
+	width: 100%;
+}
+
+/* Ensure Elementor container doesn't interfere */
+.e-con:has(.elementor-widget-nova-stacking-cards-2)>.e-con-inner {
+	max-width: 100% !important;
+	width: 100% !important;
+	overflow: visible !important;
+	gap: 0 !important;
+}
+
+/* ============================================
+   CONTAINER - 100vh, overflow hidden, pinned by GSAP
+   ============================================ */
+
+.nova-stacking-cards-2 {
+	--container-width: 1200px;
+	--card-height: 500px;
+	--card-radius: 20px;
+
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	height: 100dvh; /* Fix mobile: dynamic viewport height */
+	/* THIS IS THE KEY - overflow hidden on container clips cards below */
+}
+
+/* ============================================
+   CARDS HOLDER - Centers cards vertically
+   ============================================ */
+
+.nova-stacking-cards-2__holder {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: calc(100% - 40px);
+	max-width: var(--container-width);
+	height: var(--card-height);
+}
+
+/* Stacked mode: holder height = card height + (n-1) × offset so the whole block stays centered */
+.nova-stacking-cards-2--stacked .nova-stacking-cards-2__holder {
+	--stack-offset: var(--stack-offset-d, 20px);
+	height: calc(var(--card-height) + (var(--stack-cards-count) - 1) * var(--stack-offset));
+}
+
+@media (max-width: 1024px) {
+	.nova-stacking-cards-2--stacked .nova-stacking-cards-2__holder {
+		--stack-offset: var(--stack-offset-t, var(--stack-offset-d, 20px));
+	}
+}
+
+@media (max-width: 767px) {
+	.nova-stacking-cards-2--stacked .nova-stacking-cards-2__holder {
+		--stack-offset: var(--stack-offset-m, var(--stack-offset-d, 20px));
+	}
+}
+
+/* ============================================
+   CARD - Fills the holder
+   ============================================ */
+
+.nova-stacking-card-2 {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--card-radius);
+	overflow: hidden;
+}
+
+/* Stacked mode: card position from inline top; left/right/height explicit */
+
+.nova-stacking-cards-2--stacked .nova-stacking-card-2 {
+    inset: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: var(--card-height);
+    overflow: visible !important;
+}
+
+/* ============================================
+   CARD INNER LAYOUT (Two Columns)
+   ============================================ */
+
+.nova-stacking-card-2__inner {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	gap: 40px;
+	padding: 40px;
+	box-sizing: border-box;
+	justify-content: space-between;
+}
+
+/* Reversed layout for alternating cards */
+.nova-stacking-card-2--reversed .nova-stacking-card-2__inner {
+	flex-direction: row-reverse;
+}
+
+/* ============================================
+   CONTENT COLUMN (Left Side)
+   ============================================ */
+
+.nova-stacking-card-2__content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	min-width: 0;
+	height: 100%;
+}
+h2.nova-icon-menu-header-title {
+    line-height: initial;
+    font-size: initial;
+}
+/* ============================================
+   CONTENT SECONDARY (Description + Button wrapper)
+   ============================================ */
+
+.nova-stacking-card-2__content_2 {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: flex-start;
+	gap: 16px;
+	width: 100%;
+}
+
+/* ============================================
+   ICON
+   ============================================ */
+
+.nova-stacking-card-2__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 48px;
+	line-height: 1;
+	margin-bottom: 20px;
+	color: currentColor;
+}
+
+.nova-stacking-card-2__icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.nova-stacking-card-2__icon img {
+	width: 48px;
+	height: 48px;
+	object-fit: contain;
+}
+
+/* ============================================
+   TITLE
+   ============================================ */
+
+
+/* ============================================
+   DESCRIPTION
+   ============================================ */
+
+.nova-stacking-card-2__description {
+	margin: 0 0 24px;
+	font-size: clamp(0.95rem, 1.5vw, 1.125rem);
+	color: currentColor;
+}
+
+.nova-stacking-card-2__description p {
+	margin: 0 0 0.75em;
+}
+
+.nova-stacking-card-2__description p:last-child {
+	margin-bottom: 0;
+}
+
+/* ============================================
+   BUTTON
+   ============================================ */
+
+.nova-stacking-card-2__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 14px 28px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	text-decoration: none;
+	color: #ffffff;
+	background-color: #1a1a2e;
+	border-radius: 50px;
+	border: none;
+	cursor: pointer;
+	transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+
+
+/* Button Text */
+.nova-stacking-card-2__button-text {
+	display: inline-block;
+}
+
+/* Button Icon */
+.nova-stacking-card-2__button-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	overflow: hidden;
+	transition: transform 0.3s ease;
+}
+
+.nova-stacking-card-2__button-icon svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.nova-stacking-card-2__button-icon i {
+	font-size: 18px;
+}
+
+.nova-stacking-card-2__button-icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+/* Icon position before text */
+.nova-stacking-card-2__button-icon.icon-before {
+	order: -1;
+}
+
+/* Icon position after text */
+.nova-stacking-card-2__button-icon.icon-after {
+	order: 1;
+}
+
+/* Icon hover animation */
+.nova-stacking-card-2__button:hover .nova-stacking-card-2__button-icon {
+	transform: translateX(4px);
+}
+
+.nova-stacking-card-2__button:hover .nova-stacking-card-2__button-icon.icon-before {
+	transform: translateX(-4px);
+}
+
+/* ============================================
+   MEDIA COLUMN (Right Side)
+   ============================================ */
+
+.nova-stacking-card-2__media {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-radius: 16px;
+	height: 100%;
+	min-width: 0;
+}
+
+.nova-stacking-card-2__image {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	object-fit: cover;
+	object-position: center;
+	border-radius: 16px;
+}
+
+/* ============================================
+   ACTIVE / POINTER STATES
+   ============================================ */
+
+.nova-stacking-card-2.is-active {
+	pointer-events: auto;
+}
+
+.nova-stacking-card-2:not(.is-active) {
+	pointer-events: none;
+}
+
+/* ============================================
+   COMPLETE STATE (after scrolling past)
+   ============================================ */
+
+.nova-stacking-cards-2.is-complete .nova-stacking-card-2:last-child {
+	pointer-events: auto;
+}
+
+/* ============================================
+   RESPONSIVE - TABLET
+   ============================================ */
+
+@media (max-width: 1024px) {
+	.nova-stacking-cards-2 {
+		--container-width: 100%;
+	}
+
+	.nova-stacking-cards-2__holder {
+		width: calc(100% - 32px);
+	}
+
+	.nova-stacking-card-2__inner {
+		gap: 24px;
+		padding: 32px;
+	}
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE (Static layout - only when JS not ready)
+   ============================================ */
+
+@media (max-width: 991px) {
+	.nova-stacking-card-2__media {
+		order: -1;
+	}
+
+	/* Layout adjustments always apply on mobile */
+	.nova-stacking-card-2__inner {
+		flex-direction: column !important;
+		gap: 20px;
+		padding: 24px;
+		min-height: auto;
+	}
+}
+
+
+
+@media (max-width: 767px) {
+	.slider-testimonials .nova-carousel-slider .nova-carousel-item-text h3 {
+		margin-bottom: 8px;
+	}
+	.elementor-12 .elementor-element.elementor-element-8021612 .nova-faq-icon {
+		font-size: 22px !important;
+		width: 22px !important;
+		height: 22px !important;
+	}
+
+	/* Static fallback: only when JS hasn't initialized the animation */
+	.nova-stacking-cards-2:not(.nova-js-ready) .nova-stacking-cards-2__holder {
+		position: relative;
+		top: auto;
+		left: auto;
+		transform: none;
+		width: 100%;
+		height: auto;
+		display: contents;
+	}
+
+	.nova-stacking-cards-2:not(.nova-js-ready) .nova-stacking-card-2 {
+		position: relative !important;
+		inset: auto !important;
+		width: 100% !important;
+		height: auto !important;
+		transform: none !important;
+	}
+
+
+
+	.nova-stacking-card-2__content,
+	.nova-stacking-card-2__media {
+		width: 100%;
+	}
+
+
+	.nova-stacking-card-2__content {
+		align-items: center;
+		text-align: center;
+	}
+
+	.nova-stacking-card-2__content_2 {
+		align-items: center;
+	}
+
+	/* When JS is ready: holder must stay absolute for GSAP to work */
+	.nova-stacking-cards-2.nova-js-ready .nova-stacking-cards-2__holder {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: calc(100% - 24px);
+		display: block;
+	}
+
+	/* Non-stacked: holder height = card height */
+	.nova-stacking-cards-2.nova-js-ready:not(.nova-stacking-cards-2--stacked) .nova-stacking-cards-2__holder {
+		height: var(--card-height);
+	}
+
+	/* Stacked: holder height includes offsets (same as desktop) */
+	.nova-stacking-cards-2.nova-js-ready.nova-stacking-cards-2--stacked .nova-stacking-cards-2__holder {
+		--stack-offset: var(--stack-offset-m, var(--stack-offset-d, 20px));
+		height: calc(var(--card-height) + (var(--stack-cards-count) - 1) * var(--stack-offset));
+	}
+
+	/* When JS is ready: cards must stay absolute for GSAP yPercent to work */
+	.nova-stacking-cards-2.nova-js-ready .nova-stacking-card-2 {
+		/* position: absolute !important; */
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	/* Non-stacked: fill the holder completely */
+	.nova-stacking-cards-2.nova-js-ready:not(.nova-stacking-cards-2--stacked) .nova-stacking-card-2 {
+		inset: 0 !important;
+	}
+
+	/* Stacked: keep inline top from PHP, reset left/right/bottom */
+	.nova-stacking-cards-2.nova-js-ready.nova-stacking-cards-2--stacked .nova-stacking-card-2 {
+		left: 0 !important;
+		right: 0 !important;
+		bottom: auto !important;
+		height: auto !important;
+	}
+}
+
+/* ============================================
+   REDUCED MOTION / STATIC MODE
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+	.nova-stacking-cards-2 {
+		height: auto !important;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+	}
+
+	.nova-stacking-cards-2__holder {
+		position: relative;
+		top: auto;
+		left: auto;
+		transform: none;
+		display: contents;
+	}
+
+	.nova-stacking-card-2 {
+		position: relative !important;
+		inset: auto !important;
+		transform: none !important;
+	}
+
+	.nova-stacking-card-2__button {
+		transition: none !important;
+	}
+}
+
+.nova-stacking-cards-2--reduced {
+	height: auto !important;
+	overflow: visible !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 24px !important;
+}
+
+.nova-stacking-cards-2--reduced .nova-stacking-cards-2__holder {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	transform: none !important;
+	display: contents !important;
+}
+
+.nova-stacking-cards-2--reduced .nova-stacking-card-2 {
+	position: relative !important;
+	inset: auto !important;
+	width: 100% !important;
+	max-width: var(--container-width) !important;
+	height: auto !important;
+	min-height: var(--card-height) !important;
+	margin: 0 auto !important;
+	transform: none !important;
+}
+
+/* ============================================
+   NOVA TITLE REPLACED FIRST CARD
+   ============================================ */
+
+.nova-stacking-card-2--nova-title-replaced {
+	/* Full card styling for NOVA Title content */
+}
+
+.nova-stacking-card-2__inner--nova-title {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+}
+
+.nova-stacking-card-2__nova-title-content {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40px;
+	box-sizing: border-box;
+}
+
+.nova-stacking-card-2--nova-title-replaced {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Ensure NOVA Title widget content fills the card properly */
+.nova-stacking-card-2__nova-title-content .nova-title-widget {
+	width: 100%;
+	max-width: max-content;
+	margin: auto;
+}
+
+/* Ensure NOVA Title styles apply to injected widget */
+.nova-stacking-card-2__nova-title-content .elementor-widget-nova-title {
+	width: 100%;
+}
+
+/* Apply all NOVA Title styles to injected widget */
+.nova-stacking-card-2__nova-title-content .elementor-widget-nova-title .nova-title-text-1 .nova-styled-word {
+	display: inline-block !important;
+	line-height: 1.2;
+	transform-origin: center center;
+	will-change: transform;
+	transition: all 0.3s ease;
+}
+
+/* Hide the original NOVA Title widget when used in first card */
+.elementor-element[data-id].nova-title-hidden-by-stacking-cards {
+	display: none !important;
+	visibility: hidden !important;
+}
+
+/* ============================================
+   EDITOR MODE - Static preview, no GSAP pin
+   ============================================ */
+
+.nova-stacking-cards-2--editor {
+	height: auto !important;
+	overflow: visible !important;
+}
+
+.nova-stacking-cards-2--editor .nova-stacking-cards-2__holder {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	transform: none !important;
+	height: auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 24px !important;
+	width: 100% !important;
+	max-width: var(--container-width) !important;
+	margin: 0 auto !important;
+}
+
+.nova-stacking-cards-2--editor .nova-stacking-card-2 {
+	position: relative !important;
+	inset: auto !important;
+	transform: none !important;
+	opacity: 1 !important;
+	height: auto !important;
+	min-height: var(--card-height, 500px) !important;
+	width: 100% !important;
+}

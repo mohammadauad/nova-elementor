@@ -1,0 +1,1361 @@
+/**
+ * NOVA Carousel Widget Styles
+ * Complete and Professional Configuration
+ */
+
+/* ============================================
+   MAIN WIDGET CONTAINER
+   ============================================ */
+
+.nova-carousel-widget {
+	width: 100%;
+	position: relative;
+	box-sizing: border-box;
+}
+
+/* ============================================
+   CONTAINER LAYOUT
+   ============================================ */
+
+.nova-carousel-container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	justify-content: space-between;
+	gap: 40px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* Permettre au padding Elementor de s'appliquer avec une spécificité plus élevée */
+.elementor-element .nova-carousel-container {
+	/* Le padding sera défini par Elementor - cette règle permet de s'assurer qu'il s'applique */
+}
+
+.nova-carousel-container>* {
+	height: auto !important;
+}
+
+/* When content is hidden, slider takes full width */
+.nova-carousel-slider.full-width {
+	width: 100% !important;
+	flex: 1 1 100% !important;
+	max-width: 100% !important;
+}
+
+/* ============================================
+   GRID MODE
+   ============================================ */
+
+.nova-carousel-grid {
+	display: grid;
+	grid-template-columns: repeat(var(--grid-cols, 3), 1fr);
+	gap: 30px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+	.nova-carousel-grid {
+		grid-template-columns: repeat(var(--grid-cols-tablet, var(--grid-cols, 2)), 1fr);
+	}
+}
+
+@media (max-width: 767px) {
+	.nova-carousel-grid {
+		grid-template-columns: repeat(var(--grid-cols-mobile, 1), 1fr);
+	}
+}
+
+/* CSS fallback using data attribute - applies when inline styles are removed by Elementor */
+/* .nova-carousel-grid[data-grid-columns="1"] {
+	grid-template-columns: repeat(1, 1fr) !important;
+}
+
+.nova-carousel-grid[data-grid-columns="2"] {
+	grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.nova-carousel-grid[data-grid-columns="3"] {
+	grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.nova-carousel-grid[data-grid-columns="4"] {
+	grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.nova-carousel-grid[data-grid-columns="5"] {
+	grid-template-columns: repeat(5, 1fr) !important;
+}
+
+.nova-carousel-grid[data-grid-columns="6"] {
+	grid-template-columns: repeat(6, 1fr) !important;
+} */
+
+.nova-carousel-grid.full-width {
+	width: 100% !important;
+	flex: 1 1 100% !important;
+	max-width: 100% !important;
+}
+
+.nova-carousel-grid .nova-carousel-item {
+	width: 100%;
+}
+
+@media (min-width: 1025px) {
+	.nova-carousel-widget.responsive-display-mode.display-desktop-grid .nova-carousel-slider {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-cols, 3), 1fr);
+		gap: 30px;
+	}
+
+	.nova-carousel-widget.responsive-display-mode.display-desktop-grid .nova-carousel-navigation,
+	.nova-carousel-widget.responsive-display-mode.display-desktop-grid .swiper-pagination,
+	.nova-carousel-widget.responsive-display-mode.display-desktop-grid .swiper-scrollbar {
+		display: none !important;
+	}
+}
+
+@media (max-width: 1024px) and (min-width: 768px) {
+	.nova-carousel-widget.responsive-display-mode.display-tablet-grid .nova-carousel-slider {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-cols-tablet, var(--grid-cols, 2)), 1fr);
+		gap: 30px;
+	}
+
+	.nova-carousel-widget.responsive-display-mode.display-tablet-grid .nova-carousel-navigation,
+	.nova-carousel-widget.responsive-display-mode.display-tablet-grid .swiper-pagination,
+	.nova-carousel-widget.responsive-display-mode.display-tablet-grid .swiper-scrollbar {
+		display: none !important;
+	}
+}
+
+@media (max-width: 767px) {
+	.nova-carousel-widget.responsive-display-mode.display-mobile-grid .nova-carousel-slider {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-cols-mobile, 1), 1fr);
+		gap: 30px;
+	}
+
+	.nova-carousel-widget.responsive-display-mode.display-mobile-grid .nova-carousel-navigation,
+	.nova-carousel-widget.responsive-display-mode.display-mobile-grid .swiper-pagination,
+	.nova-carousel-widget.responsive-display-mode.display-mobile-grid .swiper-scrollbar {
+		display: none !important;
+	}
+}
+
+.nova-carousel-content {
+	flex: 0 0 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
+	max-width: 400px;
+	min-width: 0;
+	width: auto;
+	box-sizing: border-box;
+}
+
+/* Hide empty content sections */
+.nova-carousel-content-1:empty {
+	display: none;
+}
+
+.nova-carousel-content-2:empty {
+	display: none;
+}
+
+.nova-carousel-content-2 {
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	position: relative;
+	z-index: 10;
+}
+
+.nova-carousel-title {
+	margin: 0 0 20px 0;
+	padding: 0;
+	font-size: 48px;
+	font-weight: 700;
+	line-height: 1.2;
+	width: 100%;
+}
+
+.nova-carousel-item-text {
+	margin: 0;
+}
+
+.nova-carousel-navigation>button,
+.nova-carousel-navigation button {
+	position: initial !important;
+	margin: 0 !important;
+	background: #fff !important;
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.nova-carousel-navigation>button svg,
+.nova-carousel-navigation button svg {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	width: 44px !important;
+	height: 44px !important;
+}
+
+/* Owl Carousel navigation styles */
+.nova-carousel-navigation .owl-nav {
+	display: none;
+}
+
+.nova-carousel-description {
+	margin: 0 0 0 0;
+	padding: 0;
+	font-size: 16px;
+	line-height: 1.6;
+	width: 100%;
+}
+
+.nova-carousel-item-date>* {
+	margin: 0 !important;
+}
+
+.nova-carousel-button {
+	display: inline-block;
+	padding: 12px 24px;
+	background-color: #0073aa;
+	color: #ffffff;
+	text-decoration: none;
+	border-radius: 4px;
+	font-size: 16px;
+	font-weight: 600;
+	transition: background-color 0.3s ease;
+}
+
+.nova-carousel-button:hover {
+	background-color: #005a87;
+}
+
+/* ============================================
+   ITEM BUTTON (PER CARD)
+   ============================================ */
+
+.nova-carousel-item-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 12px;
+	text-decoration: none;
+	cursor: pointer;
+	position: relative;
+	z-index: 12;
+	pointer-events: auto;
+	transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Icon position: before (icon left of text) */
+.nova-carousel-item-button.icon-before {
+	flex-direction: row;
+}
+
+/* Icon position: after (icon right of text) */
+.nova-carousel-item-button.icon-after {
+	flex-direction: row;
+}
+
+.nova-carousel-item-button-text {
+	line-height: 1;
+}
+
+.nova-carousel-item-button-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+.nova-carousel-item-button-icon svg {
+	display: block;
+	width: 1em;
+	height: 1em;
+}
+
+.nova-carousel-item-button-icon i {
+	display: inline-block;
+	line-height: 1;
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+.nova-carousel-navigation {
+	display: flex !important;
+	flex-direction: row;
+	gap: 4px;
+	align-items: center;
+	justify-content: flex-start;
+	visibility: visible !important;
+	opacity: 1 !important;
+	position: relative;
+	z-index: 10;
+}
+
+/* Position: Top */
+.nova-carousel-widget>.nova-carousel-navigation {
+	margin-bottom: 20px;
+}
+
+/* Position: Bottom */
+.nova-carousel-container>.nova-carousel-navigation {
+	margin-top: 20px;
+}
+
+/* Position: Left/Right - Wrapper pour slider et navigation */
+.nova-carousel-slider-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	width: 100%;
+	position: relative;
+}
+
+.nova-carousel-slider-wrapper.nova-carousel-nav-position-left {
+	flex-direction: row;
+}
+
+.nova-carousel-slider-wrapper.nova-carousel-nav-position-right {
+	flex-direction: row-reverse;
+}
+
+.nova-carousel-slider-wrapper .nova-carousel-navigation {
+	flex-direction: column;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.nova-carousel-slider-wrapper .nova-carousel-slider {
+	flex: 1;
+}
+
+/* Position: Outside - Boutons séparés de chaque côté */
+.nova-carousel-slider-wrapper.nova-carousel-nav-position-outside {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	width: 100%;
+	position: relative;
+}
+
+.nova-carousel-slider-wrapper.nova-carousel-nav-position-outside .nova-carousel-nav.nova-carousel-prev {
+	flex-shrink: 0;
+	order: 1;
+}
+
+.nova-carousel-slider-wrapper.nova-carousel-nav-position-outside .nova-carousel-slider {
+	flex: 1;
+	order: 2;
+}
+
+.nova-carousel-slider-wrapper.nova-carousel-nav-position-outside .nova-carousel-nav.nova-carousel-next {
+	flex-shrink: 0;
+	order: 3;
+}
+
+/* Responsive pour position outside */
+@media (max-width: 768px) {
+	.nova-carousel-slider-wrapper.nova-carousel-nav-position-outside {
+		gap: 10px;
+	}
+}
+
+/* ============================================
+   NAVIGATION BUTTONS
+   ============================================ */
+
+.nova-carousel-nav {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border: 1px solid #ddd;
+	background-color: #ffffff;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	pointer-events: auto !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	position: relative;
+	z-index: 10;
+	padding: 0;
+	margin: 0;
+}
+
+.nova-carousel-nav:hover {
+	background-color: #f5f5f5;
+	border-color: #0073aa;
+}
+
+.nova-carousel-nav svg {
+	width: 44px !important;
+	height: 44px !important;
+	display: block !important;
+	flex-shrink: 0;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.nova-carousel-nav.owl-nav-disabled,
+.nova-carousel-nav.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+
+
+/* ============================================
+   SWIPER.JS SPECIFIC STYLES
+   ============================================ */
+
+/* S'assurer que le conteneur Swiper commence à gauche */
+.nova-carousel-slider .swiper {
+	width: 100%;
+	overflow: hidden;
+	padding-left: 0 !important;
+	margin-left: 0 !important;
+}
+
+.nova-carousel-slider .swiper-wrapper {
+	display: flex;
+	align-items: stretch;
+	justify-content: flex-start;
+}
+
+/* S'assurer que le premier slide est complètement visible et aligné à gauche */
+.nova-carousel-slider .swiper-slide {
+	margin-left: 0 !important;
+}
+
+.nova-carousel-slider .swiper-slide:first-child {
+	margin-left: 0 !important;
+}
+
+/* Si centeredSlides est désactivé, forcer l'alignement à gauche */
+.nova-carousel-slider .swiper:not(.swiper-centered) .swiper-wrapper {
+	transform: translate3d(0px, 0, 0) !important;
+}
+
+/* S'assurer que le conteneur parent n'a pas de padding qui décale */
+.nova-carousel-slider-wrapper .nova-carousel-slider {
+	margin-left: 0 !important;
+}
+
+.nova-carousel-track {
+	/* Owl Carousel structure */
+	width: 100%;
+}
+
+.nova-carousel-slider .owl-stage {
+	display: flex;
+}
+
+/* ============================================
+   ITEM
+   ============================================ */
+
+.nova-carousel-item {
+	/* Flex Properties */
+	flex: 0 0 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
+
+	/* Layout Properties */
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	align-content: flex-start;
+	justify-content: flex-start;
+
+	/* Size Properties */
+	width: 100%;
+	min-width: 0;
+	min-height: 0;
+
+	/* Position Properties */
+	position: relative;
+
+	/* Box Model */
+	padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+
+}
+
+.nova-carousel-item.has-background-image {
+	position: relative;
+}
+
+.nova-carousel-item.has-background-image .nova-carousel-item-content {
+	position: relative;
+	z-index: 3;
+	pointer-events: none;
+}
+
+.nova-carousel-item.has-background-image .nova-carousel-item-content * {
+	pointer-events: auto;
+}
+
+/* Background créatif avec masque */
+.nova-carousel-item.has-creative-background {
+	position: relative;
+}
+
+/* ============================================
+   ITEM IMAGE
+   ============================================ */
+
+.nova-carousel-item-image {
+	/* Flex Properties */
+	flex: 0 0 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
+
+	/* Layout Properties */
+	display: block;
+	width: 100%;
+
+	/* Box Model */
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	position: relative;
+}
+
+.nova-carousel-item-image img {
+	width: 100%;
+	height: auto;
+	display: block;
+	object-fit: cover;
+}
+
+/* Image Overlay */
+.nova-carousel-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item.has-background-image .nova-carousel-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item.has-creative-background .nova-carousel-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item.has-background-image.has-creative-background .nova-carousel-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item-image {
+	position: relative;
+}
+
+.nova-carousel-item-image .nova-carousel-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+/* ============================================
+   ITEM CONTENT
+   ============================================ */
+
+.nova-carousel-item-content {
+	/* Flex Properties */
+	flex: 1 1 auto;
+	flex-basis: auto;
+	flex-grow: 1;
+	flex-shrink: 1;
+
+	/* Layout Properties */
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	align-content: flex-start;
+	justify-content: flex-start;
+
+	/* Size Properties */
+	width: 100%;
+	min-width: 0;
+	min-height: 0;
+
+	/* Position Properties */
+	position: relative;
+	z-index: 3;
+	pointer-events: none;
+
+	/* Box Model */
+	padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+}
+
+.nova-carousel-item-content * {
+	pointer-events: auto;
+}
+
+/* ============================================
+   ITEM TEXT ELEMENTS
+   ============================================ */
+
+.nova-carousel-item-text {
+	/* Flex Properties */
+	flex: 0 1 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 1;
+
+	/* Typography */
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: #333;
+
+	/* Layout Properties */
+	display: block;
+	width: 100%;
+	margin-top: 0;
+
+	/* Box Model */
+	padding: 0;
+	box-sizing: border-box;
+}
+
+a.nova-carousel-item-button .nova-carousel-item-button-icon {
+	transition: transform 0.3s ease;
+}
+
+a.nova-carousel-item-button:hover .nova-carousel-item-button-icon {
+	animation: slideIcon 0.3s ease-in-out infinite alternate;
+}
+
+.nova-carousel-item-icon {
+	/* Flex Properties */
+	flex: 0 0 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
+
+	/* Layout Properties */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	/* Box Model */
+	box-sizing: border-box;
+
+	/* Typography */
+	line-height: 1;
+}
+
+.nova-carousel-item-icon i,
+.nova-carousel-item-icon svg {
+	display: inline-block;
+}
+
+.nova-carousel-item-date {
+	/* Flex Properties */
+	flex: 0 0 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
+
+	/* Layout Properties */
+	display: block;
+	width: 100%;
+
+	/* Box Model */
+	margin: 10px 0 0 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item-excerpt {
+	/* Flex Properties */
+	flex: 0 1 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 1;
+
+	/* Typography */
+	font-size: 14px;
+	line-height: 1.6;
+	color: #555;
+
+	/* Layout Properties */
+	display: block;
+	width: 100%;
+	min-width: 0;
+
+	/* Box Model */
+	margin: 10px 0 0 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item-author {
+	/* Flex Properties */
+	flex: 0 0 auto;
+	flex-basis: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
+
+	/* Typography */
+	font-size: 12px;
+	color: #888;
+
+	/* Layout Properties */
+	display: block;
+	width: 100%;
+
+	/* Box Model */
+	margin: 5px 0 0 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.nova-carousel-item-link {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 10;
+	text-decoration: none;
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+/* ============================================
+   OWL CAROUSEL NAVIGATION
+   ============================================ */
+
+/* Hide default Owl Carousel navigation */
+.owl-nav {
+	display: none !important;
+}
+
+/* Custom navigation buttons */
+.nova-carousel-nav {
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	pointer-events: auto !important;
+}
+
+/* Owl Carousel dots/pagination */
+.owl-dots {
+	position: relative;
+	bottom: auto;
+	left: auto;
+	width: auto;
+	margin-top: 20px;
+	text-align: center;
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+}
+
+.owl-dot {
+	width: 8px;
+	height: 8px;
+	background-color: #ddd;
+	opacity: 1;
+	margin: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	border: none;
+	padding: 0;
+}
+
+.owl-dot.active,
+.owl-dot:hover {
+	background-color: #0073aa;
+}
+
+/* ============================================
+   OWL CAROUSEL PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+
+/* Ensure items are visible when Owl Carousel wraps them */
+.nova-carousel-slider .owl-item {
+	width: auto;
+	min-width: 0;
+	/* Remove any margin - Owl Carousel handles spacing via its margin property */
+	/* margin: 0 !important; */
+}
+
+.nova-carousel-slider .owl-item .nova-carousel-item {
+	width: 100%;
+	display: flex;
+	height: 100%;
+	/* Remove any margin - Owl Carousel handles spacing via its margin property */
+	margin: 0;
+}
+
+/* Fix for Owl Carousel structure */
+.nova-carousel-slider.owl-carousel {
+	display: block;
+}
+
+.nova-carousel-slider .owl-stage-outer {
+	position: relative;
+	overflow: hidden;
+	width: 100%;
+}
+
+.nova-carousel-slider .owl-stage {
+	display: flex;
+	position: relative;
+	width: 100%;
+}
+
+/* Améliorer la réactivité du touch */
+.nova-carousel-slider.owl-carousel {
+	touch-action: pan-y pinch-zoom;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+/* ============================================
+   POPUP AU CLIC
+   ============================================ */
+
+.nova-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999999 !important;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.nova-popup-overlay.nova-popup-open {
+	opacity:        1;
+	pointer-events: auto;
+}
+
+/* Boîte popup */
+.nova-popup-box {
+	position:   relative;
+	background: #fff;
+	max-width:  640px;
+	width:      100%;
+	max-height: 90vh;
+	overflow-y: auto;
+	border-radius: 12px;
+	padding:    32px;
+	box-sizing: border-box;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	/* Animation state — géré par JS + classes */
+	transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nova-popup-media {
+    max-height: 480px !important;
+    background: #e8effd;
+}
+.nova-popup-overlay {
+    backdrop-filter: blur(10px);
+}
+
+/* États d'animation */
+.nova-popup-overlay:not(.nova-popup-open) .nova-popup-box {
+	opacity: 0;
+}
+
+/* fade-scale */
+.nova-popup-overlay[data-animation="fade-scale"]:not(.nova-popup-open) .nova-popup-box {
+	transform: scale(0.85);
+}
+.nova-popup-overlay[data-animation="fade-scale"].nova-popup-open .nova-popup-box {
+	transform: scale(1);
+}
+
+/* slide-up */
+.nova-popup-overlay[data-animation="slide-up"]:not(.nova-popup-open) .nova-popup-box {
+	transform: translateY(40px);
+}
+.nova-popup-overlay[data-animation="slide-up"].nova-popup-open .nova-popup-box {
+	transform: translateY(0);
+}
+
+/* slide-down */
+.nova-popup-overlay[data-animation="slide-down"]:not(.nova-popup-open) .nova-popup-box {
+	transform: translateY(-40px);
+}
+.nova-popup-overlay[data-animation="slide-down"].nova-popup-open .nova-popup-box {
+	transform: translateY(0);
+}
+
+/* Bouton fermer */
+.nova-popup-close {
+	position:        absolute;
+	top:             12px;
+	right:           12px;
+	width:           36px;
+	height:          36px;
+	border:          none;
+	border-radius:   50%;
+	background:      rgba(0, 0, 0, 0.08);
+	color:           #333;
+	font-size:       16px;
+	cursor:          pointer;
+	display:         flex;
+	align-items:     center;
+	justify-content: center;
+	line-height:     1;
+	transition:      background 0.2s ease, color 0.2s ease;
+	z-index:         1;
+}
+
+.nova-popup-close:hover {
+	background: rgba(0, 0, 0, 0.18);
+}
+
+/* Contenu popup */
+.nova-popup-content {
+	display:        flex;
+	flex-direction: column;
+}
+
+/* Layouts */
+.nova-popup-layout-image_left,
+.nova-popup-layout-image_right {
+	flex-direction: row;
+	gap:            24px;
+	align-items:    flex-start;
+}
+
+.nova-popup-layout-image_right {
+	flex-direction: row-reverse;
+}
+
+.nova-popup-layout-image_left .nova-popup-image,
+.nova-popup-layout-image_right .nova-popup-image {
+	flex-shrink: 0;
+	width:       40%;
+}
+
+/* Layout 2 colonnes (style Nova Tabs) */
+.nova-popup-layout-2_col {
+	flex-direction: row;
+	gap:            24px;
+	align-items:    flex-start;
+}
+
+.nova-popup-col {
+	display:        flex;
+	flex-direction: column;
+	flex:           1;
+	min-width:      0;
+}
+
+/* Image */
+.nova-popup-image img {
+	width:         100%;
+	height:        auto;
+	display:       block;
+	border-radius: 8px;
+	margin-bottom: 20px;
+}
+
+.nova-popup-layout-image_left .nova-popup-image img,
+.nova-popup-layout-image_right .nova-popup-image img {
+	margin-bottom: 0;
+}
+
+/* Textes */
+.nova-popup-text1 {
+	margin-bottom: 12px;
+}
+
+.nova-popup-text2 {
+	margin-bottom: 20px;
+}
+
+/* Bouton lien (style Nova Cards) */
+.nova-popup-btn-wrap {
+	display:    flex;
+	margin-top: 1rem;
+}
+
+.nova-popup-btn {
+	display:         inline-flex;
+	align-items:     center;
+	justify-content: center;
+	gap:             8px;
+	text-decoration: none;
+	cursor:          pointer;
+	transition:      color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nova-popup-btn-icon {
+	display:    flex;
+	transition: transform 0.3s ease;
+}
+
+.nova-popup-btn-arrow {
+	width:   24px;
+	height:  24px;
+	display: block;
+}
+
+.nova-popup-btn:hover .nova-popup-btn-icon {
+	animation: slideIcon 0.3s ease-in-out infinite alternate;
+}
+
+.nova-popup-btn-text {
+	display: inline;
+}
+
+/* Vidéo dans le popup */
+.nova-popup-video-container {
+	position:      relative;
+	width:         100%;
+	overflow:      hidden;
+	border-radius: 8px;
+}
+
+.nova-popup-video-wrap {
+	position:       relative;
+	width:          100%;
+	padding-bottom: 56.25%; /* 16:9 */
+	height:         0;
+	overflow:       hidden;
+}
+
+.nova-popup-video-wrap iframe {
+	position: absolute;
+	top:      0;
+	left:     0;
+	width:    100%;
+	height:   100%;
+	border:   0;
+}
+
+.nova-popup-video {
+	width:   100%;
+	height:  auto;
+	display: block;
+}
+
+/* Bouton mute custom */
+.nova-popup-mute-btn {
+	position:        absolute;
+	top:             12px;
+	left:            12px;
+	z-index:         10;
+	display:         flex;
+	align-items:     center;
+	justify-content: center;
+	width:           40px;
+	height:          40px;
+	background:      rgba(0, 0, 0, 0.35);
+	border:          none;
+	border-radius:   50%;
+	color:           #fff;
+	cursor:          pointer;
+	padding:         0;
+	transition:      background 0.2s ease, transform 0.15s ease;
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
+div#nova-cursor-tooltip p {
+    margin: 0;
+}
+.nova-popup-mute-btn svg {
+	width:          20px;
+	height:         20px;
+	display:        block;
+	pointer-events: none;
+}
+
+/* Gestion des icônes selon l'état */
+.nova-popup-mute-icon {
+	display: none;
+}
+
+/* Muet : afficher l'icône muted */
+.nova-popup-video-container[data-muted="1"] .nova-popup-icon-muted {
+	display: block;
+}
+
+/* Son actif : afficher l'icône sound */
+.nova-popup-video-container[data-muted="0"] .nova-popup-icon-sound {
+	display: block;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+	.nova-popup-layout-image_left,
+	.nova-popup-layout-image_right,
+	.nova-popup-layout-2_col {
+		flex-direction: column;
+	}
+
+	.nova-popup-layout-image_left .nova-popup-image,
+	.nova-popup-layout-image_right .nova-popup-image {
+		width: 100%;
+	}
+
+	.nova-popup-col {
+		width: 100%;
+	}
+}
+
+/* ============================================
+   HOVER TEXT (cursor tooltip — géré par JS)
+   ============================================ */
+
+/* Le bloc hover-text dans le DOM est masqué visuellement —
+   le tooltip JS (#nova-cursor-tooltip) prend le relais */
+.nova-carousel-hover-text {
+	display: none !important;
+}
+
+/* Tooltip global qui suit le curseur */
+#nova-cursor-tooltip {
+	position:       fixed;
+	top:            0;
+	left:           0;
+	pointer-events: none;
+	z-index:        99999;
+	max-width:      220px;
+	text-align:     center;
+	border-radius:  6px;
+	padding:        8px 14px;
+	font-size:      13px;
+	line-height:    1.4;
+	color:          #fff;
+	background:     rgba(0, 0, 0, 0.75);
+	box-shadow:     0 4px 16px rgba(0, 0, 0, 0.25);
+	/* Position gérée via translate3d par JS (anti-blur GPU) */
+	will-change:    transform, opacity;
+	transition:     opacity 0.25s ease;
+	/* Éviter le blur sub-pixel : forcer rendu sur couche GPU */
+	backface-visibility: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Items avec popup — curseur pointer */
+.nova-carousel-item.has-popup {
+	cursor: pointer;
+}
+
+/* ============================================
+   HOVER MEDIA SWAP (image/vidéo au hover)
+   ============================================ */
+
+/* Conteneur image avec média hover */
+.nova-carousel-item-image.has-hover-media {
+	position: relative;
+}
+
+/* Les deux médias occupent le même espace */
+.nova-carousel-item-image .nova-carousel-media {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Média hover : caché par défaut, superposé */
+.nova-carousel-item-image .nova-carousel-media--hover {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	transition: opacity 0.35s ease;
+	pointer-events: none;
+}
+
+/* Média initial : visible par défaut */
+.nova-carousel-item-image .nova-carousel-media--initial {
+	position: relative;
+	opacity: 1;
+	transition: opacity 0.35s ease;
+}
+
+/* Au hover sur le slide : swap */
+.nova-carousel-slider .swiper-slide:hover .nova-carousel-media--hover,
+.nova-carousel-slider .owl-item:hover .nova-carousel-media--hover {
+	opacity: 1;
+}
+
+.nova-carousel-slider .swiper-slide:hover .nova-carousel-media--initial,
+.nova-carousel-slider .owl-item:hover .nova-carousel-media--initial {
+	opacity: 0;
+}
+
+/* ============================================
+   HOVER EFFECTS
+   ============================================ */
+
+.nova-carousel-item[data-hover-effect="lift"]:hover {
+	transform: translateY(-5px);
+	transition: transform 0.3s ease;
+}
+
+.nova-carousel-item[data-hover-effect="scale"]:hover {
+	transform: scale(1.05);
+	transition: transform 0.3s ease;
+}
+
+.nova-carousel-item[data-hover-effect="shadow"]:hover {
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+	transition: box-shadow 0.3s ease;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+	.nova-carousel-container {
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	.nova-carousel-content {
+		max-width: 100%;
+	}
+
+	.nova-carousel-title {
+		font-size: 32px;
+	}
+}
+
+/* ============================================
+   MODE FAN DECK (rotation alternée, style photo de groupe)
+   ============================================ */
+
+/* Toute la chaîne de parents doit laisser déborder */
+.nova-carousel-widget.nova-fan-deck-mode,
+.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-container,
+.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider-wrapper,
+.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider,
+.nova-carousel-widget.nova-fan-deck-mode .swiper,
+.nova-carousel-widget.nova-fan-deck-mode .swiper-wrapper {
+	overflow: visible !important;
+}
+
+.nova-carousel-widget.nova-fan-deck-mode .swiper-slide {
+	overflow: visible !important;
+	position: relative;
+	transform-origin: center center;
+	will-change: transform, box-shadow;
+	cursor: pointer;
+}
+
+.nova-carousel-widget.nova-fan-deck-mode .swiper-slide:hover {
+	z-index: 999 !important;
+}
+
+/* ============================================
+   MODE FAN (rotation aléatoire)
+   ============================================ */
+
+/* Le conteneur doit laisser déborder les cartes agrandies */
+.nova-carousel-widget.nova-fan-mode,
+.nova-carousel-widget.nova-fan-mode .nova-carousel-container,
+.nova-carousel-widget.nova-fan-mode .nova-carousel-slider-wrapper,
+.nova-carousel-widget.nova-fan-mode .nova-carousel-slider,
+.nova-carousel-widget.nova-fan-mode .swiper,
+.nova-carousel-widget.nova-fan-mode .swiper-wrapper {
+	overflow: visible !important;
+}
+
+.nova-carousel-widget.nova-fan-mode .swiper-slide {
+	overflow: visible !important;
+	position: relative;
+	transform-origin: center bottom;
+	will-change: transform, box-shadow;
+	cursor: pointer;
+}
+
+.nova-carousel-widget.nova-fan-mode .swiper-slide:hover {
+	z-index: 10 !important;
+}
+
+/* ============================================
+   ELEMENTOR COMPATIBILITY - Permettre le padding
+   ============================================ */
+
+/* S'assurer que les styles Elementor (padding, margin, etc.) peuvent s'appliquer */
+/* Les styles inline d'Elementor ont la priorité grâce à leur spécificité élevée */
+/* Cette règle vide permet de documenter la compatibilité sans interférer */

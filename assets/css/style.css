@@ -1,0 +1,631 @@
+/*
+ * NOVA Addons for Elementor - Mega Menu Styles
+ * Shine brighter with every page.
+ */
+
+.nova-mega-menu-container {
+    /* Base container style for the menu */
+    position: relative;
+    overflow: visible !important;
+    /* Allow mega menu panels to extend beyond container */
+    width: 100%;
+}
+
+.nova-mega-menu-panel p {
+    margin: 0;
+}
+
+span.nova-dropdown-icon {
+    display: flex;
+}
+
+.nova-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    /* For horizontal menu */
+    position: relative;
+    overflow: visible !important;
+    /* Allow mega menu panels to extend beyond list */
+}
+
+.nova-menu-list>li {
+    position: relative;
+    /* Important for positioning the panel */
+}
+
+/* Ensure mega menu items can contain wide panels */
+.nova-menu-list>li.nova-has-mega-menu {
+    overflow: visible !important;
+    /* Allow panel to extend beyond li boundaries */
+}
+
+.nova-menu-list>li>a {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    text-decoration: none;
+}
+
+/* Description style for menu items */
+.nova-mega-menu-description {
+    display: block;
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 2px;
+    font-style: italic;
+}
+
+/* Mega Menu Panel — caché par défaut via CSS uniquement */
+.nova-mega-menu-panel {
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    /* Caché par CSS — le JS ne touche jamais à ces propriétés directement */
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    /* display: block pour permettre la mesure de largeur sans flash */
+    display: block;
+    overflow: visible;
+}
+
+/* Classe de mesure invisible — utilisée par JS pour lire la largeur sans flash */
+.nova-mega-menu-panel--measuring {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: block !important;
+}
+
+/* Panel visible quand l'item a la classe nova-mega-menu-displayed */
+.nova-menu-list>li.nova-has-mega-menu.nova-mega-menu-displayed>.nova-mega-menu-panel {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* When panel is visible (via JS class only), ensure transform is reset */
+.nova-menu-list>li.nova-has-mega-menu.nova-mega-menu-displayed>.nova-mega-menu-panel {
+    transform: translateX(-50%) !important;
+}
+
+/* ===== MEGA MENU HEADER EXPANSION ===== */
+/* Header transition for smooth width animation - Applied via JS */
+div#header,
+header#header,
+.site-header {
+    /* Transition added dynamically by JS for better control */
+    /* Ensure header is centered during expansion */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+
+/* Dropdown icon wrapper */
+.nova-mega-menu-icon-wrapper {
+    margin-left: 5px;
+    font-size: 0.8em;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    position: relative;
+}
+
+/* Individual icon styles */
+.nova-mega-menu-icon {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    transition: opacity 0.3s ease;
+}
+
+.nova-mega-menu-icon svg,
+.nova-mega-menu-icon i {
+    display: inline-block;
+    width: auto;
+    height: auto;
+}
+
+/* --- GESTION DES ICÔNES DE MENU (Simplifiée) --- */
+
+/* 1. État par défaut : Normale visible, les autres cachées */
+.nova-mega-menu-icon-normal {
+    /* opacity: 1 !important; */
+    /* visibility: visible !important; */
+}
+
+.nova-mega-menu-icon-hover,
+.nova-mega-menu-icon-active {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* 2. État HOVER (si non actif) : Hover visible, normale cachée */
+.nova-menu-list>li:hover:not(.nova-mega-menu-displayed):not(.nova-submenu-open) .nova-mega-menu-icon-hover {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.nova-menu-list>li:hover:not(.nova-mega-menu-displayed):not(.nova-submenu-open) .nova-mega-menu-icon-normal {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* 3. État ACTIF (Menu ouvert) : Active visible, les autres cachées */
+.nova-menu-list>li.nova-mega-menu-displayed .nova-mega-menu-icon-active,
+.nova-menu-list>li.nova-submenu-open .nova-mega-menu-icon-active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.nova-menu-list>li.nova-mega-menu-displayed .nova-mega-menu-icon-normal,
+.nova-menu-list>li.nova-mega-menu-displayed .nova-mega-menu-icon-hover,
+.nova-menu-list>li.nova-submenu-open .nova-mega-menu-icon-normal,
+.nova-menu-list>li.nova-submenu-open .nova-mega-menu-icon-hover {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Transitions fluides */
+.nova-mega-menu-icon {
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
+}
+
+/* Panel display on hover */
+/* .nova-menu-list > li.nova-has-mega-menu:hover > .nova-mega-menu-panel, */
+.nova-menu-list>li.nova-has-mega-menu.nova-mega-menu-active>.nova-mega-menu-panel,
+.nova-menu-list>li.nova-has-mega-menu.nova-mega-menu-displayed>.nova-mega-menu-panel {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    /* Allows clicking when visible */
+    display: block !important;
+}
+
+/* First level menu item style on hover */
+/* Note: La couleur hover est configurée via le widget Elementor (menu_item_color_hover) */
+/* Le sélecteur pour .nova-mega-menu-displayed est aussi ajouté dans le widget pour garder la couleur hover */
+
+
+/* Adjustment for classic submenus if the item is NOT a mega menu */
+.nova-menu-list>li:not(.nova-has-mega-menu)>ul.sub-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    background: #f9f9f9;
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.nova-menu-list>li:not(.nova-has-mega-menu):hover>ul.sub-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sur mobile, utiliser display au lieu de opacity/visibility */
+@media (max-width: 768px) {
+    .nova-menu-list>li:not(.nova-has-mega-menu)>ul.sub-menu {
+        position: relative;
+        top: auto;
+        left: 0;
+        margin-left: 20px;
+        box-shadow: none;
+        border-left: 2px solid rgba(0, 0, 0, 0.1);
+        display: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: none;
+    }
+
+    .nova-menu-list>li:not(.nova-has-mega-menu).nova-submenu-open>ul.sub-menu {
+        display: block;
+    }
+
+    .nova-menu-list>li:not(.nova-has-mega-menu):hover>ul.sub-menu {
+        display: none;
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.nova-menu-list ul.sub-menu li a {
+    padding: 5px 0;
+    display: block;
+}
+
+/* ================================
+   Mobile Breadcrumb Styles
+================================ */
+
+.nova-mobile-breadcrumb {
+    position: relative;
+}
+
+.nova-mobile-breadcrumb-toggle {
+    display: none;
+    /* Hidden by default, shown on mobile */
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    color: inherit;
+    z-index: 1000;
+    position: relative;
+}
+
+.nova-mobile-breadcrumb-toggle svg,
+.nova-mobile-breadcrumb-toggle i {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.nova-mobile-breadcrumb-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.nova-mobile-breadcrumb-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.nova-mobile-breadcrumb-content {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 90%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 9999;
+    overflow-y: auto;
+    visibility: hidden;
+    pointer-events: none;
+    translate: none;
+    rotate: none;
+    scale: none;
+    opacity: 1;
+    transform: translate(-100%, 0px);
+}
+
+.nova-mobile-breadcrumb-content.active {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.nova-mobile-breadcrumb-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+    color: #333;
+    z-index: 10000;
+    padding: 5px 10px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nova-mobile-breadcrumb-close:hover {
+    color: #000;
+}
+
+.nova-mobile-breadcrumb-close-icon {
+    display: block;
+    font-weight: 300;
+}
+
+.nova-mobile-breadcrumb-close-icon svg,
+.nova-mobile-breadcrumb-close-icon i {
+    width: 1em;
+    height: 1em;
+    display: block;
+}
+
+.nova-mobile-breadcrumb-template-wrapper {
+    padding: 60px 20px 20px;
+    width: 100%;
+}
+
+/* S'assurer que le menu dans le popup est visible */
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-container {
+    display: block !important;
+    visibility: visible !important;
+}
+
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-list {
+    display: flex !important;
+    flex-direction: column;
+}
+
+/* Show breadcrumb toggle based on responsive breakpoint */
+/* JavaScript handles all display logic — CSS ne doit pas interférer */
+.nova-mobile-breadcrumb-wrapper {
+    display: none;
+}
+
+.nova-mobile-breadcrumb-toggle {
+    display: none;
+}
+
+/* Quand JS ajoute la classe nova-breadcrumb-visible, on affiche */
+.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible {
+    display: flex !important;
+}
+
+.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible .nova-mobile-breadcrumb-toggle {
+    display: block !important;
+}
+
+/* Cacher le menu desktop quand le breadcrumb est visible */
+.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible~.nova-icon-menu-container,
+.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible~.nova-mega-menu-container {
+    display: none !important;
+}
+
+/* Tablet adjustments */
+@media (max-width: var(--breadcrumb-breakpoint-tablet, 768px)) {
+    .nova-mobile-breadcrumb-content {
+        max-width: 85%;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: var(--breadcrumb-breakpoint-mobile, 480px)) {
+    .nova-mobile-breadcrumb-content {
+        max-width: 100%;
+    }
+
+    .nova-mobile-breadcrumb-template-wrapper {
+        padding: 50px 15px 15px;
+    }
+}
+
+/* ============================================================
+   EWD Sticky Columns - CSS VRAIMENT Corrigé
+   ============================================================ */
+/* Wrapper pour la section Elementor à deux colonnes */
+.ewd-sticky-wrapper {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    /* Pas de gap, géré par Elementor */
+}
+
+/* ============================================
+   FIX CRITIQUE : Pin-spacer ne doit PAS être 100%
+   ============================================ */
+/* Le pin-spacer prend la place de la colonne sticky */
+.ewd-sticky-wrapper>.pin-spacer {
+    /* NE PAS mettre width: 100% !!! */
+    /* Le pin-spacer doit avoir la même largeur que la colonne sticky */
+    flex-shrink: 0 !important;
+    /* Laisser ScrollTrigger gérer la largeur naturellement */
+}
+
+/* Colonne sticky à l'intérieur du pin-spacer */
+.ewd-sticky-wrapper>.pin-spacer>.ewd-sticky-col {
+    box-sizing: border-box;
+}
+
+/* ============================================
+   Colonne sticky (avant pin)
+   ============================================ */
+.ewd-sticky-col {
+    position: relative !important;
+    top: auto !important;
+    align-self: flex-start;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Désactiver toute transition qui pourrait ralentir le mouvement sticky */
+    transition: none !important;
+    will-change: transform, top;
+}
+
+/* ============================================
+   Mobile : désactivation complète
+   ============================================ */
+@media (max-width: 991px) {
+    .ewd-sticky-wrapper {
+        flex-wrap: wrap;
+    }
+
+    .ewd-sticky-col {
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ============================================
+   Classe quand le sticky est actif (pin)
+   ============================================ */
+/* Par défaut : ewd-sticky-is-pinned (personnalisable dans NOVA Settings) */
+.ewd-sticky-col.ewd-sticky-is-pinned {
+    /* Exemple : z-index ou ombre quand fixé */
+}
+
+/* ============================================
+   Variables CSS
+   ============================================ */
+.ewd-sticky-wrapper {
+    --ewd-sticky-top: 80px;
+    --ewd-sticky-speed: 0;
+}
+
+.nova-mobile-breadcrumb-content[data-animation-type="expand"] button.nova-mobile-breadcrumb-close {
+    display: none;
+}
+
+/* ================================
+   Mobile Breadcrumb Logo Styles
+================================ */
+
+.nova-mobile-breadcrumb-wrapper {
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    justify-content: space-between;
+    /* display géré par JS — ne pas mettre display:flex ici */
+}
+
+.nova-mobile-breadcrumb-logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.nova-mobile-breadcrumb-logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.nova-mobile-breadcrumb-logo img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Responsive adjustments for logo */
+@media (max-width: 768px) {
+    .nova-mobile-breadcrumb-wrapper {
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nova-mobile-breadcrumb-wrapper {
+        gap: 8px;
+    }
+}
+
+/* Responsive adjustments for logo */
+@media (max-width: 768px) {
+    .nova-mobile-breadcrumb-wrapper {
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nova-mobile-breadcrumb-wrapper {
+        gap: 8px;
+    }
+}
+
+/* ================================
+   Mobile Breadcrumb Expand Mode
+================================ */
+
+/* Expand mode: content uses relative positioning instead of fixed */
+.nova-mobile-breadcrumb-content[data-animation-type="expand"] {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+    height: 0;
+    background: #ffffff;
+    z-index: 9999;
+    overflow: hidden;
+    visibility: visible;
+    pointer-events: none;
+    opacity: 1;
+    transform: none;
+}
+
+/* Classe ajoutée par PHP pour cacher avant que GSAP s'initialise (évite le flash) */
+.nova-expand-hidden {
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Expand mode: no overlay needed */
+.nova-mobile-breadcrumb-content[data-animation-type="expand"]~.nova-mobile-breadcrumb .nova-mobile-breadcrumb-overlay {
+    display: none !important;
+}
+
+/* Expand mode: close button positioning */
+.nova-mobile-breadcrumb-content[data-animation-type="expand"] .nova-mobile-breadcrumb-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10001;
+}
+
+/* Expand mode: template wrapper padding */
+.nova-mobile-breadcrumb-content[data-animation-type="expand"] .nova-mobile-breadcrumb-template-wrapper {
+    padding: 60px 20px 20px;
+    width: 100%;
+}
+
+/* Expand mode: responsive adjustments */
+@media (max-width: 768px) {
+    .nova-mobile-breadcrumb-content[data-animation-type="expand"] .nova-mobile-breadcrumb-template-wrapper {
+        padding: 50px 15px 15px;
+    }
+}
+
+/* ================================
+   Breadcrumb Toggle Icon Switch
+================================ */
+
+/* Par défaut : icône open visible, icône close cachée */
+.nova-mobile-breadcrumb-toggle .nova-breadcrumb-icon-open {
+    display: inline-flex;
+}
+
+.nova-mobile-breadcrumb-toggle .nova-breadcrumb-icon-close {
+    display: none;
+}
+
+/* Quand ouvert : icône open cachée, icône close visible */
+.nova-mobile-breadcrumb-toggle.nova-breadcrumb-is-open .nova-breadcrumb-icon-open {
+    display: none;
+}
+
+.nova-mobile-breadcrumb-toggle.nova-breadcrumb-is-open .nova-breadcrumb-icon-close {
+    display: inline-flex;
+}
+
+/* 
+.nova-mega-menu-displayed .nova-mobile-breadcrumb-template-wrapper span.nova-mega-menu-icon-wrapper {
+    transform: rotate(180deg);
+} */

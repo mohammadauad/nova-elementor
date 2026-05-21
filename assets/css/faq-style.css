@@ -1,0 +1,227 @@
+/**
+ * NOVA FAQ Widget Styles
+ */
+
+.nova-faq-widget {
+	width: 100%;
+}
+
+.nova-faq-title {
+	margin: 0 0 30px 0;
+	font-weight: 600;
+	line-height: 1.4;
+}
+.nova-faq-answer p:last-child {
+    margin-bottom: 0;
+}
+.nova-faq-container {
+	width: 100%;
+}
+span.nova-faq-icon img {
+    width: 100% !important;
+    height: 100% !important;
+}
+.nova-faq-item {
+	width: 100%;
+	margin-bottom: 15px;
+	transition: all 0.3s ease;
+}
+
+.nova-faq-question {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	cursor: pointer;
+	user-select: none;
+	transition: all 0.3s ease;
+	position: relative;
+	width: 100%;
+}
+
+.nova-faq-question.icon-left {
+	flex-direction: row;
+}
+
+.nova-faq-question.icon-left .nova-faq-icon {
+	order: -1;
+}
+
+.nova-faq-question.icon-right {
+	flex-direction: row;
+}
+
+.nova-faq-question.icon-right .nova-faq-icon {
+	order: 1;
+}
+
+.nova-faq-question-text {
+	flex: 1;
+	font-weight: 500;
+	line-height: 1.5;
+}
+
+.nova-faq-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: all 0.3s ease;
+	line-height: 1;
+}
+
+.nova-faq-icon svg {
+	display: block;
+	width: 16px;
+	height: 16px;
+	transition: all 0.3s ease;
+}
+
+/* Styles pour l'état actif - Icône */
+.nova-faq-item.active .nova-faq-icon {
+	transition: all 0.3s ease;
+}
+
+.nova-faq-item.active .nova-faq-icon.icon-open {
+	transition: transform 0.3s ease, color 0.3s ease, background 0.3s ease;
+}
+
+.nova-faq-answer-wrapper {
+	overflow: hidden;
+	transition: none;
+	will-change: max-height, opacity, transform;
+}
+
+.nova-faq-item.active .nova-faq-answer-wrapper {
+	transition: none;
+}
+
+
+.nova-faq-item.active .nova-faq-answer {
+	opacity: 1;
+}
+
+/* Animation Slide */
+.nova-faq-widget[data-animation-type="slide"] .nova-faq-answer-wrapper {
+	max-height: 0;
+	opacity: 0;
+	transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.nova-faq-widget[data-animation-type="slide"] .nova-faq-item.active .nova-faq-answer-wrapper {
+	max-height: 5000px;
+	opacity: 1;
+	transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Animation Fade */
+.nova-faq-widget[data-animation-type="fade"] .nova-faq-answer-wrapper {
+	opacity: 0;
+	transform: translateY(-10px);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.nova-faq-widget[data-animation-type="fade"] .nova-faq-item.active .nova-faq-answer-wrapper {
+	opacity: 1;
+	transform: translateY(0);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Animation None */
+.nova-faq-widget[data-animation-type="none"] .nova-faq-answer-wrapper {
+	display: none;
+}
+
+.nova-faq-widget[data-animation-type="none"] .nova-faq-item.active .nova-faq-answer-wrapper {
+	display: block;
+}
+
+/* Styles pour l'état actif - Question */
+.nova-faq-item.active .nova-faq-question {
+	transition: all 0.3s ease;
+}
+
+.nova-faq-item.active .nova-faq-question-text {
+	transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+/* Hover Effects */
+.nova-faq-question:hover {
+	opacity: 0.8;
+	transition: opacity 0.3s ease;
+}
+
+.nova-faq-item.active .nova-faq-question:hover {
+	opacity: 1;
+}
+
+/* Focus States */
+.nova-faq-question:focus {
+	outline: 2px solid #4A90E2;
+	outline-offset: 2px;
+}
+
+.nova-faq-question:focus:not(:focus-visible) {
+	outline: none;
+}
+
+
+/* Accessibility - Styles pour aria-expanded */
+.nova-faq-question[aria-expanded="true"] {
+	/* Styles pour l'état ouvert - gérés par .active */
+}
+
+.nova-faq-question[aria-expanded="false"] {
+	/* Styles pour l'état fermé - gérés par défaut */
+}
+
+/* Transitions spécifiques pour l'état actif */
+.nova-faq-item.active {
+	transition: all 0.3s ease;
+}
+
+/* Animation de l'icône lors du toggle */
+.nova-faq-icon {
+	transform-origin: center;
+}
+
+.nova-faq-item.active .nova-faq-icon {
+	transform-origin: center;
+}
+
+/* Smooth transitions pour tous les éléments lors du changement d'état */
+.nova-faq-item * {
+	transition-timing-function: ease;
+}
+
+/* État actif - Amélioration de la visibilité */
+.nova-faq-item.active .nova-faq-question {
+	position: relative;
+}
+
+.nova-faq-item.active .nova-faq-question::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+/* Print Styles */
+@media print {
+	.nova-faq-item {
+		break-inside: avoid;
+	}
+	
+	.nova-faq-answer-wrapper {
+		display: block !important;
+		max-height: none !important;
+		opacity: 1 !important;
+	}
+	
+	.nova-faq-icon {
+		display: none;
+	}
+}

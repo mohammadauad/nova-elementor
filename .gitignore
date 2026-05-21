@@ -1,0 +1,19 @@
+# Backup / scratch files
+*.bak
+*.ai-backup-*
+nova-tabs.txt
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Composer (not used here but good defaults)
+/vendor/
+composer.lock

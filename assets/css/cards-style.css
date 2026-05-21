@@ -1,0 +1,516 @@
+/* ============================================
+   NOVA CARDS WIDGET
+   ============================================ */
+
+.nova-cards-widget {
+	width: 100%;
+	position: relative;
+}
+
+.nova-cards-grid {
+	display: grid;
+	/* Default fallback - will be overridden by data-grid-columns or JavaScript */
+	grid-template-columns: repeat(3, 1fr);
+	gap: 30px;
+	width: 100%;
+}
+
+/* CSS fallback using data attribute - applies when inline styles are removed by Elementor */
+.nova-cards-grid[data-grid-columns="1"] {
+	grid-template-columns: repeat(1, 1fr) !important;
+}
+
+.nova-cards-grid[data-grid-columns="2"] {
+	grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.nova-cards-grid[data-grid-columns="3"] {
+	grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.nova-cards-grid[data-grid-columns="4"] {
+	grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.nova-cards-grid[data-grid-columns="5"] {
+	grid-template-columns: repeat(5, 1fr) !important;
+}
+
+.nova-cards-grid[data-grid-columns="6"] {
+	grid-template-columns: repeat(6, 1fr) !important;
+}
+
+/* CSS fallback for pixels mode with auto-center */
+.nova-cards-grid[data-grid-mode="pixels"] {
+	justify-items: center;
+}
+
+
+.nova-card-item {
+	position: relative;
+	width: 100%;
+	max-width: 100%;
+	min-height: 300px;
+	overflow: hidden;
+	border-radius: 8px;
+	display: flex;
+	align-items: flex-end;
+	justify-content: flex-start;
+}
+
+/* Remove min-height when aspect-ratio is applied (for creative background cards) */
+.nova-card-item[style*="aspect-ratio"] {
+	min-height: 0;
+	height: auto;
+}
+
+.nova-card-item.animated {
+	opacity: 1 !important;
+	transform: translateY(0) !important;
+	filter: blur(0) !important;
+}
+
+.nova-card-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	z-index: 0;
+	/* Smooth transition for hover effects */
+	transition: transform 0.5s ease, filter 0.5s ease;
+	transform-origin: center center;
+	will-change: transform;
+	backface-visibility: hidden;
+}
+
+/* Zoom image on hover — only when enabled via Elementor option (class added by JS) */
+.nova-card-item.nova-hover-image-scale:hover .nova-card-background {
+	transform: scale(1.08);
+}
+
+.nova-card-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	/* Overlay gradient will be set via inline style */
+	/* Smooth transitions for GSAP hover animations */
+	will-change: transform, opacity;
+	backface-visibility: hidden;
+	transform-origin: bottom center;
+}
+
+.nova-card-overlay {
+	z-index: 1;
+}
+
+.nova-card-content {
+	z-index: 2;
+}
+
+.nova-card-text.nova-card-text-1 h3 {
+	margin: 0;
+}
+
+.nova-card-text p:last-child {
+	margin: 0;
+}
+
+.nova-card-text {
+	width: 100%;
+	position: relative;
+}
+
+.nova-card-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 12px;
+	text-decoration: none;
+	cursor: pointer;
+	position: relative;
+	z-index: 12;
+	pointer-events: auto;
+	transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nova-card-button span.nova-card-button-icon {
+	transition: transform 0.3s ease;
+	display: flex;
+}
+
+.nova-card-item:hover .nova-card-button-icon {
+	animation: slideIcon 0.3s ease-in-out infinite alternate;
+}
+
+.nova-card-button-icon img {
+	width: 32px;
+	height: 32px;
+}
+
+/* Animated border on hover between text-1 and text-2
+   Apply only when background image + overlay are enabled */
+.nova-card-item.has-background-image.has-overlay-enabled .nova-card-text-1::after {
+	content: '';
+	position: absolute;
+	bottom: -3px;
+	left: 0;
+	width: 0;
+	height: 2px;
+	background: rgb(255 255 255);
+	transition: width 1s ease;
+}
+
+.nova-card-item.has-background-image.has-overlay-enabled:hover .nova-card-text-1::after {
+	width: 100%;
+}
+
+.nova-card-text-1 {
+	/* Styles pour le premier texte - configurés via Elementor */
+	display: block;
+}
+
+.nova-card-text-2 {
+	/* Styles pour le deuxième texte - configurés via Elementor */
+	display: block;
+}
+
+.nova-card-button {
+	text-decoration: initial !important;
+}
+
+.nova-card-item {
+	text-decoration: none;
+	color: inherit;
+}
+
+.elementor-editor-active .nova-card-item {
+	opacity: 1 !important;
+	filter: initial !important;
+	transform: initial !important;
+	overflow: initial !important;
+}
+
+.nova-card-item.has-link {
+	cursor: pointer;
+}
+
+/* ============================================
+   ALTERNATE LAYOUT: IMAGE ABOVE CONTENT
+   ============================================ */
+
+/* Card becomes a vertical stack: image on top, content below */
+.nova-card-item--image-top {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	min-height: 0;
+}
+
+/* Image wrapper for the alternate layout */
+.nova-card-item--image-top .nova-card-image-wrapper {
+	position: relative;
+	width: 100%;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.nova-card-item--image-top .nova-card-image-wrapper img {
+	display: block;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+	transform-origin: center center;
+	will-change: transform;
+	backface-visibility: hidden;
+}
+
+
+
+/* Content no longer overlays the image; it just sits below */
+.nova-card-item--image-top .nova-card-content {
+	position: relative;
+	height: auto;
+}
+
+/* ============================================
+   ELEMENTOR EDITOR SPECIFIC STYLES
+   For image-above-content layout
+   ============================================ */
+
+/* Ensure styles apply correctly in Elementor editor */
+/* .elementor-element .nova-card-item--image-top .nova-card-image-wrapper,
+.elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper {
+	position: relative !important;
+	width: 100% !important;
+	flex-shrink: 0 !important;
+	overflow: hidden !important;
+	display: block !important;
+} */
+
+/* .elementor-element .nova-card-item--image-top .nova-card-image-wrapper img,
+.elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper img {
+	display: block !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	height: auto !important;
+	object-fit: cover !important;
+	object-position: center center !important;
+} */
+
+/* Force aspect-ratio to work in editor */
+.elementor-element .nova-card-item--image-top .nova-card-image-wrapper[style*="aspect-ratio"] img,
+.elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper[style*="aspect-ratio"] img {
+	height: auto !important;
+}
+
+/* Ensure border-radius applies in editor */
+.elementor-element .nova-card-item--image-top .nova-card-image-wrapper,
+.elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper {
+	border-radius: inherit !important;
+}
+
+.elementor-element .nova-card-item--image-top .nova-card-image-wrapper img,
+.elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper img {
+	border-radius: inherit !important;
+}
+
+/* Ensure padding and margin apply in editor - inline styles take precedence */
+.elementor-element .nova-card-item--image-top .nova-card-image-wrapper,
+.elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper {
+	box-sizing: border-box !important;
+	/* Inline styles from Elementor controls will override these defaults */
+}
+
+/* Override any Elementor default styles that might interfere */
+.elementor-editor-active .elementor-element .nova-card-item--image-top .nova-card-image-wrapper,
+.elementor-editor-active .elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper {
+	/* Reset any transforms or filters that might interfere */
+	transform: none !important;
+	filter: none !important;
+	opacity: 1 !important;
+}
+
+.elementor-editor-active .elementor-element .nova-card-item--image-top .nova-card-image-wrapper img,
+.elementor-editor-active .elementor-widget-nova-cards .nova-card-item--image-top .nova-card-image-wrapper img {
+	transform: none !important;
+	filter: none !important;
+	opacity: 1 !important;
+}
+
+
+.nova-card-button-wrap {
+	display: flex;
+	justify-content: center;
+	margin-top: 1.5rem;
+}
+
+.nova-card-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	padding: 0.75rem 1.75rem;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0);
+	color: #ffffff;
+	text-decoration: none;
+	font-weight: 600;
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+	pointer-events: auto;
+}
+
+/* Force !important for button typography styles to override theme styles */
+.elementor-widget-nova-cards .nova-card-button {
+	font-family: inherit !important;
+	font-size: inherit !important;
+	font-weight: inherit !important;
+	font-style: inherit !important;
+	line-height: inherit !important;
+	letter-spacing: inherit !important;
+	text-decoration: inherit !important;
+	text-transform: inherit !important;
+	text-align: inherit !important;
+}
+
+
+/* Creative Background Styles */
+.nova-card-creative-background {
+	background-position: center !important;
+	background-repeat: no-repeat !important;
+}
+
+.elementor-widget-nova-cards {
+	width: 100% !important;
+}
+
+/* Disable border and background styles when creative background is enabled */
+.nova-cards-widget.creative-background-enabled .nova-card-item.has-creative-background {
+	border: none !important;
+	border-width: 0 !important;
+	border-style: none !important;
+	border-color: transparent !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+	-moz-box-shadow: none !important;
+}
+
+/* Ensure no border styles are applied to creative background cards */
+.nova-cards-widget.creative-background-enabled .nova-card-item.has-creative-background,
+.nova-cards-widget.creative-background-enabled .nova-card-item.has-creative-background::before,
+.nova-cards-widget.creative-background-enabled .nova-card-item.has-creative-background::after {
+	border: none !important;
+	box-shadow: none !important;
+}
+
+/* Responsive Grid */
+@media (max-width: 1024px) {
+	.nova-cards-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 768px) {
+	.nova-cards-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ============================================
+   FILTRES
+   ============================================ */
+
+.nova-cards-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: center;
+	margin-bottom: 24px;
+}
+
+.nova-title-widget ul {
+	list-style: inside;
+}
+
+.nova-cards-filter-item {
+	display: inline-block;
+	cursor: pointer;
+	font-size: inherit;
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+
+.nova-cards-filters {
+	max-width: 100%;
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+.nova-cards-filter-item.active,
+.nova-cards-filter-item:hover {
+	background-color: currentColor;
+}
+
+.nova-cards-filter-item.active span,
+.nova-cards-filter-item:hover span {
+	color: #fff;
+}
+
+/* Masquage des cards filtrées */
+.nova-card-item.nova-filter-hidden {
+	display: none !important;
+}
+
+@media (max-width: 767px) {
+	.nova-cards-filter-item.hide-on-mobile {
+		display: none !important;
+	}
+}
+
+/* Filtres meta (formulaire) */
+.nova-cards-filters--meta {
+	align-items: flex-end;
+	gap: 12px 16px;
+}
+
+.nova-cards-meta-filter {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.nova-cards-meta-filter__icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+}
+
+.nova-cards-meta-filter__icon img {
+	display: block;
+	width: 22px;
+	height: 22px;
+	object-fit: contain;
+}
+
+.nova-cards-meta-filter__control {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.nova-cards-meta-filter-input {
+	max-width: 100%;
+	min-width: 140px;
+	font-size: inherit;
+	line-height: 1.4;
+}
+
+.nova-cards-meta-filter__checkbox-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.nova-cards-meta-filter__checkbox-label input {
+	margin: 0;
+}
+
+@media (max-width: 767px) {
+	.nova-cards-filters--meta {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.nova-cards-meta-filter-input {
+		width: 100%;
+		min-width: 0;
+	}
+}
+
+/* ================================
+   Nova Card Text Logo (image dans Texte 1)
+================================ */
+.nova-card-text-1 .nova-card-text-logo {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	max-height: 60px;
+	width: auto;
+	object-fit: contain;
+}

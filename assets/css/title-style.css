@@ -1,0 +1,233 @@
+/* ============================================
+   NOVA TITLE WIDGET
+   ============================================ */
+
+
+/* Overlay Content Container - Structure de base seulement */
+.elementor-widget-nova-title .nova-title-overlay-content {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	/* Les propriétés flex (direction, justify-content, align-items, gap) seront gérées par Elementor */
+}
+.elementor-widget-nova-title .nova-title-left-group {
+	display: flex;
+	flex-direction: column;
+}
+.nova-stacking-card-2__inner.nova-stacking-card-2__inner--nova-title, .nova-stacking-card-2__inner.nova-stacking-card-2__inner--nova-title > div {
+    padding: 0 !important;
+    height: auto !important;
+}
+.elementor-widget-nova-title .nova-title-overlay-content .nova-title-text-left {
+	/* Largeur max par défaut - sera surchargée par Elementor si configurée */
+	max-width: 100%;
+}
+.nova-title-text.nova-title-text-2 p:last-child {
+    margin-bottom: 0;
+}
+.elementor-widget-nova-title .nova-title-overlay-content .nova-title-text-right {
+	display: flex;
+	flex-direction: column;
+	/* Largeur max par défaut - sera surchargée par Elementor si configurée */
+	max-width: 100%;
+}
+
+/* Text Elements - Structure de base seulement */
+/* .elementor-widget-nova-title .nova-title-text {
+	will-change: opacity, transform;
+	backface-visibility: hidden;
+} */
+
+.elementor-widget-nova-title .nova-title-text-2 > *:first-child {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Badge Styles */
+.elementor-widget-nova-title .nova-title-badge {
+	display: inline-flex;
+	align-items: center;
+	/* gap sera contrôlé par le paramètre badge_icon_spacing dans Elementor */
+	vertical-align: middle;
+}
+
+.elementor-widget-nova-title .nova-title-badge-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+
+.elementor-widget-nova-title .nova-title-badge-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.elementor-widget-nova-title .nova-title-badge-text {
+	display: inline-block;
+}
+
+/* Styled Words Styles */
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word {
+	display: inline-block !important; /* Important pour garantir le display */
+	/* S'assurer que les styles inline sont appliqués */
+	transform-origin: center center; /* Pour une meilleure rotation */
+	/* Permettre au transform inline de fonctionner */
+	will-change: transform;
+	/* Transition par défaut (peut être surchargée par les styles inline) */
+	transition: all 0.3s ease;
+	line-height: 1;
+}
+
+/* Styled Words Animation Styles */
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animated {
+	/* Les transitions seront définies via les styles inline depuis les contrôles */
+}
+
+/* État initial pour les mots animés au chargement */
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-load {
+	/* Les styles initiaux seront appliqués via data-initial-styles ou CSS */
+}
+
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-load.animated,
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-load.nova-animated {
+	/* Les styles finaux sont déjà appliqués via les styles inline */
+}
+
+/* Animation au survol */
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-hover {
+	/* Les styles initiaux seront appliqués au chargement via JavaScript ou data-initial-styles */
+}
+
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-hover:hover,
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-hover.nova-hover-ready:hover {
+	/* Les styles finaux seront appliqués au hover via les transitions définies dans les styles inline */
+	/* Retirer les styles initiaux au hover pour déclencher la transition */
+}
+
+/* Animation au scroll */
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-scroll {
+	/* Les styles initiaux seront appliqués au chargement */
+}
+
+.elementor-widget-nova-title .nova-title-text-1 .nova-styled-word-animate-on-scroll.nova-scroll-animated {
+	/* Les styles finaux seront appliqués quand l'élément est dans la vue */
+}
+
+/* Button Styles */
+.elementor-widget-nova-title .nova-title-button-wrapper {
+	width: 100%;
+	display: block;
+}
+
+.elementor-widget-nova-title .nova-title-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	cursor: pointer;
+	box-sizing: border-box;
+	/* Transition uniquement pour les propriétés qui ne changent pas les dimensions */
+	transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.elementor-widget-nova-title .nova-title-button:hover {
+	/* Retirer opacity et scale lors du hover */
+	opacity: 1 !important;
+	transform: none !important;
+}
+.elementor-widget-nova-title .nova-title-button:hover span.nova-title-button-icon.icon-before {
+    transform: translateX(-4px);
+}
+
+.elementor-widget-nova-title .nova-title-button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.elementor-widget-nova-title .nova-title-button-icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.elementor-widget-nova-title .nova-title-button-text {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1.2;
+}
+
+/* Icônes décoratives - positionnement absolu, animation au scroll */
+.elementor-widget-nova-title .nova-title-icons-wrapper {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	overflow: visible;
+	z-index: 0;
+}
+
+.elementor-widget-nova-title .nova-title-decoration-icon {
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	will-change: transform;
+	backface-visibility: hidden;
+	transition: transform 0.8s ease;
+	/* left/right, top/bottom et transform sont définis en inline selon align_h, align_v et translate X/Y */
+}
+
+.elementor-widget-nova-title .nova-title-decoration-icon-inner {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+
+.elementor-widget-nova-title .nova-title-decoration-icon-inner svg {
+	flex-shrink: 0;
+}
+
+.elementor-widget-nova-title .nova-title-decoration-icon-inner img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+/* Contenu du titre au-dessus des icônes */
+.elementor-widget-nova-title .nova-title-overlay-content,
+.elementor-widget-nova-title .nova-title-button-wrapper {
+	position: relative;
+	z-index: 1;
+}
+
+/* Responsive - Valeurs minimales seulement */
+@media (max-width: 768px) {
+	.elementor-widget-nova-title .nova-title-overlay-content {
+		flex-direction: column;
+	}
+}
+
+/* Responsive width/height for decorative icons */
+@media (max-width: 1024px) {
+	.elementor-widget-nova-title .nova-title-decoration-icon {
+		--nova-icon-w-current: var(--nova-icon-w-tablet);
+		--nova-icon-h-current: var(--nova-icon-h-tablet);
+	}
+}
+
+@media (max-width: 767px) {
+	.elementor-widget-nova-title .nova-title-decoration-icon {
+		--nova-icon-w-current: var(--nova-icon-w-mobile);
+		--nova-icon-h-current: var(--nova-icon-h-mobile);
+	}
+}

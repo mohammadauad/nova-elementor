@@ -1,0 +1,205 @@
+.nova-stacking-cards {
+	position: relative;
+	width: 100%;
+	min-height: 100vh;
+	display: flex;
+	align-items: stretch;
+	padding-bottom: var(--nova-stack-extra-scroll, 0px);
+}
+
+.nova-stacking-cards__inner {
+	position: relative;
+	width: 100%;
+	min-height: 100vh;
+	overflow: hidden;
+}
+
+.e-con:has(.elementor-widget-nova-stacking-cards) > .e-con-inner {
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.nova-stacking-card {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%) scale(0.96);
+	transform-origin: center top;
+	width: min(var(--nova-stacking-card-width, 960px), 100%);
+	height: var(--nova-stacking-card-height, 85vh);
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	overflow: hidden;
+	border-radius: var(--nova-stacking-card-radius, 32px);
+	background: #070b14;
+	box-shadow: var(--nova-stacking-card-shadow, 0 40px 80px rgba(11, 16, 26, 0.28));
+	opacity: 1 !important;
+	will-change: transform;
+}
+
+.nova-stacking-card__media {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+}
+
+.nova-stacking-card__media-image {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: center center;
+	filter: contrast(1.05);
+	transform: scale(1.05);
+	will-change: transform;
+}
+
+.nova-stacking-card__media-img {
+	display: none;
+}
+
+.nova-stacking-card__overlay {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(6, 10, 18, 0) 15%, rgba(6, 10, 18, 0.72) 100%);
+}
+
+.nova-stacking-card__content {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: var(--nova-stacking-card-padding, 3.5rem);
+	color: #ffffff;
+	text-align: left;
+}
+
+.nova-stacking-card__index {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: clamp(32px, 5vw, 48px);
+	height: clamp(32px, 5vw, 48px);
+	border-radius: 999px;
+	font-size: clamp(0.85rem, 1vw, 1rem);
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	background-color: rgba(255, 255, 255, 0.08);
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.nova-stacking-card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: clamp(40px, 5vw, 56px);
+	height: clamp(40px, 5vw, 56px);
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.16);
+	backdrop-filter: blur(12px);
+	color: #ffffff;
+	font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+}
+
+.nova-stacking-card__label {
+	font-size: clamp(0.8rem, 1vw, 0.95rem);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: #9cc2ff;
+}
+
+.nova-stacking-card__title {
+	margin: 0;
+	font-size: clamp(1.8rem, 3.6vw, 3.4rem);
+	line-height: 1.05;
+	letter-spacing: -0.01em;
+	color: inherit;
+}
+
+.nova-stacking-card__description {
+	font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+	line-height: 1.7;
+	max-width: 38ch;
+	color: rgba(231, 237, 247, 0.92);
+}
+
+.nova-stacking-card__cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	align-self: flex-start;
+	padding: 12px 20px;
+	border-radius: 999px;
+	border: none;
+	background-color: #ffffff;
+	color: #0f1627;
+	font-weight: 600;
+	font-size: 0.95rem;
+	text-decoration: none;
+	transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.nova-stacking-card__cta:hover {
+	transform: translateY(-1px);
+}
+
+.nova-stacking-card__cta-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.nova-stacking-cards:after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 55%);
+	z-index: 0;
+}
+
+@media (max-width: 1024px) {
+	.nova-stacking-card {
+		width: min(88vw, 720px);
+		height: min(var(--nova-stacking-card-height, 85vh), 88vh);
+	}
+
+	.nova-stacking-card__content {
+		padding: clamp(2rem, 4vw, 2.75rem);
+	}
+}
+
+@media (max-width: 767px) {
+	.nova-stacking-card {
+		position: relative;
+		left: 0;
+		transform: none;
+		width: 100%;
+		height: auto;
+		min-height: 68vh;
+		margin-bottom: 32px;
+	}
+
+	.nova-stacking-card__media {
+		position: absolute;
+		inset: 0;
+	}
+
+	.nova-stacking-cards {
+		min-height: auto;
+		display: block;
+	}
+
+	.nova-stacking-cards__inner {
+		min-height: auto;
+	}
+}
+

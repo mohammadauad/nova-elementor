@@ -1,0 +1,729 @@
+/**
+ * NOVA Icon Menu Styles
+ * Version: 1.0.0
+ */
+
+/* ================================
+   CRITICAL: Force #top-header-2 width
+================================ */
+#top-header-2 {
+	width: auto !important;
+	overflow: visible !important;
+}
+
+/* ================================
+   Reset et Styles de Base
+================================ */
+
+.nova-icon-menu-container {
+	position: relative;
+	width: 100%;
+}
+
+.nova-icon-menu-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	/* flex-wrap: wrap; */
+}
+
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-vertical .nova-icon-menu-header-title {
+	display: flex;
+	justify-content: space-between;
+	width: 100% !important;
+	min-width: 100%;
+	align-items: center;
+	gap: 15px;
+}
+
+span.nova-accordion-toggle-icon>span {
+	width: 15px;
+}
+
+.nova-mobile-breadcrumb-toggle[style="display: block;"],
+.nova-mobile-breadcrumb-toggle[style="display: flex;"] {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+/* ✅ FALLBACK: Styles de base pour garantir l'application même si le CSS Elementor n'est pas généré */
+/* Ces styles utilisent des sélecteurs génériques qui fonctionnent dans tous les modes */
+.elementor-element[class*="nova-icon-menu-"] .nova-icon-menu-list,
+.elementor-widget[class*="nova-icon-menu-"] .nova-icon-menu-list,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-list,
+.nova-mobile-breadcrumb-content .nova-icon-menu-list {
+	display: flex !important;
+}
+
+/* ✅ Forcer display flex dans tous les contextes (même hors Elementor) */
+.nova-icon-menu-container .nova-icon-menu-list {
+	display: flex !important;
+}
+
+/* Titre du menu */
+.nova-icon-menu-header-title {
+	margin: 0;
+	padding: 0;
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: inherit;
+	color: inherit;
+	display: flex;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.nova-icon-menu-header-title-inner {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	vertical-align: middle;
+}
+
+.nova-icon-menu-header-title-text {
+	display: inline;
+}
+
+.nova-icon-menu-header-title-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	flex-shrink: 0;
+	color: currentColor;
+}
+
+.nova-mobile-breadcrumb-template-wrapper {
+	height: 100%;
+}
+
+.nova-mobile-breadcrumb-template-wrapper>div {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.nova-icon-menu-header-title-icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+	display: flex;
+}
+
+/* Titre du menu avec lien */
+.nova-icon-menu-header-title-link {
+	text-decoration: none;
+	color: inherit;
+	transition: color 0.3s ease, background-color 0.3s ease;
+	display: inline-block;
+}
+
+.nova-icon-menu-header-title-link:hover,
+.nova-icon-menu-header-title-link:active {
+	text-decoration: none;
+}
+
+/* ✅ Fallback pour les liens dans le menu */
+.nova-icon-menu-container .nova-icon-menu-list a {
+	text-decoration: none !important;
+}
+
+/* ✅ Fallback pour le conteneur dans le popup mobile */
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-container,
+.nova-mobile-breadcrumb-content .nova-icon-menu-container {
+	width: 100%;
+}
+
+.nova-icon-menu-list li {
+	position: relative;
+	list-style: none;
+	margin: 0;
+}
+
+.nova-icon-menu-list a {
+	display: flex;
+	align-items: center;
+	padding: 15px 20px;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.3s ease;
+	position: relative;
+}
+
+/* .nova-icon-menu-list a:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+} */
+
+/* ================================
+   Styles pour #top-header-2 uniquement
+================================ */
+#top-header-2 {
+	--nova-hover-duration: 0.3s;
+	--nova-hover-easing: ease;
+	--nova-submenu-duration: 0.3s;
+}
+
+/* ================================
+   Icône et Texte
+================================ */
+
+.nova-icon-menu-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 10px;
+	font-size: 20px;
+	width: 24px;
+	min-width: 24px;
+	height: auto;
+	flex-shrink: 0;
+}
+
+/* S'assurer que les images ont min-width et height auto par défaut */
+.nova-icon-menu-icon img {
+	min-width: 24px;
+	height: auto;
+}
+
+
+
+
+.nova-icon-menu-description {
+	font-size: 13px;
+	line-height: 1.3;
+	margin-top: 3px;
+}
+
+/* ================================
+   Icône Dropdown
+================================ */
+
+.NOVA-dropdown-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	transition: transform 0.3s ease;
+	flex-shrink: 0;
+	max-width: 7px;
+	min-width: 7px;
+}
+
+
+
+/* Position gauche : espacement à droite + order */
+.NOVA-dropdown-position-left .NOVA-dropdown-icon {
+	order: -1;
+}
+
+.NOVA-dropdown-position-left .nova-icon-menu-title {
+	order: 1;
+}
+
+.NOVA-dropdown-position-left .nova-icon-menu-description {
+	order: 2;
+	width: 100%;
+	margin-left: 0;
+}
+
+.nova-has-submenu.menu-item-has-children>a {
+	position: relative;
+}
+
+/* Rotation de l'icône au survol */
+.nova-has-submenu.menu-item-has-children:hover>a .NOVA-dropdown-icon {
+	transform: rotate(180deg);
+}
+
+/* ================================
+   ORIENTATION HORIZONTALE (Défaut)
+================================ */
+
+.nova-icon-menu-horizontal .nova-icon-menu-list {
+	flex-direction: row;
+	align-items: center;
+}
+
+/* ✅ Styles de base pour garantir l'application en mode déconnecté */
+.elementor-element.nova-icon-menu-horizontal .nova-icon-menu-list,
+.nova-icon-menu-horizontal .nova-icon-menu-list,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-horizontal .nova-icon-menu-list,
+.nova-mobile-breadcrumb-content .nova-icon-menu-horizontal .nova-icon-menu-list {
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+}
+
+/* ✅ Styles supplémentaires pour les configurations Elementor en mode déconnecté */
+.elementor-element.nova-icon-menu-horizontal .nova-icon-menu-list,
+.elementor-widget.nova-icon-menu-horizontal .nova-icon-menu-list,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-horizontal .nova-icon-menu-list,
+.nova-mobile-breadcrumb-content .nova-icon-menu-horizontal .nova-icon-menu-list {
+	/* Ces styles seront surchargés par le CSS généré par Elementor si disponible */
+	justify-content: flex-start;
+	gap: 0;
+	flex-wrap: nowrap;
+}
+
+.nova-icon-menu-horizontal .nova-icon-menu-list>li {
+	margin: 0;
+}
+
+/* ================================
+   ORIENTATION VERTICALE
+================================ */
+
+.nova-icon-menu-vertical .nova-icon-menu-list {
+	flex-direction: column;
+	align-items: stretch;
+}
+
+/* ✅ Styles de base pour garantir l'application en mode déconnecté */
+.elementor-element.nova-icon-menu-vertical .nova-icon-menu-list,
+.nova-icon-menu-vertical .nova-icon-menu-list,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-vertical .nova-icon-menu-list,
+.nova-mobile-breadcrumb-content .nova-icon-menu-vertical .nova-icon-menu-list {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: stretch !important;
+}
+
+/* ✅ Styles supplémentaires pour les configurations Elementor en mode déconnecté */
+.elementor-element.nova-icon-menu-vertical .nova-icon-menu-list,
+.elementor-widget.nova-icon-menu-vertical .nova-icon-menu-list,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-vertical .nova-icon-menu-list,
+.nova-mobile-breadcrumb-content .nova-icon-menu-vertical .nova-icon-menu-list {
+	/* Ces styles seront surchargés par le CSS généré par Elementor si disponible */
+	justify-content: flex-start;
+	gap: 0;
+	flex-wrap: nowrap;
+}
+
+/* Forcer les items à prendre 100% de la largeur */
+.nova-icon-menu-vertical .nova-icon-menu-list>li,
+.elementor-element.nova-icon-menu-vertical .nova-icon-menu-list>li,
+.elementor-widget.nova-icon-menu-vertical .nova-icon-menu-list>li,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-vertical .nova-icon-menu-list>li,
+.nova-mobile-breadcrumb-content .nova-icon-menu-vertical .nova-icon-menu-list>li {
+	width: 100% !important;
+}
+
+/* Forcer les liens à prendre 100% de la largeur */
+.nova-icon-menu-vertical .nova-icon-menu-list>li>a,
+.elementor-element.nova-icon-menu-vertical .nova-icon-menu-list>li>a,
+.elementor-widget.nova-icon-menu-vertical .nova-icon-menu-list>li>a,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-vertical .nova-icon-menu-list>li>a,
+.nova-mobile-breadcrumb-content .nova-icon-menu-vertical .nova-icon-menu-list>li>a {
+	width: 100% !important;
+	display: flex !important;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+/* S'assurer que le wrapper texte prend toute la largeur disponible en mode vertical */
+.nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-text-wrap,
+.elementor-element.nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-text-wrap,
+.elementor-widget.nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-text-wrap,
+.nova-mobile-breadcrumb-template-wrapper .nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-text-wrap,
+.nova-mobile-breadcrumb-content .nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-text-wrap {
+	flex: 1 1 auto !important;
+	width: 100%;
+	min-width: 0;
+	/* Permet au flex de rétrécir si nécessaire */
+	box-sizing: border-box;
+}
+
+/* S'assurer que tous les éléments enfants prennent la largeur du parent */
+.nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-title,
+.nova-icon-menu-vertical .nova-icon-menu-list>li>a .nova-icon-menu-description {
+	/* width: 100%; */
+	box-sizing: border-box;
+}
+
+/* ================================
+   SOUS-MENUS - Layout de base
+================================ */
+
+.nova-icon-menu-list .sub-menu {
+	list-style: none;
+	margin: 0;
+	padding: 10px 0;
+	position: absolute;
+	background: #ffffff;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	min-width: 220px;
+	z-index: 1000;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-10px);
+	transition: all 0.3s ease;
+}
+
+/* Afficher le sous-menu au survol (si trigger = hover/both) - MAIS pas si déjà ouvert via click */
+.nova-submenu-trigger-hover .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu,
+.nova-submenu-trigger-both .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+/* Sur mobile, désactiver le hover */
+@media (max-width: 768px) {
+	.nova-icon-menu-list li:hover>.sub-menu {
+		opacity: 1;
+		visibility: visible;
+		transform: none;
+		display: none !important;
+	}
+}
+
+/* Styles des liens dans les sous-menus */
+
+
+/* .nova-icon-menu-list .sub-menu a:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+} */
+
+/* Sous-sous-menus */
+.nova-icon-menu-list .sub-menu .sub-menu {
+	left: 100%;
+	top: 0;
+	margin-left: 5px;
+}
+
+/* ================================
+   SOUS-MENUS - Mode HORIZONTAL
+================================ */
+
+.nova-icon-menu-horizontal .nova-icon-menu-list>li>.sub-menu {
+	top: 100%;
+	left: 0;
+	margin-top: 0;
+}
+
+/* Alignement à droite si proche du bord */
+.nova-icon-menu-horizontal .nova-icon-menu-list>li:last-child>.sub-menu {
+	left: auto;
+	right: 0;
+}
+
+/* ================================
+   SOUS-MENUS - Mode VERTICAL
+================================ */
+
+.nova-icon-menu-vertical .nova-icon-menu-list>li>.sub-menu {
+	top: 0;
+	left: 100%;
+	margin-left: 5px;
+}
+
+/* Sous-menus ouverts en dessous en mode vertical (alternative) */
+.nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list>li>.sub-menu {
+	position: relative;
+	left: 0;
+	top: auto;
+	box-shadow: none;
+	border-radius: 0;
+	/* ✅ Demande: si caché => display none (mode "en dessous") */
+	display: none;
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+}
+
+/* Ouvrir le sous-menu en dessous sur hover (si trigger = hover/both) - MAIS pas si déjà ouvert via click */
+.nova-submenu-trigger-hover .nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu,
+.nova-submenu-trigger-both .nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu {
+	display: block;
+}
+
+/* Ouvrir le sous-menu (click/toggle JS) - desktop & mobile */
+.nova-icon-menu-list li.nova-submenu-open>.sub-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+	display: block !important;
+	/* ✅ Important pour surcharger display:none du mode "en dessous" */
+}
+
+/* ✅ Spécificité élevée pour le mode "en dessous" avec click - PRIORITÉ MAXIMALE */
+/* Sélecteurs multiples pour couvrir toutes les structures possibles */
+.nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.nova-submenu-trigger-click .nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.nova-submenu-trigger-both .nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.nova-submenu-trigger-click.nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.nova-submenu-trigger-both.nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.elementor-element.nova-submenu-trigger-click.nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+.elementor-element.nova-submenu-trigger-both.nova-icon-menu-vertical.nova-submenu-below .nova-icon-menu-list li.nova-submenu-open>.sub-menu {
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	transform: none !important;
+	position: relative !important;
+	left: 0 !important;
+	top: auto !important;
+	z-index: 1 !important;
+	min-height: auto !important;
+	max-height: none !important;
+	overflow: visible !important;
+}
+
+/* ================================
+   Flèches pour indiquer les sous-menus
+================================ */
+
+/* Flèche pour horizontal: vers le bas */
+	.nova-icon-menu-horizontal .nova-has-submenu>a .NOVA-dropdown-icon {
+	transform: rotate(0deg);
+}
+
+.nova-icon-menu-horizontal .nova-has-submenu:hover>a .NOVA-dropdown-icon {
+	transform: rotate(180deg);
+}
+
+/* Garder l'icône pivotée quand le sous-menu est ouvert (mobile ou clic) */
+.nova-icon-menu-horizontal .nova-has-submenu.nova-submenu-open>a .NOVA-dropdown-icon {
+	transform: rotate(180deg);
+}
+
+/* Flèche pour vertical: vers la droite */
+.nova-icon-menu-vertical .nova-has-submenu>a .NOVA-dropdown-icon {
+	margin-left: auto;
+}
+
+.nova-icon-menu-vertical .nova-has-submenu:hover>a .NOVA-dropdown-icon {
+	transform: rotate(0deg);
+}
+
+.nova-icon-menu-vertical .nova-icon-menu-list .nova-has-submenu.nova-submenu-open>a .NOVA-dropdown-icon {
+	transform: rotate(180deg);
+}
+
+/* ================================
+   Animations des sous-menus
+================================ */
+
+@keyframes NOVAFadeInDown {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes NOVAFadeInRight {
+	from {
+		opacity: 0;
+		transform: translateX(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+/* Animation pour horizontal - seulement si pas déjà ouvert via click */
+.nova-submenu-trigger-hover .nova-icon-menu-horizontal .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu,
+.nova-submenu-trigger-both .nova-icon-menu-horizontal .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu {
+	animation: NOVAFadeInDown 0.3s ease forwards;
+}
+
+/* Animation pour vertical - seulement si pas déjà ouvert via click */
+.nova-submenu-trigger-hover .nova-icon-menu-vertical .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu,
+.nova-submenu-trigger-both .nova-icon-menu-vertical .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu {
+	animation: NOVAFadeInRight 0.3s ease forwards;
+}
+
+
+
+/* ================================
+   Responsive
+================================ */
+
+@media (max-width: 768px) {
+
+	/* Forcer le mode vertical sur mobile */
+	.nova-icon-menu-horizontal .nova-icon-menu-list {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.nova-icon-menu-horizontal .nova-icon-menu-list>li {
+		width: 100%;
+	}
+
+	/* Sous-menus en dessous sur mobile - Utiliser display au lieu de transform */
+	.nova-icon-menu-horizontal .nova-icon-menu-list>li>.sub-menu,
+	.nova-icon-menu-vertical .nova-icon-menu-list>li>.sub-menu {
+		position: relative;
+		left: 0;
+		top: auto;
+		margin-left: 20px;
+		margin-top: 0;
+		box-shadow: none;
+		border-left: 2px solid rgba(0, 0, 0, 0.1);
+		border-radius: 0;
+		display: none !important;
+		opacity: 1;
+		visibility: visible;
+		transform: none;
+		transition: none;
+	}
+
+	/* Afficher le sous-menu quand ouvert (classe ajoutée par JS) - Spécificité plus élevée */
+	.nova-icon-menu-horizontal .nova-icon-menu-list li.nova-submenu-open>.sub-menu,
+	.nova-icon-menu-vertical .nova-icon-menu-list li.nova-submenu-open>.sub-menu {
+		display: block !important;
+	}
+
+	/* Désactiver complètement le hover sur mobile - Ne pas appliquer si .nova-submenu-open est présent */
+	.nova-icon-menu-horizontal .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu,
+	.nova-icon-menu-vertical .nova-icon-menu-list li:not(.nova-submenu-open):hover>.sub-menu {
+		display: none !important;
+		transform: none;
+		opacity: 1;
+		visibility: visible;
+	}
+
+	/* Icône dropdown pointant vers le bas */
+.nova-icon-menu-horizontal .nova-has-submenu>a .NOVA-dropdown-icon {
+		margin-left: auto;
+	}
+}
+
+/* ================================
+   Mode Sombre (optionnel)
+================================ */
+
+.nova-icon-menu-dark .nova-icon-menu-list a {
+	color: #ffffff;
+}
+
+/* .nova-icon-menu-dark .nova-icon-menu-list a:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nova-icon-menu-dark .nova-icon-menu-list .sub-menu {
+	background: #2c3e50;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+} */
+
+/* ================================
+   Transitions fluides
+================================ */
+
+.nova-icon-menu-list * {
+	box-sizing: border-box;
+}
+
+.nova-icon-menu-list a,
+.nova-icon-menu-list .sub-menu,
+.NOVA-dropdown-icon {
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================
+   ACCORDION
+================================ */
+
+.nova-accordion-trigger {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	user-select: none;
+}
+
+.nova-accordion-toggle-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	margin-left: 8px;
+	font-size: 14px;
+	transition: transform 0.25s ease;
+}
+
+/* État ouvert: afficher icône "moins", cacher "plus" */
+.nova-accordion-trigger.nova-accordion-open .nova-accordion-icon-open {
+	display: inline-flex;
+}
+
+.nova-accordion-trigger.nova-accordion-open .nova-accordion-icon-closed {
+	display: none;
+}
+
+/* État fermé: afficher icône "plus", cacher "moins" */
+.nova-accordion-trigger:not(.nova-accordion-open) .nova-accordion-icon-open {
+	display: none;
+}
+
+.nova-accordion-trigger:not(.nova-accordion-open) .nova-accordion-icon-closed {
+	display: inline-flex;
+}
+
+/* Corps de l'accordion */
+.nova-accordion-menu-body {
+	/* Visible par défaut (ouvert par défaut géré par PHP) */
+	display: block;
+}
+
+.nova-accordion-menu-body.nova-accordion-closed {
+	/* display: none !important; */
+}
+
+/* Forcer l'affichage quand pas fermé (priorité maximale) */
+.nova-accordion-menu-body:not(.nova-accordion-closed) {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+/* Spécificité maximale pour mobile popup */
+.nova-mobile-breadcrumb-content .nova-accordion-menu-body:not(.nova-accordion-closed),
+.nova-mobile-breadcrumb-template-wrapper .nova-accordion-menu-body:not(.nova-accordion-closed) {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	max-height: none !important;
+}
+
+/* Forcer l'affichage avec style inline (priorité absolue) */
+.nova-accordion-menu-body[style*="display: block"] {
+	display: block !important;
+}
+
+.nova-accordion-menu-body[style*="visibility: visible"] {
+	visibility: visible !important;
+}
+
+.nova-accordion-menu-body[style*="opacity: 1"] {
+	opacity: 1 !important;
+}
+
+/* Transitions après init JS */
+.nova-accordion-menu-body.nova-accordion-animated {
+	display: block !important;
+	overflow: hidden;
+	transition: max-height 0.35s ease, opacity 0.35s ease;
+	max-height: 3000px;
+	opacity: 1;
+}
+
+.nova-accordion-menu-body.nova-accordion-animated.nova-accordion-closed {
+	display: block !important;
+	max-height: 0 !important;
+	opacity: 0 !important;
+	pointer-events: none;
+	overflow: hidden;
+}

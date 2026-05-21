@@ -1,0 +1,43 @@
+/**
+ * NOVA Split Sticky Containers
+ * Deux colonnes avec une colonne sticky par rapport à l'autre.
+ */
+
+.nova-split-sticky-containers {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	align-items: flex-start;
+	width: 100%;
+	box-sizing: border-box;
+	gap: 40px;
+	/* Décalage sticky configurable via variable CSS */
+	--nova-split-sticky-top: 80px;
+}
+
+.nova-split-sticky-containers__column {
+	min-width: 0;
+}
+
+/* Colonne sticky – version CSS pure, sans JS */
+.nova-split-sticky-containers--sticky-left .nova-split-sticky-containers__column--left,
+.nova-split-sticky-containers--sticky-right .nova-split-sticky-containers__column--right {
+	position: sticky;
+	top: var(--nova-split-sticky-top);
+	align-self: flex-start;
+}
+
+/* Si aucune colonne sticky n'est choisie, rien de spécial à faire
+   (classe --sticky-none gardée pour clarté / éventuelles évolutions JS) */
+
+@media (max-width: 991px) {
+	.nova-split-sticky-containers {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* En mobile, on désactive le sticky pour éviter des comportements étranges
+	   avec les conteneurs de grande hauteur. */
+	.nova-split-sticky-containers__column {
+		position: static !important;
+	}
+}
+

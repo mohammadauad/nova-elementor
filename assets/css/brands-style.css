@@ -1,0 +1,256 @@
+/* ============================================
+   NOVA BRANDS WIDGET
+   ============================================ */
+
+.nova-brands-widget {
+	width: 100%;
+	position: relative;
+}
+
+
+.nova-brands-widget .swiper-wrapper {
+	display: flex;
+	justify-content: flex-start;
+}
+
+/* Texte */
+.nova-brands-text {
+	margin-bottom: 40px;
+}
+
+.nova-brands-text>* {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* Container */
+.nova-brands-container {
+	width: 100%;
+	position: relative;
+}
+
+/* Grid Layout (quand slider désactivé) */
+.nova-brands-grid {
+	width: 100%;
+}
+
+.nova-brands-grid-inner {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 30px;
+	width: 100%;
+}
+
+.nova-brands-grid-inner .nova-brands-item {
+	/* Largeur calculée selon le nombre de colonnes, en tenant compte du gap */
+	width: calc((100% - (var(--grid-cols-current, var(--grid-cols, 4)) - 1) * var(--grid-gap, 30px)) / var(--grid-cols-current, var(--grid-cols, 4)));
+	flex-shrink: 0;
+	flex-grow: 0;
+}
+
+@media (max-width: 1024px) {
+	.nova-brands-grid-inner .nova-brands-item {
+		width: calc((100% - (var(--grid-cols-current, var(--grid-cols-tablet, var(--grid-cols, 3))) - 1) * var(--grid-gap, 30px)) / var(--grid-cols-current, var(--grid-cols-tablet, var(--grid-cols, 3))));
+	}
+}
+
+@media (max-width: 767px) {
+	.nova-brands-grid-inner .nova-brands-item {
+		width: calc((100% - (var(--grid-cols-current, var(--grid-cols-mobile, 2)) - 1) * var(--grid-gap, 30px)) / var(--grid-cols-current, var(--grid-cols-mobile, 2)));
+	}
+}
+
+.nova-brands-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 80px;
+	/* Items inherit visibility from parent widget, no individual animation */
+	opacity: 1;
+	transform: translateY(0);
+	filter: blur(0);
+}
+
+/* Logo */
+.nova-brands-logo {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	transition: all 0.3s ease;
+	width: 100%;
+	height: 100%;
+}
+
+.nova-brands-logo img {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	transition: all 0.3s ease;
+	filter: grayscale(0) !important;
+}
+
+/* Slider Swiper */
+.nova-brands-slider {
+	position: relative;
+	padding: 0 50px;
+}
+
+.nova-brands-swiper {
+	width: 100%;
+	overflow: hidden;
+}
+
+.nova-brands-swiper .swiper-slide {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: auto;
+	min-height: 80px;
+	/* Slides inherit visibility from parent widget, no individual animation */
+	opacity: 1;
+	transform: translateY(0);
+	filter: blur(0);
+}
+
+/* Auto width mode - slides have auto width based on content */
+.nova-brands-swiper[style*="auto-width"] .swiper-slide,
+.nova-brands-swiper.swiper-auto-width .swiper-slide {
+	width: auto !important;
+}
+
+.nova-brands-swiper .swiper-slide .nova-brands-logo {
+	width: 100%;
+}
+
+.nova-brands-swiper .swiper-slide .nova-brands-logo img {
+	max-width: 100%;
+	height: auto;
+}
+
+/* Fallback: afficher les slides si animation désactivée */
+.nova-brands-widget[data-animation-config*='"enable":false'] .nova-brands-swiper .swiper-slide,
+.nova-brands-widget[data-animation-config*='"enable": false'] .nova-brands-swiper .swiper-slide {
+	opacity: 1 !important;
+	transform: translateY(0) !important;
+	filter: blur(0) !important;
+}
+
+/* Afficher les slides avec style inline (appliqué par JS) */
+.nova-brands-swiper .swiper-slide[style*="opacity"],
+.nova-brands-swiper .swiper-slide[style*="opacity: 1"],
+.nova-brands-swiper .swiper-slide[style*="opacity:1"] {
+	opacity: 1 !important;
+	transform: translateY(0) !important;
+	filter: blur(0) !important;
+}
+
+/* Fallback ultime: après 2 secondes, afficher toutes les slides si JS ne fonctionne pas */
+.nova-brands-widget .nova-brands-swiper .swiper-slide {
+	animation: nova-brands-fade-in 0.1s ease 2s forwards;
+}
+
+@keyframes nova-brands-fade-in {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+		filter: blur(0);
+	}
+}
+
+/* Si style inline présent, annuler l'animation */
+.nova-brands-swiper .swiper-slide[style*="opacity"] {
+	animation: none;
+}
+
+/* Navigation Swiper */
+.nova-brands-swiper .swiper-button-next,
+.nova-brands-swiper .swiper-button-prev {
+	width: 40px;
+	height: 40px;
+	background: #fff;
+	border-radius: 50%;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	color: #333;
+	transition: all 0.3s ease;
+}
+
+.nova-brands-swiper .swiper-button-next:after,
+.nova-brands-swiper .swiper-button-prev:after {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.nova-brands-swiper .swiper-button-next:hover,
+.nova-brands-swiper .swiper-button-prev:hover {
+	background: #f0f0f0;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.nova-brands-swiper .swiper-button-next {
+	right: 0;
+}
+
+.nova-brands-swiper .swiper-button-prev {
+	left: 0;
+}
+
+/* Pagination Swiper */
+.nova-brands-swiper .swiper-pagination {
+	position: relative;
+	margin-top: 30px;
+	bottom: auto;
+}
+
+.nova-brands-swiper .swiper-pagination-bullet {
+	width: 10px;
+	height: 10px;
+	background: #ccc;
+	opacity: 1;
+	transition: all 0.3s ease;
+}
+
+.nova-brands-swiper .swiper-pagination-bullet-active {
+	background: #333;
+	width: 30px;
+	border-radius: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.nova-brands-slider {
+		padding: 0 30px;
+	}
+
+	.nova-brands-swiper .swiper-button-next,
+	.nova-brands-swiper .swiper-button-prev {
+		width: 30px;
+		height: 30px;
+	}
+
+	.nova-brands-swiper .swiper-button-next:after,
+	.nova-brands-swiper .swiper-button-prev:after {
+		font-size: 12px;
+	}
+
+	.nova-brands-grid,
+	.nova-brands-grid-inner {
+		gap: 20px;
+	}
+}
+
+@media (max-width: 480px) {
+	.nova-brands-slider {
+		padding: 0 0;
+	}
+
+	.nova-brands-grid,
+	.nova-brands-grid-inner {
+		gap: 15px;
+	}
+}

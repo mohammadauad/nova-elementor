@@ -1,0 +1,317 @@
+/**
+ * NOVA Stacking Cards - Fullscreen stacked storytelling cards.
+ */
+
+.nova-stacking-cards-wrapper {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+
+.nova-stacking-cards {
+	--stack-width: 100vw;
+	--stack-height: 100vh;
+	--card-radius: 24px;
+	--card-shadow-strength: 0.35;
+	--nova-stacking-nav-offset: clamp(1.5rem, 4vw, 3rem);
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--stack-width);
+	height: var(--stack-height);
+	margin: 0 auto;
+}
+
+.e-con:has(.elementor-widget-nova-stacking-cards) > .e-con-inner {
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: visible !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.nova-stacking-cards__inner {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+}
+
+.nova-stacking-card {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    box-shadow: 0 32px 96px rgba(15, 15, 23, var(--card-shadow-strength));
+    transform-origin: center center;
+    opacity: 1 !important;
+}
+
+.nova-stacking-cards-nav {
+	position: absolute;
+	left: clamp(1.5rem, 3vw, 3rem);
+	right: clamp(1.5rem, 3vw, 3rem);
+	bottom: var(--nova-stacking-nav-offset);
+	top: auto;
+	display: flex;
+	justify-content: center;
+	gap: clamp(0.5rem, 2vw, 1.25rem);
+	z-index: 5;
+	pointer-events: none;
+}
+
+.nova-stacking-nav-pos-top .nova-stacking-cards-nav {
+	top: var(--nova-stacking-nav-offset);
+	bottom: auto;
+}
+
+.nova-stacking-cards-nav-list {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: clamp(0.5rem, 1.5vw, 1.25rem);
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	width: 100%;
+	pointer-events: auto;
+}
+
+.nova-stacking-cards-nav-item {
+	display: flex;
+}
+
+.nova-stacking-cards-nav-button {
+	position: relative;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(0.35rem, 1vw, 0.75rem);
+	padding: 0.6rem 1.6rem;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	background: rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(6px);
+	color: #ffffff;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Ensure Elementor custom styles are applied with proper specificity */
+.elementor-widget-nova-stacking-cards .nova-stacking-cards-nav-button {
+	display: inline-flex !important;
+}
+
+.elementor-widget-nova-stacking-cards .nova-stacking-cards-nav-list {
+	display: flex !important;
+}
+
+.elementor-widget-nova-stacking-cards .nova-stacking-cards-nav-icon {
+	display: inline-flex !important;
+}
+
+.nova-stacking-cards-nav-button:hover,
+.nova-stacking-cards-nav-button:focus {
+	transform: translateY(-2px);
+}
+
+.nova-stacking-cards-nav-button.is-active {
+	background: #ffffff;
+	color: #111111;
+	border-color: transparent;
+}
+
+.nova-stacking-cards-nav-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.nova-stacking-cards-nav-icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.nova-stacking-cards-nav-icon img {
+	display: block;
+	width: 1.4em;
+	height: 1.4em;
+	object-fit: contain;
+}
+
+.nova-stacking-cards-nav-text {
+	display: inline-block;
+}
+
+.nova-stacking-card__media {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+.nova-stacking-card__image {
+    width: 100%;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+.nova-stacking-card__title h2 {
+    margin: 0;
+}
+.nova-stacking-card__overlay {
+	position: absolute;
+	inset: 0;
+	background: var(--card-overlay, rgba(0, 0, 0, 0.45));
+	z-index: 2;
+}
+
+.nova-stacking-card__content {
+	position: relative;
+	z-index: 3;
+	padding: clamp(2rem, 4vw, 4rem);
+	display: flex;
+	flex-direction: column;
+	gap: clamp(0.75rem, 2vw, 1.75rem);
+	align-items: center;
+	text-align: center;
+	color: #ffffff;
+    height: 100%;
+}
+
+.nova-stacking-card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: inherit;
+}
+
+.nova-stacking-card__icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.nova-stacking-card__icon-image img {
+	display: block;
+	width: clamp(2.5rem, 5vw, 3.5rem);
+	height: auto;
+	object-fit: contain;
+}
+
+.nova-stacking-card__subtitle {
+	font-size: clamp(0.875rem, 1.4vw, 1.2rem);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.nova-stacking-card__title {
+	margin: 0;
+	font-size: clamp(2.2rem, 5vw, 4rem);
+	line-height: 1.1;
+	font-weight: 600;
+	color: inherit;
+}
+
+.nova-stacking-card__description {
+	font-size: clamp(1rem, 2vw, 1.25rem);
+	line-height: 1.6;
+	color: inherit;
+}
+
+.nova-stacking-card__description p {
+	margin: 0 0 1rem;
+}
+
+.nova-stacking-card__description p:last-child {
+	margin-bottom: 0;
+}
+
+.nova-stacking-card__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 600;
+	padding: 1rem 2.4rem;
+	border-radius: 999px;
+	background-color: #ffffff;
+	color: #111111;
+	text-decoration: none;
+	position: relative;
+	overflow: hidden;
+	transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.nova-stacking-card__button:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 12px 32px rgba(17, 17, 17, 0.2);
+}
+
+.nova-stacking-card.is-active {
+	pointer-events: auto;
+}
+
+.nova-stacking-card:not(.is-active) {
+	pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+	.nova-stacking-cards {
+		width: 100%;
+	}
+
+	.nova-stacking-card__content {
+		padding: clamp(1.5rem, 4vw, 3rem);
+	}
+}
+
+@media (max-width: 767px) {
+	.nova-stacking-card__title {
+		font-size: clamp(1.9rem, 8vw, 2.6rem);
+	}
+
+	.nova-stacking-card__description {
+		font-size: clamp(0.95rem, 4vw, 1.1rem);
+	}
+
+	.nova-stacking-card__content {
+		padding: clamp(1.25rem, 6vw, 2.25rem);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.nova-stacking-cards {
+		scroll-behavior: auto;
+	}
+
+	.nova-stacking-card {
+		position: relative;
+		inset: auto;
+		margin-bottom: 1.5rem;
+		transform: none !important;
+		opacity: 1 !important;
+		box-shadow: none;
+	}
+
+	.nova-stacking-card:last-child {
+		margin-bottom: 0;
+	}
+
+	.nova-stacking-card__overlay {
+		background: rgba(0, 0, 0, 0.35);
+	}
+}
+

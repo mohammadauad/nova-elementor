@@ -1,0 +1,318 @@
+/* ============================================
+   NOVA SCROLL HERO - SOLUTION WRAPPER
+   ============================================ */
+
+/* ===== OVERRIDE ELEMENTOR ===== */
+/* CRITICAL: overflow must be visible on ALL ancestors for position:sticky to work */
+
+.elementor-widget-nova-scroll-hero,
+.elementor-widget-nova-scroll-hero .elementor-widget-container {
+	width: 100%;
+	max-width: 100% !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: visible !important;
+}
+
+/* All Elementor flex/grid containers that might contain the widget */
+.e-con:has(.elementor-widget-nova-scroll-hero),
+.e-con:has(.elementor-widget-nova-scroll-hero)>.e-con-inner,
+.elementor-section:has(.elementor-widget-nova-scroll-hero),
+.elementor-section:has(.elementor-widget-nova-scroll-hero)>.elementor-container,
+.elementor-column:has(.elementor-widget-nova-scroll-hero),
+.elementor-column:has(.elementor-widget-nova-scroll-hero)>.elementor-column-wrap,
+.elementor-column:has(.elementor-widget-nova-scroll-hero)>.elementor-widget-wrap {
+	max-width: 100% !important;
+	width: 100% !important;
+	overflow: visible !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	gap: 0 !important;
+}
+
+/* ===== WIDGET PRINCIPAL ===== */
+
+.nova-scroll-hero {
+	width: 100%;
+	max-width: 100%;
+	height: 150vh;
+	position: relative;
+	padding: 0;
+	margin: 0;
+
+}
+
+/* Texte initial */
+.nova-scroll-hero-text {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 80px 40px 120px;
+	font-size: 18px;
+	line-height: 1.6;
+	color: #333;
+	position: relative;
+	z-index: 1;
+
+	/* 🔥 PERFORMANCE */
+	will-change: transform, opacity;
+	backface-visibility: hidden;
+}
+
+.nova-scroll-hero-text p,
+.nova-scroll-hero-text h1 {
+	margin: 0 0 20px 0;
+}
+
+.nova-scroll-hero-text p:last-child,
+.nova-scroll-hero-text h1:last-child {
+	margin-bottom: 0;
+}
+
+/* 🔥 IMAGE WRAPPER - Parent du container - STICKY */
+.nova-scroll-hero-image-wrapper {
+	position: sticky;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: visible;
+	z-index: 10;
+	/* Create a new stacking context to isolate effects */
+	isolation: isolate;
+}
+
+/* 🔥 IMAGE CONTAINER - Centré avec animation */
+.nova-scroll-hero-image-container {
+	position: relative;
+	/* width et height sont définis par les selectors Elementor (responsive) */
+	/* Fallback uniquement si Elementor n'a pas encore généré le CSS */
+	width: var(--initial-width, 1061px);
+	height: var(--initial-height, 700px);
+	margin: 0;
+	border-radius: 8px;
+	overflow: hidden;
+	will-change: transform, border-radius;
+	transform-origin: center center;
+	backface-visibility: hidden;
+	transition: box-shadow 0.3s ease;
+	contain: layout paint style;
+}
+
+/* Heavier shadow only on interaction (deferred painting) */
+/* .nova-scroll-hero-image-container:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+} */
+
+/* Image */
+.nova-scroll-hero-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	transform: translateZ(0);
+	backface-visibility: hidden;
+}
+
+.nova-overlay-text-left p {
+	margin: 0;
+}
+
+/* Overlay - Apparaît progressivement de bas en haut */
+.nova-scroll-hero-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 24px;
+	padding: 60px;
+
+	background: linear-gradient(180deg,
+			rgba(0, 0, 0, 0.1) 0%,
+			rgba(0, 0, 0, 0.4) 50%,
+			rgba(0, 0, 0, 0.7) 100%);
+
+	opacity: 0;
+	/* ✅ Initial: hidden */
+	pointer-events: none;
+	z-index: 20;
+
+	will-change: opacity;
+	transform: translateZ(0);
+	/* Keep overlay effects isolated to this element */
+	contain: paint style;
+}
+
+/* Textes */
+
+.nova-scroll-hero-overlay-content {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: start;
+	justify-content: space-between;
+}
+
+.nova-scroll-hero-overlay-content .nova-overlay-text-left {
+	width: 100%;
+}
+
+.nova-scroll-hero-overlay-content .nova-overlay-text-right {
+	width: 100%;
+	justify-content: left;
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+}
+
+.nova-overlay-text-2>*:first-child {
+	margin-top: 0;
+}
+
+.nova-overlay-text {
+	color: #fff;
+	text-align: center;
+	font-size: 18px;
+	line-height: 1.6;
+	margin: 0;
+	padding: 0 0;
+
+	will-change: opacity, transform;
+	backface-visibility: hidden;
+	/* Softer for cheaper rendering */
+	/* text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25); */
+}
+
+.nova-overlay-text-1 {
+	font-size: 22px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+}
+
+.nova-overlay-text-2 {
+	font-size: 42px;
+	font-weight: 800;
+	line-height: 1.2;
+	max-width: 800px;
+	/* text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); */
+}
+
+/* Bouton */
+.nova-scroll-hero-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px 40px;
+	background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+	color: #333;
+	text-decoration: none;
+	border-radius: 50px;
+	font-weight: 700;
+	font-size: 15px;
+	letter-spacing: 0.5px;
+	cursor: pointer;
+	opacity: 0;
+	pointer-events: auto;
+
+	will-change: opacity, transform;
+	backface-visibility: hidden;
+
+	transition:
+		transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+		box-shadow 0.3s ease;
+}
+
+.nova-scroll-hero-button:hover {
+	transform: translateY(-2px) scale(1.02);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 1199px) {
+	.nova-scroll-hero {
+		height: 280vh;
+	}
+
+	.nova-overlay-text-2 {
+		font-size: 36px;
+	}
+}
+
+@media (max-width: 768px) {
+	.nova-scroll-hero {
+		height: 200vh;
+	}
+
+	.nova-scroll-hero-text {
+		padding: 60px 24px 80px;
+		font-size: 16px;
+	}
+
+	.nova-scroll-hero-image-container {
+		border-radius: 6px;
+	}
+
+	.nova-scroll-hero-overlay {
+		padding: 30px 20px;
+		gap: 16px;
+	}
+
+	.nova-overlay-text {
+		font-size: 16px;
+	}
+
+	.nova-overlay-text-1 {
+		font-size: 18px;
+	}
+
+	.nova-overlay-text-2 {
+		font-size: 28px;
+	}
+
+	.nova-scroll-hero-button {
+		padding: 12px 28px;
+		font-size: 14px;
+	}
+}
+
+@media (max-width: 480px) {
+	.nova-scroll-hero {
+		height: 220vh;
+	}
+
+	.nova-scroll-hero-image-container {
+		border-radius: 4px;
+	}
+
+	.nova-overlay-text-2 {
+		font-size: 24px;
+	}
+
+	.nova-scroll-hero-button {
+		padding: 10px 24px;
+		font-size: 13px;
+	}
+}
+
+/* ===== SMOOTH SCROLL ===== */
+html {
+	scroll-behavior: smooth;
+}
+
+/* ===== PERFORMANCE ===== */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation: none !important;
+		transition: none !important;
+	}
+}

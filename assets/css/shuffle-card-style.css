@@ -1,0 +1,945 @@
+/* ============================================
+   NOVA SHUFFLE CARD WIDGET STYLES
+   Based on Swiper.js Cards Effect
+   ============================================ */
+
+.nova-shuffle-card-widget {
+	position: relative;
+	width: 100%;
+	/* S'assurer que les boutons de navigation ne sont pas cachés */
+	overflow: visible !important;
+}
+
+.nova-shuffle-card-container {
+	position: relative;
+	width: 100%;
+	/* S'assurer que le conteneur a une hauteur minimale pour éviter les problèmes de layout */
+	min-height: 300px;
+	/* Isolation pour créer un contexte de stacking propre */
+	isolation: isolate;
+	/* S'assurer que les boutons de navigation ne sont pas cachés */
+	overflow: visible !important;
+}
+
+.nova-shuffle-card-content {
+	margin-bottom: 20px;
+}
+
+.nova-shuffle-card-title {
+	margin-bottom: 10px;
+}
+
+.nova-shuffle-card-description {
+	margin-bottom: 15px;
+}
+
+.nova-shuffle-card-button {
+	display: inline-block;
+	padding: 10px 20px;
+	text-decoration: none;
+	border-radius: 4px;
+	transition: all 0.3s ease;
+}
+
+.nova-shuffle-card-wrapper {
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.nova-shuffle-card-wrapper.has-arrows {
+	gap: 20px;
+}
+
+/* S'assurer que le wrapper peut contenir les boutons positionnés en absolute */
+.nova-shuffle-card-wrapper.has-arrows {
+	position: relative;
+	overflow: visible;
+}
+
+/* Nova Shuffle Card Container (wrapper principal) */
+.nova-shuffle-card-widget .nova-shuffle-card-container {
+	width: 100%;
+	position: relative;
+}
+
+/* Nova Shuffle Card Slider (conteneur des slides) */
+.nova-shuffle-card-widget .nova-shuffle-card-slider {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	/* Permettre overflow visible pour les boutons de navigation, mais isoler le contenu */
+	overflow: visible !important;
+	padding: 20px 0;
+	/* S'assurer que le slider a une hauteur minimale basée sur le contenu */
+	min-height: 400px;
+	/* S'assurer que les boutons de navigation sont visibles */
+	/* Isolation pour créer un contexte de stacking propre et éviter les conflits */
+	isolation: isolate;
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-slider.full-width {
+	width: 100%;
+}
+
+/* Nova Shuffle Card Slide - Cards Effect */
+.nova-shuffle-card-widget .nova-shuffle-card-slide {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    transform-style: preserve-3d;
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+    background: transparent !important;
+    /* Cacher le contenu qui dépasse pour éviter l'overlap */
+    overflow: hidden !important;
+    /* Isolation pour créer un contexte de stacking propre */
+    isolation: isolate;
+    /* Position relative pour permettre le positionnement 3D sans casser le layout */
+    position: relative;
+}
+
+/* Compatibilité avec ancienne structure Swiper */
+.nova-shuffle-card-widget .swiper-slide {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    transform-style: preserve-3d;
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+    background: transparent !important;
+    /* Permettre la visibilité des cartes inactives avec rotation */
+    overflow: visible;
+    /* Isolation pour créer un contexte de stacking propre */
+    isolation: isolate;
+}
+
+/* Card Item */
+.nova-shuffle-card-item {
+	width: 100%;
+	max-width: 500px;
+	min-width: 200px;
+	min-height: 200px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	border-radius: 8px;
+	overflow: hidden !important;
+	/* Default background - will be overridden by Elementor controls */
+	background-color: #ffffff;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	/* Card shadow for depth effect - will be overridden by Elementor controls */
+	box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+	/* Smooth transitions */
+	transition: box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
+	/* S'assurer que le contenu ne déborde pas et évite l'overlap */
+	position: relative;
+	z-index: inherit;
+	/* Isolation pour créer un nouveau contexte de stacking et éviter le chevauchement */
+	isolation: isolate;
+	/* Empêcher le contenu de se superposer */
+	contain: layout style paint;
+}
+
+/* Card with background image */
+.nova-shuffle-card-item.has-background-image {
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+/* Card with creative background (SVG mask) */
+.nova-shuffle-card-item.has-creative-background {
+	background-size: contain;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+/* Card with image overlay */
+.nova-shuffle-card-item.has-image-overlay {
+	position: relative;
+}
+
+/* Card hover effect */
+.nova-shuffle-card-item:hover {
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	transform: translateY(-2px);
+}
+
+.nova-shuffle-card-item-image {
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.nova-shuffle-card-item-image img {
+	width: 100%;
+	height: auto;
+	display: block;
+	object-fit: cover;
+}
+
+.nova-shuffle-card-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.nova-shuffle-card-item-content {
+	padding: 20px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	z-index: 2;
+	/* Ensure content is visible */
+	color: inherit;
+	/* Background for content area if needed */
+	background: transparent;
+}
+
+/* Content styling when card has background image */
+.nova-shuffle-card-item.has-background-image .nova-shuffle-card-item-content,
+.nova-shuffle-card-item.has-creative-background .nova-shuffle-card-item-content {
+	color: #ffffff;
+	/* Add text shadow for better readability on images */
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.nova-shuffle-card-item-icon {
+	margin-bottom: 15px;
+}
+
+.nova-shuffle-card-item-text {
+	margin-bottom: 10px;
+}
+
+.nova-shuffle-card-item-date {
+	margin-top: auto;
+}
+
+.nova-shuffle-card-item-link {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 10;
+	text-decoration: none;
+	/* Allow Swiper drag to work - only activate link on click, not drag */
+	pointer-events: auto;
+	touch-action: pan-y;
+}
+
+/* Prevent link from blocking drag - only activate on actual click */
+.nova-shuffle-card-widget .swiper-slide:active .nova-shuffle-card-item-link,
+.nova-shuffle-card-widget .swiper-slide.swiper-slide-dragging .nova-shuffle-card-item-link {
+	pointer-events: none;
+}
+
+/* Navigation Buttons - Base styles (sans !important pour permettre override par Elementor) */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next,
+.nova-shuffle-card-widget .swiper-button-prev,
+.nova-shuffle-card-widget .swiper-button-next,
+.nova-shuffle-card-widget .nova-nav-button {
+	position: absolute;
+	width: 44px;
+	height: 44px;
+	margin-top: 0;
+	z-index: 1000;
+	top: 50%;
+	transform: translateY(-50%);
+	border: none;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* Ensure buttons are clickable */
+	pointer-events: auto;
+	cursor: pointer;
+	/* CRITICAL: Allow clicks but prevent drag gestures */
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: transparent;
+	/* Prevent drag events from interfering */
+	user-select: none;
+	-webkit-user-select: none;
+	/* Make sure buttons are above everything */
+	isolation: isolate;
+	transition: background 0.3s ease, opacity 0.3s ease, color 0.3s ease;
+	/* S'assurer que les boutons sont visibles */
+	opacity: 1;
+	visibility: visible;
+	/* S'assurer que le contenu (SVG) est visible */
+	overflow: visible;
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev:hover,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next:hover,
+.nova-shuffle-card-widget .swiper-button-prev:hover,
+.nova-shuffle-card-widget .swiper-button-next:hover {
+	background: rgba(255, 255, 255, 1);
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev.disabled,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next.disabled,
+.nova-shuffle-card-widget .swiper-button-prev.disabled,
+.nova-shuffle-card-widget .swiper-button-next.disabled {
+	opacity: 0.35;
+	cursor: not-allowed !important;
+	pointer-events: none !important;
+}
+
+/* Positionnement des boutons par rapport au wrapper */
+.nova-shuffle-card-wrapper .nova-shuffle-card-nav-prev,
+.nova-shuffle-card-wrapper .swiper-button-prev {
+	left: 10px !important;
+}
+
+.nova-shuffle-card-wrapper .nova-shuffle-card-nav-next,
+.nova-shuffle-card-wrapper .swiper-button-next {
+	right: 10px !important;
+}
+
+/* Fallback pour les boutons dans le slider */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev,
+.nova-shuffle-card-widget .swiper-button-prev {
+	left: 10px !important;
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next,
+.nova-shuffle-card-widget .swiper-button-next {
+	right: 10px !important;
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev::after,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next::after,
+.nova-shuffle-card-widget .swiper-button-prev::after,
+.nova-shuffle-card-widget .swiper-button-next::after {
+	font-size: 20px;
+	font-weight: bold;
+	display: none !important;
+}
+
+/* Icônes pour les boutons de navigation (SVG et Font Icons) */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg,
+.nova-shuffle-card-widget .swiper-button-prev svg,
+.nova-shuffle-card-widget .swiper-button-next svg {
+	pointer-events: none;
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* Ne pas forcer fill: none pour les SVG personnalisés qui ont déjà leurs propres styles */
+}
+
+/* SVG avec attributs width/height (SVG personnalisés uploadés) - Laisser le navigateur utiliser les attributs */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg[width],
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg[width],
+.nova-shuffle-card-widget .swiper-button-prev svg[width],
+.nova-shuffle-card-widget .swiper-button-next svg[width] {
+	/* Ne pas écraser les dimensions - le navigateur utilisera automatiquement les attributs width/height */
+	max-width: 100%;
+	max-height: 100%;
+	/* S'assurer que les styles inline du SVG sont respectés */
+	/* Forcer la visibilité */
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* Le navigateur utilisera les attributs width/height du SVG automatiquement */
+	/* Ne pas définir width/height en CSS pour permettre au SVG d'utiliser ses attributs natifs */
+}
+
+/* Fallback pour les SVG sans attributs width/height (icônes par défaut) */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg:not([width]):not([height]),
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg:not([width]):not([height]),
+.nova-shuffle-card-widget .swiper-button-prev svg:not([width]):not([height]),
+.nova-shuffle-card-widget .swiper-button-next svg:not([width]):not([height]) {
+	width: 20px;
+	height: 20px;
+	fill: none;
+}
+
+/* Styles par défaut pour les paths sans attributs (fallback uniquement) */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg:not([width]):not([height]) path:not([stroke]):not([fill]),
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg:not([width]):not([height]) path:not([stroke]):not([fill]),
+.nova-shuffle-card-widget .swiper-button-prev svg:not([width]):not([height]) path:not([stroke]):not([fill]),
+.nova-shuffle-card-widget .swiper-button-next svg:not([width]):not([height]) path:not([stroke]):not([fill]) {
+	stroke: currentColor;
+	stroke-width: 2;
+	fill: none;
+}
+
+/* Support pour les icônes Elementor (fonts et SVG) */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev i,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next i,
+.nova-shuffle-card-widget .swiper-button-prev i,
+.nova-shuffle-card-widget .swiper-button-next i,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev .elementor-icon,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next .elementor-icon,
+.nova-shuffle-card-widget .swiper-button-prev .elementor-icon,
+.nova-shuffle-card-widget .swiper-button-next .elementor-icon {
+	font-size: 20px;
+	line-height: 1;
+	display: block !important;
+	pointer-events: none;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* La couleur sera héritée du parent via currentColor */
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev .elementor-icon svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next .elementor-icon svg,
+.nova-shuffle-card-widget .swiper-button-prev .elementor-icon svg,
+.nova-shuffle-card-widget .swiper-button-next .elementor-icon svg {
+	width: 20px;
+	height: 20px;
+	fill: currentColor;
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* S'assurer que les boutons sont toujours visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-slider .nova-shuffle-card-nav-prev,
+.nova-shuffle-card-widget .nova-shuffle-card-slider .nova-shuffle-card-nav-next,
+.nova-shuffle-card-widget .nova-shuffle-card-slider .swiper-button-prev,
+.nova-shuffle-card-widget .nova-shuffle-card-slider .swiper-button-next {
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+/* S'assurer que les boutons dans le wrapper sont toujours visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-wrapper .nova-shuffle-card-nav-prev,
+.nova-shuffle-card-widget .nova-shuffle-card-wrapper .nova-shuffle-card-nav-next,
+.nova-shuffle-card-widget .nova-shuffle-card-wrapper .swiper-button-prev,
+.nova-shuffle-card-widget .nova-shuffle-card-wrapper .swiper-button-next {
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+/* S'assurer que les icônes sont visibles et héritent la couleur */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev > *,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next > *,
+.nova-shuffle-card-widget .swiper-button-prev > *,
+.nova-shuffle-card-widget .swiper-button-next > * {
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* S'assurer que les SVG directement dans les boutons (sans wrapper) sont visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev > svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next > svg,
+.nova-shuffle-card-widget .swiper-button-prev > svg,
+.nova-shuffle-card-widget .swiper-button-next > svg {
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	width: auto !important;
+	height: auto !important;
+	max-width: 100%;
+	max-height: 100%;
+	/* S'assurer que le SVG hérite la couleur du bouton */
+	color: inherit;
+}
+
+/* S'assurer que tous les éléments SVG dans les boutons (y compris dans .elementor-icon) sont visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg,
+.nova-shuffle-card-widget .swiper-button-prev svg,
+.nova-shuffle-card-widget .swiper-button-next svg {
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* S'assurer que les SVG héritent la couleur du bouton */
+	color: inherit;
+	fill: currentColor;
+	stroke: currentColor;
+}
+
+/* S'assurer que les wrappers Elementor (comme .elementor-icon) sont visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev .elementor-icon,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next .elementor-icon,
+.nova-shuffle-card-widget .swiper-button-prev .elementor-icon,
+.nova-shuffle-card-widget .swiper-button-next .elementor-icon {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 100% !important;
+	height: 100% !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* S'assurer que les SVG dans les wrappers Elementor sont visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev .elementor-icon svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next .elementor-icon svg,
+.nova-shuffle-card-widget .swiper-button-prev .elementor-icon svg,
+.nova-shuffle-card-widget .swiper-button-next .elementor-icon svg {
+	display: block !important;
+	width: auto !important;
+	height: auto !important;
+	max-width: 100% !important;
+	max-height: 100% !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* Respecter les attributs width/height du SVG si présents */
+}
+
+/* S'assurer que tous les enfants directs des boutons sont centrés et visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev > *,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next > *,
+.nova-shuffle-card-widget .swiper-button-prev > *,
+.nova-shuffle-card-widget .swiper-button-next > * {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 100% !important;
+	height: 100% !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* S'assurer que tous les SVG dans les boutons (peu importe leur position dans le DOM) sont visibles */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg,
+.nova-shuffle-card-widget .swiper-button-prev svg,
+.nova-shuffle-card-widget .swiper-button-next svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev .elementor-icon svg,
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next .elementor-icon svg,
+.nova-shuffle-card-widget .swiper-button-prev .elementor-icon svg,
+.nova-shuffle-card-widget .swiper-button-next .elementor-icon svg {
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* Respecter les dimensions natives du SVG si présentes */
+	width: auto !important;
+	height: auto !important;
+	max-width: 100% !important;
+	max-height: 100% !important;
+	/* S'assurer que le SVG hérite la couleur */
+	color: inherit;
+	fill: currentColor;
+	stroke: currentColor;
+}
+
+/* S'assurer que les SVG personnalisés uploadés sont visibles et conservent leur taille */
+.nova-shuffle-card-widget .nova-shuffle-card-nav-prev svg[width][height],
+.nova-shuffle-card-widget .nova-shuffle-card-nav-next svg[width][height],
+.nova-shuffle-card-widget .swiper-button-prev svg[width][height],
+.nova-shuffle-card-widget .swiper-button-next svg[width][height] {
+	display: block !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	/* Le navigateur utilisera automatiquement les attributs width/height du SVG */
+	/* Ne PAS définir width/height en CSS - laisser le navigateur utiliser les attributs HTML */
+	max-width: 100%;
+	max-height: 100%;
+	/* S'assurer que le SVG est centré dans le bouton */
+	margin: 0 auto;
+	min-width: max-content !important;
+    min-height: max-content !important;
+}
+
+
+/* S'assurer que le wrapper permet l'affichage des boutons */
+.nova-shuffle-card-wrapper.has-arrows {
+	overflow: visible !important;
+	position: relative !important;
+}
+
+/* S'assurer que les boutons de navigation sont toujours visibles dans le wrapper */
+.nova-shuffle-card-wrapper.has-arrows .nova-shuffle-card-nav-prev,
+.nova-shuffle-card-wrapper.has-arrows .nova-shuffle-card-nav-next,
+.nova-shuffle-card-wrapper.has-arrows .swiper-button-prev,
+.nova-shuffle-card-wrapper.has-arrows .swiper-button-next {
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	z-index: 1000 !important;
+}
+
+/* S'assurer que les slides ne cachent pas les boutons */
+.nova-shuffle-card-widget .nova-shuffle-card-slide {
+	z-index: auto;
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="z-index: 100"] {
+	z-index: 100 !important;
+}
+
+/* Pagination */
+.nova-shuffle-card-widget .swiper-pagination,
+.nova-shuffle-card-widget .nova-shuffle-card-pagination {
+	position: absolute;
+	bottom: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: auto;
+	margin-top: 0;
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	align-items: center;
+}
+
+.nova-shuffle-card-widget .swiper-pagination-bullet,
+.nova-shuffle-card-widget .pagination-bullet {
+	width: 8px;
+	height: 8px;
+	background: #000;
+	opacity: 0.3;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: opacity 0.3s ease;
+}
+
+.nova-shuffle-card-widget .swiper-pagination-bullet-active,
+.nova-shuffle-card-widget .pagination-bullet.active {
+	opacity: 1;
+}
+
+/* Custom Follow Cursor */
+.nova-shuffle-card-cursor {
+	position: fixed;
+	pointer-events: none;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 20px;
+	font-weight: 500;
+}
+
+
+
+.nova-shuffle-card-cursor.pressing {
+	transform: translate(-50%, -50%) scale(0.85);
+}
+
+/* Disable cursor on mobile */
+@media (max-width: 810px) {
+	.nova-shuffle-card-cursor {
+		display: none !important;
+	}
+}
+
+/* Press effect on shuffle */
+.nova-shuffle-card-widget .swiper.shuffle-pressing .swiper-slide-active .nova-shuffle-card-item {
+	transform: scale(0.95) !important;
+	transition: transform 0.1s ease !important;
+}
+
+/* Cards Effect - Ensure proper stacking */
+.nova-shuffle-card-widget .swiper-slide,
+.nova-shuffle-card-widget .nova-shuffle-card-slide {
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	/* S'assurer que les cartes ne se superposent pas visuellement */
+	will-change: transform, opacity, z-index;
+	/* S'assurer que le contenu ne déborde pas */
+	overflow: hidden;
+	/* Isolation pour créer un contexte de stacking propre */
+	isolation: isolate;
+}
+
+/* Carte active - toujours visible et au premier plan */
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="z-index: 100"],
+.nova-shuffle-card-widget .swiper-slide[style*="z-index: 100"] {
+	z-index: 100 !important;
+	opacity: 1 !important;
+	pointer-events: auto !important;
+	/* S'assurer que la carte active est toujours au-dessus */
+	position: relative;
+}
+
+/* Cartes en arrière-plan - visibles pour l'effet "cards" avec rotation */
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="z-index: 90"],
+.nova-shuffle-card-widget .swiper-slide[style*="z-index: 90"] {
+	z-index: 90 !important;
+	/* L'opacité est gérée par JavaScript (0.6) */
+	pointer-events: none !important;
+	/* S'assurer que le contenu ne déborde pas */
+	overflow: hidden !important;
+}
+
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="z-index: 80"],
+.nova-shuffle-card-widget .swiper-slide[style*="z-index: 80"] {
+	z-index: 80 !important;
+	/* L'opacité est gérée par JavaScript (0.4) */
+	pointer-events: none !important;
+	/* S'assurer que le contenu ne déborde pas */
+	overflow: hidden !important;
+}
+
+/* Cartes encore plus loin - toujours visibles mais plus transparentes */
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="z-index: 70"],
+.nova-shuffle-card-widget .swiper-slide[style*="z-index: 70"],
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="z-index: 60"],
+.nova-shuffle-card-widget .swiper-slide[style*="z-index: 60"] {
+	/* L'opacité est gérée par JavaScript */
+	pointer-events: none !important;
+	/* S'assurer que le contenu ne déborde pas */
+	overflow: hidden !important;
+}
+
+/* Shuffle Animation - Based on CodePen example */
+.nova-shuffle-card-widget .swiper-slide.shuffling {
+	animation: shuffleCard 0.4s ease-out;
+}
+
+@keyframes shuffleCard {
+	0% {
+		transform: scale(1) rotate(0deg);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(0.95) rotate(2deg);
+		opacity: 0.8;
+	}
+	100% {
+		transform: scale(1) rotate(0deg);
+		opacity: 1;
+	}
+}
+
+/* Shuffle Exit Animation - Use wrapper to avoid interfering with Swiper transforms */
+.nova-shuffle-card-widget .swiper-slide.shuffle-exiting {
+	z-index: 0 !important;
+	pointer-events: none;
+}
+
+.nova-shuffle-card-widget .swiper-slide.shuffle-exiting .nova-shuffle-card-item {
+	animation: shuffleExit var(--exit-duration, 400ms) cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+	position: relative;
+	will-change: transform, opacity;
+}
+
+@keyframes shuffleExit {
+	0% {
+		opacity: 1;
+		transform: translateX(0) translateY(0) rotate(0deg);
+	}
+	40% {
+		opacity: 1;
+		transform: translateX(0) translateY(0) rotate(0deg);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(calc(var(--exit-direction, 1) * var(--exit-distance, 200px))) translateY(0) rotate(0deg);
+	}
+}
+
+/* Shuffle Return Animation */
+.nova-shuffle-card-widget .swiper-slide.shuffle-returning {
+	z-index: 10 !important;
+}
+
+.nova-shuffle-card-widget .swiper-slide.shuffle-returning .nova-shuffle-card-item {
+	animation: shuffleReturn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+	opacity: 0;
+	will-change: transform, opacity;
+}
+
+@keyframes shuffleReturn {
+	0% {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	50% {
+		opacity: 0.7;
+		transform: scale(1.02);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* Ensure navigation buttons are clickable */
+.nova-shuffle-card-widget .swiper-button-prev,
+.nova-shuffle-card-widget .swiper-button-next {
+	pointer-events: auto !important;
+	cursor: pointer !important;
+	z-index: 20 !important;
+}
+
+.nova-shuffle-card-widget .swiper-button-disabled {
+	opacity: 0.35;
+	cursor: not-allowed !important;
+	pointer-events: none !important;
+}
+
+/* Additional Card Styles */
+
+/* Card text styling */
+.nova-shuffle-card-item-text {
+	margin-bottom: 10px;
+	color: inherit;
+}
+
+.nova-shuffle-card-item-text p {
+	margin: 0;
+	line-height: 1.6;
+}
+
+.nova-shuffle-card-item-text h1,
+.nova-shuffle-card-item-text h2,
+.nova-shuffle-card-item-text h3,
+.nova-shuffle-card-item-text h4,
+.nova-shuffle-card-item-text h5,
+.nova-shuffle-card-item-text h6 {
+	margin: 0 0 10px 0;
+	color: inherit;
+}
+
+/* Card date styling */
+.nova-shuffle-card-item-date {
+	margin-top: auto;
+	color: inherit;
+	opacity: 0.8;
+	font-size: 0.9em;
+}
+
+.nova-shuffle-card-item-date p {
+	margin: 0;
+}
+
+.nova-shuffle-card-item-date img {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+/* Card icon styling */
+.nova-shuffle-card-item-icon {
+	margin-bottom: 15px;
+	display: inline-block;
+}
+
+.nova-shuffle-card-item-icon svg,
+.nova-shuffle-card-item-icon img {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+}
+
+/* Swiper Cards Effect - Ensure proper card appearance */
+.nova-shuffle-card-widget .swiper-slide {
+	/* Card appearance */
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+}
+
+/* Active card styling - toujours visible et au premier plan */
+.nova-shuffle-card-widget .nova-shuffle-card-slide:first-child .nova-shuffle-card-item,
+.nova-shuffle-card-widget .swiper-slide-active .nova-shuffle-card-item {
+	z-index: 10 !important;
+	opacity: 1 !important;
+	pointer-events: auto !important;
+}
+
+/* Non-active cards - visibles pour l'effet "cards" avec rotation */
+.nova-shuffle-card-widget .nova-shuffle-card-slide:not(:first-child) .nova-shuffle-card-item,
+.nova-shuffle-card-widget .swiper-slide:not(.swiper-slide-active) .nova-shuffle-card-item {
+	/* L'opacité est gérée par JavaScript via updatePositions() */
+	/* Mais on s'assure qu'elles ne sont pas cliquables */
+	pointer-events: none !important;
+	/* S'assurer que le contenu ne déborde pas pour éviter l'overlap */
+	overflow: hidden !important;
+}
+
+/* S'assurer que les cartes inactives sont visibles avec leur rotation mais sans overlap */
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="opacity: 0.6"] .nova-shuffle-card-item,
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="opacity: 0.4"] .nova-shuffle-card-item,
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="opacity: 0.25"] .nova-shuffle-card-item {
+	/* Les cartes inactives doivent être visibles pour l'effet cards */
+	overflow: hidden !important;
+	visibility: visible !important;
+	/* S'assurer que le contenu ne déborde pas */
+	position: relative;
+}
+
+/* Seules les cartes complètement invisibles doivent être masquées */
+.nova-shuffle-card-widget .nova-shuffle-card-slide[style*="opacity: 0"] {
+	visibility: hidden !important;
+	pointer-events: none !important;
+	overflow: hidden !important;
+}
+
+/* Card shadows for depth - DISABLED */
+.nova-shuffle-card-widget .swiper-slide-shadow {
+	display: none !important;
+	opacity: 0 !important;
+	visibility: hidden !important;
+}
+
+/* Ensure cards maintain aspect ratio if needed */
+.nova-shuffle-card-item[style*="aspect-ratio"] {
+	min-height: 0;
+	height: auto;
+}
+
+/* Card background fallback */
+.nova-shuffle-card-item:not(.has-background-image):not(.has-creative-background) {
+	background-color: #ffffff;
+}
+
+.nova-shuffle-card-widget .swiper-button-next,
+.nova-shuffle-card-widget .swiper-button-prev {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+    z-index: 999 !important;
+}
+
+/* Les enfants ne capturent pas les events */
+.nova-shuffle-card-widget .swiper-button-next *,
+.nova-shuffle-card-widget .swiper-button-prev * {
+    pointer-events: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.nova-shuffle-card-wrapper.has-arrows {
+		gap: 10px;
+	}
+	
+	.nova-shuffle-card-widget .swiper-button-prev,
+	.nova-shuffle-card-widget .swiper-button-next {
+		width: 36px;
+		height: 36px;
+	}
+	
+	.nova-shuffle-card-item {
+		min-width: 150px;
+		min-height: 150px;
+		max-width: 100%;
+	}
+	
+	.nova-shuffle-card-item-content {
+		padding: 15px;
+	}
+}

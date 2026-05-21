@@ -1,0 +1,126 @@
+/* NOVA Slider News Widget - Styles basés sur l'exemple fourni */
+
+/* Container externe pour isolation complète */
+.nova-slider-news-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 100% !important;
+  display: block !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nova-slider-news-wrapper {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-width: 100%;
+  flex: 1;
+}
+
+.nova-slider-news-divider {
+  position: relative;
+  height: var(--nova-slider-height, 120px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 100%;
+}
+
+.marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nova-slider-gap, 24px);
+  padding: 0 var(--nova-slider-item-padding, 24px);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.08em;
+  color: var(--nova-slider-text-color, #fff);
+  text-transform: uppercase;
+  background: var(--nova-slider-bg, #111);
+  height: var(--nova-slider-item-height, 72px);
+}
+
+.marquee-item .dot {
+  display: inline-block;
+  width: var(--nova-slider-dot-size, 10px);
+  height: var(--nova-slider-dot-size, 10px);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--green  { 
+  background: var(--nova-slider-dot-green, #4ade80); 
+}
+.dot--yellow { 
+  background: var(--nova-slider-dot-yellow, #facc15); 
+}
+.dot--orange { 
+  background: var(--nova-slider-dot-orange, #fb923c); 
+}
+.dot--purple { 
+  background: var(--nova-slider-dot-purple, #c084fc); 
+}
+
+/* Bordures supérieure et inférieure */
+.nova-slider-news-divider::before,
+.nova-slider-news-divider::after {
+  content: '';
+  position: absolute;
+  left: 0; 
+  right: 0;
+  height: var(--nova-slider-border-height, 3px);
+  background: var(--nova-slider-border-color, #111);
+  z-index: 2;
+}
+
+.nova-slider-news-divider::before { 
+  top: 0; 
+}
+.nova-slider-news-divider::after  { 
+  bottom: 0; 
+}
+
+/* Animation d'entrée avec ScrollTrigger (opacity uniquement, pas de scaleX) */
+
+/* Responsive */
+@media (max-width: 768px) {
+  .marquee-item {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    height: calc(var(--nova-slider-item-height, 72px) * 0.8);
+    padding: 0 calc(var(--nova-slider-item-padding, 24px) * 0.8);
+  }
+  
+  .nova-slider-news-divider {
+    height: calc(var(--nova-slider-height, 120px) * 0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  .marquee-item {
+    font-size: clamp(1rem, 5vw, 1.6rem);
+    height: calc(var(--nova-slider-item-height, 72px) * 0.7);
+    padding: 0 calc(var(--nova-slider-item-padding, 24px) * 0.7);
+  }
+  
+  .nova-slider-news-divider {
+    height: calc(var(--nova-slider-height, 120px) * 0.7);
+  }
+}
+
+/* Support pour les polices Google */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Black+Han+Sans&display=swap');
+
+/* Fallback si Bebas Neue n'est pas disponible */
+.marquee-item {
+  font-family: 'Bebas Neue', 'Black Han Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}

@@ -1,0 +1,70 @@
+/**
+ * NOVA Title to Stacking Cards Transition
+ * 
+ * Styles pour la transition fade smooth entre:
+ * - Widget nova-title (premier widget)
+ * - Widget nova-stacking-cards-2 (deuxième widget)
+ */
+
+/* Container de transition */
+.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) {
+	position: relative;
+	min-height: 200vh; /* Au moins 200vh pour permettre le scroll */
+	overflow: visible; /* Permettre la superposition des widgets */
+}
+
+/* Widget Title - État initial */
+.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-title {
+	position: relative;
+	z-index: 2;
+	will-change: opacity;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Widget Stacking Cards - État initial (caché) */
+.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-stacking-cards-2 {
+	position: relative;
+	z-index: 1;
+	will-change: opacity;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	/* Le JavaScript gérera l'opacité et la visibilité */
+}
+
+/* Optimisation pour les performances */
+.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-title,
+.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-stacking-cards-2 {
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
+}
+
+/* Mobile - Pas de transition, affichage normal */
+@media (max-width: 767px) {
+	.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) {
+		min-height: auto;
+	}
+	
+	.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-title,
+	.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-stacking-cards-2 {
+		opacity: 1 !important;
+		visibility: visible !important;
+		position: relative !important;
+		z-index: auto !important;
+	}
+}
+
+/* Reduced motion - Pas de transition */
+@media (prefers-reduced-motion: reduce) {
+	.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) {
+		min-height: auto;
+	}
+	
+	.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-title,
+	.e-con:has(.elementor-widget-nova-title):has(.elementor-widget-nova-stacking-cards-2) .elementor-widget-nova-stacking-cards-2 {
+		opacity: 1 !important;
+		visibility: visible !important;
+		transition: none !important;
+	}
+}

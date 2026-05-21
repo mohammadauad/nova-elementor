@@ -1,0 +1,138 @@
+/**
+ * NOVA Addons - FOUC Prevention
+ * 
+ * Prevents Flash of Unstyled Content for animated widgets.
+ * Strategy:
+ *   1. An inline <script> in <head> adds `nova-js` to <html> immediately.
+ *   2. When JS is present, animated elements start at opacity: 0 (hidden).
+ *   3. Each widget JS adds `nova-js-ready` to its root after animation setup.
+ *   4. CSS transition smoothly reveals the content.
+ *   5. Without JS or in Elementor editor, elements remain fully visible.
+ */
+
+/* ============================================================
+   INITIAL HIDE — only when JS is detected (html.nova-js)
+   Elements are hidden before paint so they never flash.
+   ============================================================ */
+
+/* Features Widget */
+/* html.nova-js .nova-features-widget .nova-feature-item {
+    opacity: 0;
+} */
+
+/* Cards Widget */
+/* html.nova-js .nova-cards-widget .nova-card-item {
+    opacity: 0;
+} */
+
+/* Title Widget - hide entire widget block */
+/* html.nova-js .nova-title-widget {
+    opacity: 0;
+} */
+
+/* Gallery Widget items */
+/* html.nova-js .nova-gallery-widget .nova-gallery-item {
+    opacity: 0;
+} */
+
+/* Stacking Cards - individual cards */
+/* html.nova-js .nova-stacking-cards .nova-stacking-card {
+    opacity: 0;
+} */
+
+/* Stacking Cards 2 - individual cards */
+/* html.nova-js .nova-stacking-cards-2 .nova-stacking-cards-2__card {
+    opacity: 0;
+} */
+
+/* Scroll Hero - image container only (overlay is already opacity:0 in its CSS) */
+/* html.nova-js .NOVA-scroll-hero .NOVA-scroll-hero-image-container {
+    opacity: 0;
+} */
+
+/* Slider News */
+/* html.nova-js .nova-slider-news-wrapper {
+    opacity: 0;
+} */
+
+/* FAQ items */
+/* html.nova-js .nova-faq-widget .nova-faq-item {
+    opacity: 0;
+} */
+
+/* ============================================================
+   REVEAL — once JS initialises and adds .nova-js-ready
+   Smooth transition from hidden → visible.
+   ============================================================ */
+
+/* Features */
+html.nova-js .nova-features-widget.nova-js-ready .nova-feature-item {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Cards */
+html.nova-js .nova-cards-widget.nova-js-ready .nova-card-item {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Title */
+html.nova-js .nova-title-widget.nova-js-ready {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Gallery */
+html.nova-js .nova-gallery-widget.nova-js-ready .nova-gallery-item {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Stacking Cards */
+html.nova-js .nova-stacking-cards.nova-js-ready .nova-stacking-card {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Stacking Cards 2 */
+html.nova-js .nova-stacking-cards-2.nova-js-ready .nova-stacking-cards-2__card {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Scroll Hero */
+html.nova-js .NOVA-scroll-hero.nova-js-ready .NOVA-scroll-hero-image-container {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Slider News */
+html.nova-js .nova-slider-news-wrapper.nova-js-ready {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* FAQ */
+html.nova-js .nova-faq-widget.nova-js-ready .nova-faq-item {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* ============================================================
+   EDITOR SAFETY — never hide content in Elementor editor
+   The `.elementor-editor-active` class is added to <body>
+   by Elementor when in edit mode.
+   ============================================================ */
+body.elementor-editor-active .nova-feature-item,
+body.elementor-editor-active .nova-card-item,
+body.elementor-editor-active .nova-title-widget,
+body.elementor-editor-active .nova-gallery-item,
+body.elementor-editor-active .nova-stacking-card,
+body.elementor-editor-active .nova-stacking-cards-2__card,
+body.elementor-editor-active .NOVA-scroll-hero-image-container,
+body.elementor-editor-active .nova-slider-news-wrapper,
+body.elementor-editor-active .nova-faq-item {
+    opacity: 1 !important;
+    transition: none !important;
+}

@@ -1,0 +1,728 @@
+/**
+ * NOVA Gallery Widget Styles
+ */
+
+/* ============================================
+   MAIN WIDGET CONTAINER
+   ============================================ */
+
+.nova-gallery-widget {
+	width: 100%;
+	position: relative;
+	box-sizing: border-box;
+}
+
+/* ============================================
+   FILTERS
+   ============================================ */
+
+.nova-gallery-filters {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 30px;
+}
+
+.nova-gallery-filter-item {
+	display: inline-block;
+	padding: 10px 20px;
+	background-color: #f5f5f5;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	font-size: 14px;
+	font-weight: 500;
+	text-decoration: none;
+	border: none;
+}
+
+.nova-gallery-filter-item:hover {
+	background-color: #e0e0e0;
+}
+
+.nova-gallery-filter-item.active {
+	background-color: #0073aa;
+	color: #ffffff;
+}
+
+/* Masquer le filtre "Tout" sur mobile si l'option est activée */
+@media (max-width: 767px) {
+	.nova-gallery-filter-item.hide-on-mobile {
+		display: none !important;
+	}
+}
+
+/* Sticky filters — géré par GSAP ScrollTrigger via JS */
+.nova-filters-sticky {
+	z-index: 100;
+	will-change: transform;
+}
+
+/* ============================================
+   GALLERY GRID
+   ============================================ */
+
+.nova-gallery-grid {
+	display: grid;
+	/* grid-template-columns will be set dynamically via JavaScript based on config */
+	/* No default value to avoid conflicts - JS will set it with !important */
+	gap: 20px;
+	width: 100%;
+}
+
+/* CSS fallback using data attribute - applies when inline styles are removed by Elementor */
+.nova-gallery-grid[data-grid-columns="1"] {
+	grid-template-columns: repeat(1, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="2"] {
+	grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="3"] {
+	grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="4"] {
+	grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="5"] {
+	grid-template-columns: repeat(5, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="6"] {
+	grid-template-columns: repeat(6, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="7"] {
+	grid-template-columns: repeat(7, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="8"] {
+	grid-template-columns: repeat(8, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="9"] {
+	grid-template-columns: repeat(9, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="10"] {
+	grid-template-columns: repeat(10, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="11"] {
+	grid-template-columns: repeat(11, 1fr) !important;
+}
+
+.nova-gallery-grid[data-grid-columns="12"] {
+	grid-template-columns: repeat(12, 1fr) !important;
+}
+
+/* CSS fallback for pixels mode with auto-center */
+.nova-gallery-grid[data-grid-mode="pixels"] {
+	justify-items: center;
+}
+
+/* Popup Styles */
+.nova-gallery-popup {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999999;
+	display: none;
+}
+
+.nova-gallery-popup-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.9);
+	cursor: pointer;
+}
+
+.nova-gallery-popup-content {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40px;
+	box-sizing: border-box;
+}
+
+.nova-gallery-popup-image-wrapper {
+	position: relative;
+	max-width: 90%;
+	max-height: 90%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.nova-gallery-popup-image {
+	max-width: 100%;
+	max-height: 80vh;
+	object-fit: contain;
+	border-radius: 4px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.nova-gallery-popup-title {
+	color: #fff;
+	font-size: 18px;
+	margin-top: 20px;
+	text-align: center;
+	max-width: 100%;
+	word-wrap: break-word;
+}
+
+.nova-gallery-popup-counter {
+	color: #fff;
+	font-size: 14px;
+	margin-top: 10px;
+	opacity: 0.8;
+}
+
+.nova-gallery-popup-close {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	width: 30px;
+	height: 30px;
+	max-width: 30px !important;
+	background-color: rgba(255, 255, 255, 0.2) !important;
+	border: none;
+	border-radius: 50% !important;
+	color: #fff !important;
+	font-size: 28px !important;
+	line-height: 1;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.3s ease;
+	z-index: 1000000;
+	padding: 0 !important;
+}
+
+.nova-gallery-popup-close:hover {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.nova-gallery-popup-prev,
+.nova-gallery-popup-next {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 50px;
+	height: 50px;
+	background-color: rgba(255, 255, 255, 0.2) !important;
+	border: none;
+	border-radius: 50% !important;
+	color: #fff !important;
+	font-size: 30px !important;
+	line-height: 1;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.3s ease;
+	z-index: 1000000;
+	padding: 0 !important;
+}
+
+.nova-gallery-popup-prev {
+	left: 20px;
+}
+
+.nova-gallery-popup-next {
+	right: 20px;
+}
+
+.nova-gallery-popup-prev:hover,
+.nova-gallery-popup-next:hover {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+	.nova-gallery-popup-content {
+		padding: 20px;
+	}
+
+	.nova-gallery-popup-image {
+		max-height: 70vh;
+	}
+
+	.nova-gallery-popup-close {
+		top: 10px;
+		right: 10px;
+		width: 35px;
+		height: 35px;
+		font-size: 24px;
+	}
+
+	.nova-gallery-popup-prev,
+	.nova-gallery-popup-next {
+		width: 40px;
+		height: 40px;
+		font-size: 20px;
+	}
+
+	.nova-gallery-popup-prev {
+		left: 10px;
+	}
+
+	.nova-gallery-popup-next {
+		right: 10px;
+	}
+}
+
+/* Cursor pointer for items with popup enabled */
+.nova-gallery-item[data-popup-image] {
+	cursor: pointer;
+}
+
+/* ============================================
+   GALLERY ITEM
+   ============================================ */
+
+.nova-gallery-item {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+}
+
+.nova-gallery-item.has-background-image {
+	position: relative;
+	min-height: 300px;
+}
+
+.nova-gallery-item.has-creative-background {
+	position: relative;
+}
+
+/* ============================================
+   ITEM IMAGE
+   ============================================ */
+
+.nova-gallery-item-image {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+
+.nova-gallery-item-image img {
+	width: 100%;
+	height: auto;
+	display: block;
+	object-fit: cover;
+}
+
+/* Image Overlay */
+.nova-gallery-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+.nova-gallery-item.has-background-image .nova-gallery-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+.nova-gallery-item-image {
+	position: relative;
+}
+
+.nova-gallery-item-image .nova-gallery-item-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+
+/* ============================================
+   ITEM TITLE
+   ============================================ */
+
+.nova-gallery-item-title {
+	margin: 15px;
+	padding: 0;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: #333;
+	position: relative;
+	z-index: 3;
+}
+
+/* ============================================
+   ITEM LINK
+   ============================================ */
+
+.nova-gallery-item-link {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 10;
+	text-decoration: none;
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+.nova-gallery-item {
+	transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		visibility 0.5s ease,
+		max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		margin 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+	opacity: 1;
+	transform: scale(1) translateY(0);
+	visibility: visible;
+	max-height: 5000px;
+	overflow: hidden;
+}
+
+.nova-gallery-item.hidden {
+	opacity: 0;
+	transform: scale(0.9) translateY(-10px);
+	visibility: hidden;
+	pointer-events: none;
+	max-height: 0;
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		visibility 0.5s ease,
+		max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		margin 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+		padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nova-gallery-item.fade-in {
+	animation: NOVAGalleryFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes NOVAGalleryFadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9) translateY(20px);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+/* ============================================
+   MULTI FILTERS ENHANCEMENTS
+   ============================================ */
+.nova-gallery-multi-filters-container {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	margin-bottom: 30px;
+}
+
+[data-filter-group="car_brand"] button.nova-gallery-filter-item.active {
+	border: 1px solid #C19C40 !important;
+	color: #C19C40 !important;
+}
+
+.nova-gallery-filter-group {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* Layout quand le bouton "Tout" est épinglé hors du slider */
+.nova-gallery-filter-group.has-pinned-all {
+	flex-direction: row;
+	align-items: center;
+	gap: 0;
+}
+
+.nova-gallery-filter-all-pinned {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+}
+
+.nova-gallery-filter-group.has-pinned-all .nova-gallery-filters.owl-carousel {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+}
+
+button.nova-gallery-owl-prev, button.nova-gallery-owl-next {
+    position: absolute;
+    z-index: 9;
+}
+button.nova-gallery-owl-next {
+    right: 0;
+}
+
+[data-filter-group="car_brand"] button.nova-gallery-owl-prev, [data-filter-group="car_brand"] button.nova-gallery-owl-next {
+    filter: brightness(0) saturate(100%) invert(68%) sepia(68%) saturate(421%) hue-rotate(2deg) brightness(83%) contrast(81%);
+}
+
+[data-filter-group="car_brand"] .nova-gallery-filter-all-pinned button.nova-gallery-filter-item:not(.active) {
+    border: 1px solid #fff !important;
+}
+.nova-gallery-filter-label {
+	font-weight: 600;
+	margin-bottom: 10px;
+	font-size: 14px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	color: inherit;
+}
+
+.nova-gallery-filters-wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+}
+
+/* Owl Carousel slider container */
+.nova-gallery-filters.owl-carousel {
+	width: 100%;
+}
+
+.nova-gallery-filters.owl-carousel .owl-stage {
+	/* NE PAS mettre display:flex ici — Owl gère le layout via transform/width */
+	align-items: center;
+}
+
+/* autoWidth mode: items prennent leur largeur naturelle */
+.nova-gallery-filters.owl-carousel.owl-autowidth .owl-item {
+	width: auto !important;
+	flex-shrink: 0;
+}
+
+/* fixed-width mode: laisser Owl calculer les largeurs */
+.nova-gallery-filters.owl-carousel:not(.owl-autowidth) .owl-item {
+	flex-shrink: 0;
+}
+
+.nova-gallery-filter-wrap {
+	display: inline-block;
+}
+
+.nova-gallery-filter-item.has-image {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 16px 6px 6px;
+	border-radius: 30px;
+}
+
+.nova-gallery-filter-image {
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.nova-gallery-filter-name {
+	display: inline-block;
+}
+
+/* Scroll natif pour filtres autoWidth sans loop */
+.nova-gallery-filters-slider.nova-scroll-native {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge */
+}
+.nova-gallery-filters-slider.nova-scroll-native::-webkit-scrollbar {
+	display: none; /* Chrome/Safari */
+}
+
+/* Owl Carousel slider adjustments for filters */
+.nova-gallery-filters-slider {
+	width: 100%;
+	overflow: hidden;
+}
+
+.nova-gallery-filters-slider .owl-stage-outer {
+	overflow: hidden;
+}
+
+.nova-gallery-filters-slider .owl-stage {
+	/* NE PAS mettre display:flex — Owl gère le layout */
+	align-items: center;
+}
+
+/* Custom nav arrows */
+.nova-gallery-owl-prev,
+.nova-gallery-owl-next {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 32px;
+	height: 32px;
+	background: transparent;
+	border-radius: 50%;
+	cursor: pointer;
+	font-size: 20px;
+	line-height: 1;
+	opacity: 0.9;
+	transition: opacity 0.2s;
+	padding: 0;
+}
+
+.nova-gallery-owl-prev:hover,
+.nova-gallery-owl-next:hover {
+	opacity: 1;
+}
+
+/* Layout flèches dans le groupe */
+.nova-gallery-filter-group {
+	position: relative;
+}
+
+.nova-gallery-filter-group:has(.nova-gallery-owl-prev) {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+
+.nova-gallery-filter-group:has(.nova-gallery-owl-prev) .nova-gallery-filters.owl-carousel {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Alignement du slider */
+.nova-gallery-filter-group[data-owl-align="center"] .nova-gallery-filters.owl-carousel .owl-stage {
+	float: none !important;
+	margin: 0 auto !important;
+}
+
+.nova-gallery-filter-group[data-owl-align="right"] .nova-gallery-filters.owl-carousel .owl-stage {
+	float: right !important;
+	margin-left: auto !important;
+}
+
+/* Slider désactivé (breakpoint non atteint) — affichage flex wrap */
+.nova-gallery-filters-slider:not(.owl-loaded) {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	gap: 8px;
+}
+
+.nova-gallery-filter-group[data-owl-align="center"] .nova-gallery-filters-slider:not(.owl-loaded) {
+	justify-content: center;
+}
+
+.nova-gallery-filter-group[data-owl-align="right"] .nova-gallery-filters-slider:not(.owl-loaded) {
+	justify-content: flex-end;
+}
+
+/* ── Pagination ─────────────────────────────────────────────────────── */
+.nova-gallery-pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin-top: 32px;
+	flex-wrap: wrap;
+}
+
+.nova-gallery-load-more {
+	display: inline-block;
+	padding: 10px 28px;
+	background: transparent;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: opacity 0.2s;
+}
+
+.nova-gallery-load-more:hover {
+	opacity: 0.7;
+}
+
+.nova-gallery-pages {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.nova-gallery-page-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 8px;
+	background: transparent;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	opacity: 0.6;
+	transition: opacity 0.2s;
+}
+
+.nova-gallery-page-btn:hover,
+.nova-gallery-page-btn.active {
+	opacity: 1;
+}
+
+.nova-gallery-page-btn.active {
+	font-weight: 600;
+}
