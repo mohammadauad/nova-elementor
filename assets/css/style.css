@@ -57,35 +57,30 @@ span.nova-dropdown-icon {
     font-style: italic;
 }
 
-/* Mega Menu Panel — caché par défaut via CSS uniquement */
+/* Mega Menu Panel */
 .nova-mega-menu-panel {
     position: fixed;
     top: 100%;
+    /* Displays just below the menu item */
     left: 50%;
+    /* Center relative to viewport */
     transform: translateX(-50%);
+    /* Center the panel */
+
     z-index: 9999;
-    /* Caché par CSS — le JS ne touche jamais à ces propriétés directement */
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-    /* display: block pour permettre la mesure de largeur sans flash */
-    display: block;
-    overflow: visible;
-}
-
-/* Classe de mesure invisible — utilisée par JS pour lire la largeur sans flash */
-.nova-mega-menu-panel--measuring {
-    visibility: hidden !important;
     opacity: 0 !important;
+    /* Force hidden by default */
+    visibility: hidden !important;
+    /* Force hidden by default */
     pointer-events: none !important;
-    display: block !important;
-}
-
-/* Panel visible quand l'item a la classe nova-mega-menu-displayed */
-.nova-menu-list>li.nova-has-mega-menu.nova-mega-menu-displayed>.nova-mega-menu-panel {
-    visibility: visible;
-    opacity: 1;
-    pointer-events: auto;
+    /* Prevents clicking while hidden */
+    display: none !important;
+    /* Hidden by default to prevent flash on page load */
+    /* Transition is now handled by JS for synchronized animation */
+    overflow: visible;
+    /* Allow content to overflow if needed */
+    /* Elementor content is injected here */
+    /* Note: La largeur, le fond et l'ombre sont configurables via le widget Elementor */
 }
 
 /* When panel is visible (via JS class only), ensure transform is reset */
@@ -138,7 +133,6 @@ header#header,
     /* opacity: 1 !important; */
     /* visibility: visible !important; */
 }
-
 .nova-mega-menu-icon-hover,
 .nova-mega-menu-icon-active {
     opacity: 0 !important;
@@ -149,27 +143,25 @@ header#header,
 }
 
 /* 2. État HOVER (si non actif) : Hover visible, normale cachée */
-.nova-menu-list>li:hover:not(.nova-mega-menu-displayed):not(.nova-submenu-open) .nova-mega-menu-icon-hover {
+.nova-menu-list > li:hover:not(.nova-mega-menu-displayed):not(.nova-submenu-open) .nova-mega-menu-icon-hover {
     opacity: 1 !important;
     visibility: visible !important;
 }
-
-.nova-menu-list>li:hover:not(.nova-mega-menu-displayed):not(.nova-submenu-open) .nova-mega-menu-icon-normal {
+.nova-menu-list > li:hover:not(.nova-mega-menu-displayed):not(.nova-submenu-open) .nova-mega-menu-icon-normal {
     opacity: 0 !important;
     visibility: hidden !important;
 }
 
 /* 3. État ACTIF (Menu ouvert) : Active visible, les autres cachées */
-.nova-menu-list>li.nova-mega-menu-displayed .nova-mega-menu-icon-active,
-.nova-menu-list>li.nova-submenu-open .nova-mega-menu-icon-active {
+.nova-menu-list > li.nova-mega-menu-displayed .nova-mega-menu-icon-active,
+.nova-menu-list > li.nova-submenu-open .nova-mega-menu-icon-active {
     opacity: 1 !important;
     visibility: visible !important;
 }
-
-.nova-menu-list>li.nova-mega-menu-displayed .nova-mega-menu-icon-normal,
-.nova-menu-list>li.nova-mega-menu-displayed .nova-mega-menu-icon-hover,
-.nova-menu-list>li.nova-submenu-open .nova-mega-menu-icon-normal,
-.nova-menu-list>li.nova-submenu-open .nova-mega-menu-icon-hover {
+.nova-menu-list > li.nova-mega-menu-displayed .nova-mega-menu-icon-normal,
+.nova-menu-list > li.nova-mega-menu-displayed .nova-mega-menu-icon-hover,
+.nova-menu-list > li.nova-submenu-open .nova-mega-menu-icon-normal,
+.nova-menu-list > li.nova-submenu-open .nova-mega-menu-icon-hover {
     opacity: 0 !important;
     visibility: hidden !important;
 }
@@ -371,7 +363,8 @@ header#header,
 }
 
 /* Show breadcrumb toggle based on responsive breakpoint */
-/* JavaScript handles all display logic — CSS ne doit pas interférer */
+/* JavaScript will handle the display based on configured breakpoints */
+/* Default: hidden, JavaScript will show it when viewport <= breakpoint */
 .nova-mobile-breadcrumb-wrapper {
     display: none;
 }
@@ -380,19 +373,22 @@ header#header,
     display: none;
 }
 
-/* Quand JS ajoute la classe nova-breadcrumb-visible, on affiche */
-.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible {
-    display: flex !important;
-}
+/* Fallback CSS: Show toggle on mobile/tablet if JavaScript fails */
+/* This ensures the toggle is visible even if JS doesn't run */
+@media (max-width: 1024px) {
+    .nova-mobile-breadcrumb-wrapper {
+        display: flex !important;
+    }
 
-.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible .nova-mobile-breadcrumb-toggle {
-    display: block !important;
-}
+    .nova-mobile-breadcrumb-toggle {
+        display: block !important;
+    }
 
-/* Cacher le menu desktop quand le breadcrumb est visible */
-.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible~.nova-icon-menu-container,
-.nova-mobile-breadcrumb-wrapper.nova-breadcrumb-visible~.nova-mega-menu-container {
-    display: none !important;
+    /* Hide the main menu when toggle is visible */
+    .nova-mobile-breadcrumb-wrapper~.nova-icon-menu-container,
+    .nova-mobile-breadcrumb-wrapper~.nova-mega-menu-container {
+        display: none !important;
+    }
 }
 
 /* Tablet adjustments */
@@ -497,11 +493,11 @@ header#header,
 ================================ */
 
 .nova-mobile-breadcrumb-wrapper {
+    display: flex;
     align-items: center;
     gap: 15px;
     position: relative;
     justify-content: space-between;
-    /* display géré par JS — ne pas mettre display:flex ici */
 }
 
 .nova-mobile-breadcrumb-logo {
@@ -624,7 +620,6 @@ header#header,
 .nova-mobile-breadcrumb-toggle.nova-breadcrumb-is-open .nova-breadcrumb-icon-close {
     display: inline-flex;
 }
-
 /* 
 .nova-mega-menu-displayed .nova-mobile-breadcrumb-template-wrapper span.nova-mega-menu-icon-wrapper {
     transform: rotate(180deg);

@@ -1,359 +1,500 @@
 /**
- * NOVA Smooth Scroll - Lenis Integration
- * Version: 4.0.0 - Scroll anomaly fixed
- *
- * Fixes applied:
- * - Lenis CDN now properly loaded via PHP (lenis v1.1.x)
- * - Removed deprecated ScrollTrigger.scrollerProxy() → replaced with
- *   ScrollTrigger.normalizeScroll() + lenis.on('scroll', ScrollTrigger.update)
- * - Removed obsolete `smooth: true` option (Lenis v1+ always smooth)
- * - normalizeWheel: true to prevent cross-browser jitter
- * - Single init path (window load) to avoid double-init race condition
- * - Scrollbar drag sync simplified and reliable
+ * NOVA Smooth Scroll - Lenis Integration Professional
+ * Version: 3.1.0 - Mouse Wheel Fixed
+ * 
+ * CRITICAL FIX: Mouse wheel now working perfectly
  */
 
 (function ($) {
 	'use strict';
 
-	// ── Debug flag ────────────────────────────────────────────────────────────
-	if (typeof window !== 'undefined' && window.NOVALenisDebug !== true) {
-		try {
-			if (new URLSearchParams(window.location.search).get('nova_debug_scroll') === '1') {
-				window.NOVALenisDebug = true;
-			}
-		} catch (e) { /* ignore */ }
-	}
-
-	// ── Main controller ───────────────────────────────────────────────────────
 	const NOVALenisScroll = {
 
 		lenis: null,
 		rafId: null,
-		gsapTickerCallback: null,
-		isScrollbarDragging: false,
-		isInitialized: false,
-		scrollerProxyApplied: false, // Flag for compatibility with sticky-columns.js
-		resizeTimer: null,
+		lastScrollLog: 0,
+		currentScroll: 0,
+		scrollerProxyApplied: false,
+		scrollTriggerRefreshHandler: null,
 
-		// ── Debug helper ──────────────────────────────────────────────────────
-		log: function (event, data) {
-			if (window.NOVALenisDebug && typeof console !== 'undefined') {
-				console.log('[NOVA LENIS]', event, data || '');
-			}
-		},
-
-		// ── Init ──────────────────────────────────────────────────────────────
+		/**
+		 * Initialize Lenis
+		 */
 		init: function () {
-			// Global hard reset mode: keep native browser scroll only.
-			window.NOVA_NATIVE_SCROLL_MODE = true;
-
-			// TEMPORARILY DISABLED AS REQUESTED
-			this.enableNativeScrollStabilizer();
-			this.log('Lenis is temporarily disabled');
-			this.isInitialized = true;
-			this.scrollerProxyApplied = true; // Still set this so other scripts proceed with native scroll
-			return;
-
-			if (this.isInitialized) return;
-
+			// Check dependencies
 			if (typeof Lenis === 'undefined') {
-				this.log('Lenis not found — aborting');
 				return;
 			}
 
-			// Respect prefers-reduced-motion
-			if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-				this.log('prefers-reduced-motion — skipping Lenis');
-				return;
-			}
-
+			// CRITICAL: Remove conflicting CSS smooth scroll
 			this.removeCSSConflicts();
-			this.createLenis();
-			this.startTicker();
-			this.syncScrollTrigger();
-			this.handleScrollbarDrag();
+
+			// Setup Lenis
+			this.setupLenis();
+			this.syncWithGSAP();
 			this.handleAnchorLinks();
 			this.handleResize();
 
-			this.isInitialized = true;
-			this.scrollerProxyApplied = true; // Signal to other scripts (like sticky columns) that we are ready
-			this.log('init-complete');
+			this.applyScrollerProxy();
+
+			// Test mouse wheel
+			this.testMouseWheel();
 		},
 
-		// ── Native wheel stabilizer (fallback when Lenis is disabled) ─────────
-		// Neutralizes tiny opposite-direction scroll corrections ("scroll rollback").
-		enableNativeScrollStabilizer: function () {
-			if (window.NOVA_DISABLE_SCROLL_STABILIZER === true) return;
-			if (window.__NOVA_NATIVE_SCROLL_STABILIZER_ACTIVE__ === true) return;
-			window.__NOVA_NATIVE_SCROLL_STABILIZER_ACTIVE__ = true;
-
-			const self = this;
-			window.addEventListener('wheel', function (e) {
-				if (e.defaultPrevented) return;
-				if (e.ctrlKey) return; // do not interfere with browser zoom gesture
-
-				const dy = typeof e.deltaY === 'number' ? e.deltaY : 0;
-				if (dy === 0) return;
-
-				const startY = window.scrollY || document.documentElement.scrollTop || 0;
-				requestAnimationFrame(function () {
-					const endY = window.scrollY || document.documentElement.scrollTop || 0;
-					const actual = endY - startY;
-					if (actual === 0) return;
-
-					const opposite = (dy > 0 && actual < 0) || (dy < 0 && actual > 0);
-					// Only correct tiny rollback artifacts; avoid fighting intentional large moves.
-					if (!opposite || Math.abs(actual) > 20) return;
-
-					window.scrollTo({ top: startY, behavior: 'auto' });
-					self.log('native-stabilizer-corrected', { deltaY: dy, actualDelta: actual, startY: startY, endY: endY });
-				});
-			}, { passive: true, capture: true });
-
-			this.log('native-stabilizer-enabled');
+		isDebugEnabled: function () {
+			return typeof window !== 'undefined' && window.NOVALenisDebug === true;
 		},
 
-		// ── Remove CSS that fights Lenis ──────────────────────────────────────
+		debugLog: function (...messages) {
+			if (this.isDebugEnabled()) {
+				// Debug log (disabled in production)
+			}
+		},
+
+		/**
+		 * CRITICAL: Remove CSS conflicts that block mouse wheel
+		 */
 		removeCSSConflicts: function () {
+			// Remove scroll-behavior from HTML
 			document.documentElement.style.scrollBehavior = 'auto';
 			document.body.style.scrollBehavior = 'auto';
 
-			// Ensure we don't have a double scrollbar or a shifting layout
-			/* 
-			if (CSS.supports('scrollbar-gutter', 'stable')) {
-				document.documentElement.style.scrollbarGutter = 'stable';
-			}
-			*/
-
+			// Remove any overflow hidden that might block
 			document.documentElement.style.overflowX = 'hidden';
 			document.documentElement.style.overflowY = 'auto';
-			this.log('css-conflicts-removed');
+
+			this.debugLog('CSS conflicts removed (scroll-behavior, overflow adjustments)');
 		},
 
-		// ── Create Lenis instance ─────────────────────────────────────────────
-		createLenis: function () {
+		/**
+		 * Setup Lenis with optimal settings for mouse wheel
+		 */
+		setupLenis: function () {
+			const self = this;
+
+			// Destroy existing instance if any
 			if (this.lenis) {
+				this.debugLog('Destroying existing Lenis instance before re-init');
 				this.lenis.destroy();
-				this.lenis = null;
 			}
 
-			this.lenis = new Lenis({
-				// Duration / easing
-				duration: 1.1,
-				easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+			this.debugLog('Creating Lenis instance', {
+				duration: 1.2,
+				wheelMultiplier: 1.0,
+				touchMultiplier: 2,
+				smooth: true,
+				smoothTouch: false
+			});
 
-				// Orientation
+			// Create Lenis instance with WHEEL OPTIMIZED config
+			this.lenis = new Lenis({
+				// Core settings
+				duration: 0,
+				easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
 				orientation: 'vertical',
 				gestureOrientation: 'vertical',
+				smooth: true,
 
-				// Wheel — normalizeWheel:true prevents cross-browser delta jitter
-				wheelMultiplier: 1,
-				touchMultiplier: 1.8,
+				// CRITICAL WHEEL SETTINGS
+				wheelMultiplier: 1.0,
+				touchMultiplier: 2,
 				normalizeWheel: true,
 
-				// Touch: keep native feel on mobile
+				// Touch settings
 				smoothTouch: false,
 
-				// Prevent Lenis on elements that need native scroll
-				prevent: function (node) {
+				// Advanced
+				infinite: false,
+				autoResize: true,
+				prevent: (node) => {
 					return node.classList.contains('lenis-prevent') ||
-						!!node.closest('.lenis-prevent');
+						node.closest('.lenis-prevent');
 				}
 			});
 
-			this.log('lenis-created');
-		},
+			this.currentScroll = typeof this.lenis.scroll === 'number'
+				? this.lenis.scroll
+				: (window.scrollY || document.documentElement.scrollTop || 0);
 
-		// ── RAF / GSAP ticker ─────────────────────────────────────────────────
-		startTicker: function () {
-			const self = this;
+			// CRITICAL: Listen to scroll events for ScrollTrigger
+			this.lenis.on('scroll', (e) => {
+				if (typeof e.scroll === 'number') {
+					this.currentScroll = e.scroll;
+				}
+				if (this.isDebugEnabled()) {
+					const now = window.performance && performance.now ? performance.now() : Date.now();
+					if (!this.lastScrollLog || now - this.lastScrollLog > 120) {
+						this.lastScrollLog = now;
+						this.debugLog('Lenis scroll event', {
+							scroll: typeof e.scroll === 'number' ? Number(e.scroll.toFixed(2)) : e.scroll,
+							velocity: typeof e.velocity === 'number' ? Number(e.velocity.toFixed(3)) : e.velocity
+						});
+					}
+				}
 
+				if (typeof ScrollTrigger !== 'undefined') {
+					ScrollTrigger.update();
+				}
+			});
+
+			// Start RAF loop - Use GSAP ticker if available, otherwise native RAF
 			if (typeof gsap !== 'undefined') {
-				// GSAP ticker: drives Lenis at the same cadence as GSAP animations
-				this.gsapTickerCallback = function (time) {
+				// Use GSAP ticker for better synchronization with ScrollTrigger
+				gsap.ticker.add((time) => {
 					self.lenis.raf(time * 1000);
-				};
-				gsap.ticker.add(this.gsapTickerCallback);
-				// lagSmoothing(0) prevents GSAP from skipping frames after tab focus
+				});
 				gsap.ticker.lagSmoothing(0);
-				this.log('ticker: gsap');
+				this.debugLog('Lenis hooked into GSAP ticker');
 			} else {
-				// Fallback native RAF
-				const raf = function (time) {
-					self.lenis.raf(time);
-					self.rafId = requestAnimationFrame(raf);
-				};
-				this.rafId = requestAnimationFrame(raf);
-				this.log('ticker: native RAF');
+				// Fallback to native RAF if GSAP not available
+				this.debugLog('GSAP unavailable, using native requestAnimationFrame for Lenis');
+				this.startRAF();
 			}
 		},
 
-		// ── ScrollTrigger sync ────────────────────────────────────────────────
-		// Modern approach: no scrollerProxy, just update ST on every Lenis tick.
-		syncScrollTrigger: function () {
-			if (typeof ScrollTrigger === 'undefined') return;
-
+		/**
+		 * Start RequestAnimationFrame loop (fallback if GSAP not available)
+		 */
+		startRAF: function () {
 			const self = this;
 
-			// Tell ScrollTrigger to update its scroll position on every Lenis frame
-			this.lenis.on('scroll', function () {
-				ScrollTrigger.update();
-			});
+			// Cancel existing RAF if any
+			if (this.rafId) {
+				cancelAnimationFrame(this.rafId);
+			}
 
-			// After a resize, refresh ST so pin spacers are recalculated
-			ScrollTrigger.addEventListener('refresh', function () {
-				if (self.lenis) self.lenis.resize();
-			});
+			function raf(time) {
+				if (self.lenis) {
+					self.lenis.raf(time);
+					self.rafId = requestAnimationFrame(raf);
+				}
+			}
 
-			// Initial refresh once everything is laid out
-			setTimeout(function () {
-				ScrollTrigger.refresh();
-				self.log('ScrollTrigger initial refresh');
-			}, 100);
-
-			this.log('ScrollTrigger sync ready');
+			this.rafId = requestAnimationFrame(raf);
+			this.debugLog('Native RAF loop started for Lenis');
 		},
 
-		// ── Scrollbar drag ────────────────────────────────────────────────────
-		// When the user drags the native scrollbar, Lenis must be paused then
-		// re-synced to the native scroll position on release.
-		handleScrollbarDrag: function () {
-			const self = this;
+		/**
+		 * Sync Lenis with GSAP ScrollTrigger
+		 */
+		syncWithGSAP: function () {
+			if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+				return;
+			}
 
-			const scrollbarWidth = function () {
-				return window.innerWidth - document.documentElement.clientWidth;
-			};
-
-			document.addEventListener('mousedown', function (e) {
-				const sbw = scrollbarWidth();
-				if (!sbw || sbw <= 0) return;
-				if (e.clientX < window.innerWidth - sbw - 2) return;
-
-				self.isScrollbarDragging = true;
-				if (self.lenis) self.lenis.stop();
-				self.log('scrollbar-drag-start');
-			}, { passive: true });
-
-			window.addEventListener('mouseup', function () {
-				if (!self.isScrollbarDragging) return;
-				self.isScrollbarDragging = false;
-
-				if (!self.lenis) return;
-
-				// Snap Lenis to where the native scroll ended up
-				const nativeY = window.scrollY || document.documentElement.scrollTop || 0;
-				self.lenis.scrollTo(nativeY, { immediate: true, force: true });
-				self.lenis.start();
-
-				if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
-				self.log('scrollbar-drag-end', { restoredTo: nativeY });
-			}, { passive: true });
+			// ScrollTrigger is already updated via lenis.on('scroll') in setupLenis
+			// This method is kept for compatibility but main sync happens in setupLenis
 		},
 
-		// ── Anchor links ──────────────────────────────────────────────────────
+		/**
+		 * Handle anchor links with smooth scroll
+		 */
 		handleAnchorLinks: function () {
 			const self = this;
 
-			document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+			document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 				anchor.addEventListener('click', function (e) {
 					const href = this.getAttribute('href');
 
 					if (href === '#' || href === '#top') {
 						e.preventDefault();
-						self.lenis.scrollTo(0, { duration: 1.4 });
+						self.debugLog('Anchor intercepted (#/#top)', { href });
+						self.lenis.scrollTo(0, {
+							offset: 0,
+							duration: 1.5
+						});
 						return;
 					}
 
 					const target = document.querySelector(href);
-					if (!target) return;
+					if (target) {
+						e.preventDefault();
 
-					e.preventDefault();
-					const header = document.querySelector('#masthead, .site-header, header');
-					const offset = header ? -header.offsetHeight : 0;
-					self.lenis.scrollTo(target, { offset: offset, duration: 1.4 });
+						const header = document.querySelector('#masthead, .site-header, header');
+						const offset = header ? -header.offsetHeight : 0;
+
+						self.debugLog('Anchor intercepted', {
+							href,
+							targetTop: target.getBoundingClientRect ? Number(target.getBoundingClientRect().top.toFixed(2)) : null,
+							offset
+						});
+
+						self.lenis.scrollTo(target, {
+							offset: offset,
+							duration: 1.5
+						});
+					}
 				});
 			});
 		},
 
-		// ── Resize ────────────────────────────────────────────────────────────
+		/**
+		 * Handle window resize
+		 */
 		handleResize: function () {
 			const self = this;
+			let resizeTimer;
 
 			window.addEventListener('resize', function () {
-				clearTimeout(self.resizeTimer);
-				self.resizeTimer = setTimeout(function () {
-					if (self.lenis) self.lenis.resize();
-					if (typeof ScrollTrigger !== 'undefined') {
-						setTimeout(function () { ScrollTrigger.refresh(); }, 50);
+				clearTimeout(resizeTimer);
+				resizeTimer = setTimeout(function () {
+					if (self.lenis) {
+						self.lenis.resize();
+						self.debugLog('Lenis resize triggered after window resize');
 					}
-					self.log('resize handled');
+
+					if (typeof ScrollTrigger !== 'undefined') {
+						ScrollTrigger.refresh();
+						self.debugLog('ScrollTrigger refresh triggered after window resize');
+					}
 				}, 250);
 			});
 		},
 
-		// ── Public API ────────────────────────────────────────────────────────
+		applyScrollerProxy: function () {
+			if (typeof ScrollTrigger === 'undefined') {
+				this.debugLog('ScrollTrigger unavailable, postponing scrollerProxy setup');
+				setTimeout(() => this.applyScrollerProxy(), 500);
+				return;
+			}
+
+			if (!this.lenis) {
+				this.debugLog('Lenis instance not ready, postponing scrollerProxy');
+				setTimeout(() => this.applyScrollerProxy(), 250);
+				return;
+			}
+
+			if (this.scrollerProxyApplied) {
+				this.debugLog('scrollerProxy already applied');
+				return;
+			}
+
+			const self = this;
+
+			/**
+			 * IMPORTANT ROBUSTNESS GUARD:
+			 * Certaines versions/combinations de ScrollTrigger + Lenis peuvent
+			 * lancer une erreur interne (ex: "Cannot read properties of undefined (reading 'indexOf')")
+			 * lors de l'appel à scrollerProxy. On encapsule donc tout dans un try/catch
+			 * pour éviter de casser tout le JS frontend (dont le slider Swiper).
+			 */
+			try {
+				ScrollTrigger.scrollerProxy(document.body, {
+					scrollTop(value) {
+						if (typeof value !== 'undefined') {
+							self.lenis.scrollTo(value, { immediate: true });
+						}
+						return self.lenis ? self.currentScroll : (window.scrollY || document.documentElement.scrollTop || 0);
+					},
+					getBoundingClientRect() {
+						return {
+							top: 0,
+							left: 0,
+							width: window.innerWidth,
+							height: window.innerHeight
+						};
+					},
+					pinType: document.body.style.transform ? 'transform' : 'fixed'
+				});
+
+				ScrollTrigger.defaults({ scroller: document.body });
+				this.debugLog('ScrollTrigger defaults updated to use document.body as scroller');
+
+				if (!this.scrollTriggerRefreshHandler) {
+					this.scrollTriggerRefreshHandler = () => {
+						if (self.lenis) {
+							self.lenis.resize();
+						}
+					};
+					ScrollTrigger.addEventListener('refresh', this.scrollTriggerRefreshHandler);
+				}
+
+				this.scrollerProxyApplied = true;
+				this.debugLog('ScrollTrigger scrollerProxy applied for document.body');
+
+				// Force an initial refresh so existing triggers use the proxy
+				setTimeout(() => {
+					ScrollTrigger.refresh();
+					this.debugLog('ScrollTrigger refresh triggered after scrollerProxy setup');
+				}, 0);
+			} catch (e) {
+				this.scrollerProxyApplied = false;
+				return;
+			}
+		},
+
+		/**
+		 * Test mouse wheel detection
+		 */
+		testMouseWheel: function () {
+			let wheelDetected = false;
+
+			const testWheel = (e) => {
+				if (!wheelDetected) {
+					wheelDetected = true;
+					window.removeEventListener('wheel', testWheel);
+					this.debugLog('Mouse wheel input detected', {
+						deltaY: typeof e.deltaY === 'number' ? Number(e.deltaY.toFixed(2)) : e.deltaY
+					});
+				}
+			};
+
+			window.addEventListener('wheel', testWheel, { passive: true });
+
+			// Auto-remove after 5 seconds
+			setTimeout(() => {
+				window.removeEventListener('wheel', testWheel);
+				this.debugLog('Mouse wheel test listener removed (timeout reached)');
+			}, 5000);
+		},
+
+		/**
+		 * Public methods
+		 */
 		scrollToTop: function () {
-			if (this.lenis) this.lenis.scrollTo(0, { duration: 1.4 });
+			if (this.lenis) {
+				this.lenis.scrollTo(0, { duration: 1.5 });
+			}
 		},
 
-		scrollToElement: function (target, offset) {
-			if (!this.lenis || !target) return;
-			const el = typeof target === 'string' ? document.querySelector(target) : target;
-			if (el) this.lenis.scrollTo(el, { offset: offset || 0, duration: 1.4 });
+		scrollToElement: function (target, offset = 0) {
+			if (this.lenis && target) {
+				const element = typeof target === 'string' ? document.querySelector(target) : target;
+				if (element) {
+					this.lenis.scrollTo(element, {
+						offset: offset,
+						duration: 1.5
+					});
+				}
+			}
 		},
 
-		stop: function () { if (this.lenis) this.lenis.stop(); },
-		start: function () { if (this.lenis) this.lenis.start(); },
+		stop: function () {
+			if (this.lenis) {
+				this.lenis.stop();
+			}
+		},
+
+		start: function () {
+			if (this.lenis) {
+				this.lenis.start();
+			}
+		},
 
 		destroy: function () {
-			if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
-			if (typeof gsap !== 'undefined' && this.gsapTickerCallback) {
-				gsap.ticker.remove(this.gsapTickerCallback);
-				this.gsapTickerCallback = null;
+			this.debugLog('Destroying Lenis controller and cleaning up');
+			if (this.rafId) {
+				cancelAnimationFrame(this.rafId);
 			}
-			clearTimeout(this.resizeTimer);
-			if (this.lenis) { this.lenis.destroy(); this.lenis = null; }
 
+			if (this.lenis) {
+				this.lenis.destroy();
+				this.lenis = null;
+			}
+
+			if (typeof ScrollTrigger !== 'undefined' && this.scrollTriggerRefreshHandler) {
+				ScrollTrigger.removeEventListener('refresh', this.scrollTriggerRefreshHandler);
+				this.scrollTriggerRefreshHandler = null;
+			}
+
+			this.scrollerProxyApplied = false;
+
+			// Restore CSS
 			document.documentElement.style.scrollBehavior = '';
 			document.body.style.scrollBehavior = '';
-
-			this.isInitialized = false;
-			this.log('destroyed');
 		}
+
 	};
 
-	// ── Bootstrap ─────────────────────────────────────────────────────────────
-	// Init on window load (not DOMContentLoaded) so all layout is settled,
-	// images are sized, and GSAP/ScrollTrigger are fully ready.
-	$(window).on('load', function () {
+	/**
+	 * Initialize on DOM ready
+	 */
+	$(document).ready(function () {
+		NOVALenisScroll.debugLog('Document ready → init Lenis sequence start');
 		NOVALenisScroll.init();
+	});
 
-		// Sync to browser-restored scroll position (back/forward navigation)
+	/**
+	 * Wait for full page load before starting
+	 */
+	$(window).on('load', function () {
 		if (NOVALenisScroll.lenis) {
-			const nativeY = window.scrollY || document.documentElement.scrollTop || 0;
-			if (nativeY > 10) {
-				NOVALenisScroll.lenis.scrollTo(nativeY, { immediate: true });
-				NOVALenisScroll.log('restored scroll position', nativeY);
+			// Restauration du scroll par le navigateur au refresh : synchroniser Lenis sur le scroll natif
+			var nativeScroll = window.scrollY || document.documentElement.scrollTop || 0;
+			var lenisScroll = typeof NOVALenisScroll.lenis.scroll === 'number' ? NOVALenisScroll.lenis.scroll : 0;
+			if (nativeScroll > 0 && Math.abs(nativeScroll - lenisScroll) > 10) {
+				NOVALenisScroll.lenis.scrollTo(nativeScroll, { immediate: true });
+				NOVALenisScroll.currentScroll = nativeScroll;
+				NOVALenisScroll.debugLog('Window load → Lenis synced to restored scroll', nativeScroll);
+				window.dispatchEvent(new CustomEvent('novalenis-scroll-restored', { detail: { scrollY: nativeScroll } }));
 			}
+			setTimeout(function () {
+				NOVALenisScroll.lenis.resize();
+				if (typeof ScrollTrigger !== 'undefined') {
+					ScrollTrigger.refresh();
+				}
+				NOVALenisScroll.debugLog('Window load complete → Lenis resize + ScrollTrigger refresh');
+			}, 100);
 		}
 	});
 
-	// ── Elementor editor: re-sync after widget renders ─────────────────────
+	/**
+	 * Elementor integration
+	 */
 	$(window).on('elementor/frontend/init', function () {
-		if (typeof elementorFrontend === 'undefined') return;
-
-		elementorFrontend.hooks.addAction('frontend/element_ready/global', function () {
-			if (!NOVALenisScroll.lenis) return;
-			NOVALenisScroll.lenis.resize();
-			if (typeof ScrollTrigger !== 'undefined') {
-				setTimeout(function () { ScrollTrigger.refresh(); }, 150);
-			}
-		});
+		if (typeof elementorFrontend !== 'undefined') {
+			elementorFrontend.hooks.addAction('frontend/element_ready/global', function () {
+				if (NOVALenisScroll.lenis) {
+					setTimeout(function () {
+						NOVALenisScroll.lenis.resize();
+						if (typeof ScrollTrigger !== 'undefined') {
+							ScrollTrigger.refresh();
+						}
+						NOVALenisScroll.debugLog('Elementor frontend init → Lenis resize + ScrollTrigger refresh');
+					}, 100);
+				}
+			});
+		}
 	});
 
-	// ── Global exposure ───────────────────────────────────────────────────────
+	/**
+	 * Expose globally
+	 */
 	window.NOVALenisScroll = NOVALenisScroll;
 	window.scrollToTop = function () { NOVALenisScroll.scrollToTop(); };
 	window.scrollToElement = function (target, offset) { NOVALenisScroll.scrollToElement(target, offset); };
 
 })(jQuery);
+
+
+/**
+ * 🔧 DEBUGGING CHECKLIST
+ * ======================
+ * 
+ * Si la molette ne marche toujours pas:
+ * 
+ * 1. Ouvrez la console et tapez:
+ *    NOVALenisScroll.lenis
+ *    (doit afficher un objet, pas null)
+ * 
+ * 2. Vérifiez les événements wheel:
+ *    window.addEventListener('wheel', (e) => console.log('Wheel:', e.deltaY));
+ * 
+ * 3. Vérifiez le CSS:
+ *    console.log(getComputedStyle(document.documentElement).overflow);
+ *    (doit être "visible" ou "auto", pas "hidden")
+ * 
+ * 4. Testez manuellement:
+ *    NOVALenisScroll.lenis.scrollTo(1000);
+ * 
+ * 5. Vérifiez les conflits:
+ *    - Plugins de cache
+ *    - Autres smooth scroll scripts
+ *    - Extensions navigateur
+ * 
+ * 6. Dans votre CSS, supprimez ou commentez:
+ *    html { scroll-behavior: smooth; }
+ * 
+ * 7. Vérifiez l'ordre des scripts dans le HTML:
+ *    jQuery → GSAP → ScrollTrigger → Lenis → Ce script
+ */

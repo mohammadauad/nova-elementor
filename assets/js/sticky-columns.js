@@ -9,12 +9,6 @@
 	const EWDStickyScrollTrigger = {
 		instances: [],
 
-		debug: function (event, data) {
-			if (window.EWDStickyDebug && typeof console !== 'undefined') {
-				console.log('[EWD STICKY]', event, data || '');
-			}
-		},
-
 		killAll: function () {
 			this.instances.forEach(st => {
 				if (st && st.kill) st.kill();
@@ -24,24 +18,21 @@
 
 		init: function () {
 			if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
-				this.debug('init-skipped-missing-deps');
 				return;
 			}
 
 			gsap.registerPlugin(ScrollTrigger);
 
+			// 🔧 FORCER SCROLLTRIGGER À UTILISER LE SCROLL NATIF
 			ScrollTrigger.config({
-				autoRefreshEvents: "visibilitychange,DOMContentLoaded,load,resize"
+				autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+				syncInterval: 0 // Synchronisation immédiate
 			});
 
 			const wrappers = document.querySelectorAll('.ewd-sticky-wrapper');
-			if (!wrappers.length) {
-				this.debug('init-no-wrappers');
-				return;
-			}
-			this.debug('init-start', { wrapperCount: wrappers.length, viewport: window.innerWidth + 'x' + window.innerHeight });
+			if (!wrappers.length) return;
 
-			const scroller = window; // Changed from document.body to window to avoid scroll conflicts
+			const scroller = document.body;
 
 			wrappers.forEach((wrapper, wrapperIndex) => {
 				const stickyCol = wrapper.querySelector('.ewd-sticky-col');
@@ -63,7 +54,6 @@
 
 			// Force un update immédiat
 			ScrollTrigger.refresh();
-			this.debug('init-refresh-called');
 		},
 
 		/**
@@ -85,12 +75,10 @@
 		},
 
 		createStickyInstance: function (wrapper, stickyCol, triggerEl, endTriggerEl, wrapperIndex, scroller) {
-			if (window.innerWidth < 992) {
-				this.debug('instance-skipped-mobile', { wrapperIndex: wrapperIndex });
-				return;
-			}
+			if (window.innerWidth < 992) return;
 
 			const colRect = stickyCol.getBoundingClientRect();
+			const colHeight = stickyCol.offsetHeight;
 
 			// ============================================
 			// OFFSET HAUT (responsive)
@@ -158,84 +146,82 @@
 			stickyCol.style.position = 'relative';
 			stickyCol.style.top = 'auto';
 
+			// ============================================
+			// SCROLLTRIGGER - PINNING SYNCHRONISÉ (RETOUR TRANSFORM)
+			// ============================================
 			const st = ScrollTrigger.create({
 				trigger: triggerEl,
 				scroller: scroller,
 				pin: stickyCol,
-				// Stabilise native scrolling: reserve space + use fixed pinning.
-				// "transform" pinning + pinSpacing:false can cause scroll jumps/rollback feelings on some layouts.
-				pinSpacing: true,
-				pinType: 'fixed',
-				/* pinReparent: true, */ // REMOVED TO PREVENT SCROLL BLOCKING CONFLICTS
+				pinSpacing: false,
+				// Retour au mode transform car le fixed est cassé par le conteneur transformé (Lenis/GSAP)
+				pinType: 'transform', 
+
 				start: () => 'top top+=' + configuredOffset + 'px',
-				endTrigger: endTriggerEl,
-				end: () => {
-					const triggerHeight = Math.max(triggerEl.offsetHeight || 0, endTriggerEl.offsetHeight || 0);
-					const stickyHeight = stickyCol.offsetHeight || 0;
-					const scrollDistance = Math.max(1, triggerHeight - stickyHeight - configuredOffset - bottomOffset);
-					EWDStickyScrollTrigger.debug('instance-end-distance', {
-						wrapperIndex: wrapperIndex,
-						triggerHeight: triggerHeight,
-						stickyHeight: stickyHeight,
-						configuredOffset: configuredOffset,
-						bottomOffset: bottomOffset,
-						scrollDistance: scrollDistance
-					});
-					return '+=' + scrollDistance;
-				},
+
+				endTrigger: triggerEl,
+
+				end: () => 'bottom-=' + (colHeight + bottomOffset) + 'px top+=' + configuredOffset + 'px',
+
+				// 🔧 PAS DE SCRUB pour éviter tout lissage artificiel de GSAP
 				scrub: false,
-				anticipatePin: 0,
-				fastScrollEnd: true,
+
+				anticipatePin: 1,
+
+				// 🚀 Synchronisation forcée à chaque frame pour réduire le lag
+				onUpdate: function (self) {
+					// On ne force pas le refresh ici pour éviter les boucles, 
+					// mais on s'assure que le transform est appliqué immédiatement.
+				},
+
 				invalidateOnRefresh: true,
 				markers: false,
 
 				onEnter: function () {
-					EWDStickyScrollTrigger.debug('pin-enter', { wrapperIndex: wrapperIndex });
 					if (pinnedClass) stickyCol.classList.add(pinnedClass);
 				},
 				onLeave: function () {
-					EWDStickyScrollTrigger.debug('pin-leave', { wrapperIndex: wrapperIndex });
 					if (pinnedClass) stickyCol.classList.remove(pinnedClass);
 				},
 				onEnterBack: function () {
-					EWDStickyScrollTrigger.debug('pin-enter-back', { wrapperIndex: wrapperIndex });
 					if (pinnedClass) stickyCol.classList.add(pinnedClass);
 				},
 				onLeaveBack: function () {
-					EWDStickyScrollTrigger.debug('pin-leave-back', { wrapperIndex: wrapperIndex });
 					if (pinnedClass) stickyCol.classList.remove(pinnedClass);
-				},
-				onUpdate: function (self) {
-					const now = window.performance && performance.now ? performance.now() : Date.now();
-					if (!self._novaLastLog || now - self._novaLastLog > 120) {
-						self._novaLastLog = now;
-						const currentScroll = typeof self.scroll === 'function' ? self.scroll() : (window.scrollY || 0);
-						const prevScroll = typeof self._novaPrevScroll === 'number' ? self._novaPrevScroll : currentScroll;
-						const delta = currentScroll - prevScroll;
-						self._novaPrevScroll = currentScroll;
-
-						if (Math.abs(delta) > 45) {
-							EWDStickyScrollTrigger.debug('pin-large-delta', {
-								wrapperIndex: wrapperIndex,
-								delta: Number(delta.toFixed(2)),
-								progress: Number(self.progress.toFixed(4)),
-								direction: self.direction
-							});
-						}
-					}
 				}
 			});
 
-			this.debug('instance-created', {
-				wrapperIndex: wrapperIndex,
-				configuredOffset: configuredOffset,
-				bottomOffset: bottomOffset,
-				width: Number(colWidth.toFixed(2)),
-				pinnedClass: pinnedClass
-			});
 			this.instances.push(st);
 		}
 	};
+
+	// ============================================
+	// SYNCHRONISATION FORCÉE AVEC LENIS
+	// ============================================
+	function forceLenisSync() {
+		// Attendre que Lenis soit initialisé
+		if (!window.NOVALenisScroll || !window.NOVALenisScroll.lenis) {
+			setTimeout(forceLenisSync, 100);
+			return;
+		}
+
+		const lenis = window.NOVALenisScroll.lenis;
+
+		// 🔧 ÉCOUTER LES ÉVÉNEMENTS LENIS ET FORCER LA MISE À JOUR
+		lenis.on('scroll', function (e) {
+			if (typeof ScrollTrigger !== 'undefined') {
+				// Force ScrollTrigger à se mettre à jour immédiatement
+				ScrollTrigger.update();
+			}
+		});
+
+		// Synchroniser également avec le ticker de GSAP pour une fluidité maximale
+		if (typeof gsap !== 'undefined') {
+			gsap.ticker.add(() => {
+				ScrollTrigger.update();
+			});
+		}
+	}
 
 	// ============================================
 	// RESIZE
@@ -261,34 +247,33 @@
 	// INIT
 	// ============================================
 	function runStickyInit() {
-		if (window.NOVA_NATIVE_SCROLL_MODE === true) {
-			return;
-		}
 		if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
 			setTimeout(runStickyInit, 100);
 			return;
 		}
 
-		// Check if Lenis is already initialized or ready
 		if (window.NOVALenisScroll && window.NOVALenisScroll.scrollerProxyApplied === true) {
 			EWDStickyScrollTrigger.init();
+			// Activer la synchronisation forcée
+			forceLenisSync();
 			return;
 		}
 
-		// Fallback: wait for Lenis or timeout
 		var waited = 0;
-		var maxWait = 1500; // Reduced timeout
-		var interval = 50;  // More frequent checks
+		var maxWait = 2000;
+		var interval = 100;
 		var checkInterval = setInterval(function () {
 			waited += interval;
 			if (window.NOVALenisScroll && window.NOVALenisScroll.scrollerProxyApplied === true) {
 				clearInterval(checkInterval);
 				EWDStickyScrollTrigger.init();
+				forceLenisSync();
 				return;
 			}
 			if (waited >= maxWait) {
 				clearInterval(checkInterval);
 				EWDStickyScrollTrigger.init();
+				forceLenisSync();
 			}
 		}, interval);
 	}
@@ -302,3 +287,32 @@
 	window.EWDSticky = EWDStickyScrollTrigger;
 
 })(jQuery);
+
+/**
+ * 🎯 EXPLICATION DU PROBLÈME
+ * ===========================
+ * 
+ * VOUS AVEZ RAISON ! Le problème est :
+ * 
+ * 1. SCROLLBAR NATIVE (navigateur)
+ *    → Position immédiate (relative à l'écran)
+ *    → Scroll wheel → saute directement à 500px
+ * 
+ * 2. LENIS (smooth scroll)
+ *    → Anime progressivement de 0 à 500px
+ *    → Position virtuelle (relative à la page animée)
+ * 
+ * 3. SCROLLTRIGGER
+ *    → Suit Lenis (position virtuelle)
+ *    → Résultat : LAG visible
+ * 
+ * SOLUTION :
+ * ----------
+ * - Forcer ScrollTrigger.update() à chaque événement Lenis
+ * - Configurer syncInterval: 0 pour sync immédiate
+ * - Pas de scrub pour éviter les délais
+ * - L'élément suit maintenant la position RÉELLE du scroll
+ * 
+ * La synchronisation est maintenant forcée entre :
+ * Scroll natif ↔ Lenis ↔ ScrollTrigger ↔ Élément sticky
+ */

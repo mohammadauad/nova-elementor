@@ -70,7 +70,7 @@ span.nova-accordion-toggle-icon>span {
 	font-weight: inherit;
 	line-height: inherit;
 	color: inherit;
-	display: flex;
+	display: block;
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -229,12 +229,12 @@ span.nova-accordion-toggle-icon>span {
 	margin-left: 0;
 }
 
-.nova-has-submenu.menu-item-has-children>a {
+.NOVA-has-submenu.menu-item-has-children>a {
 	position: relative;
 }
 
 /* Rotation de l'icône au survol */
-.nova-has-submenu.menu-item-has-children:hover>a .NOVA-dropdown-icon {
+.NOVA-has-submenu.menu-item-has-children:hover>a .NOVA-dropdown-icon {
 	transform: rotate(180deg);
 }
 
@@ -478,11 +478,11 @@ span.nova-accordion-toggle-icon>span {
 ================================ */
 
 /* Flèche pour horizontal: vers le bas */
-	.nova-icon-menu-horizontal .nova-has-submenu>a .NOVA-dropdown-icon {
+.nova-icon-menu-horizontal .NOVA-has-submenu>a .NOVA-dropdown-icon {
 	transform: rotate(0deg);
 }
 
-.nova-icon-menu-horizontal .nova-has-submenu:hover>a .NOVA-dropdown-icon {
+.nova-icon-menu-horizontal .NOVA-has-submenu:hover>a .NOVA-dropdown-icon {
 	transform: rotate(180deg);
 }
 
@@ -492,15 +492,15 @@ span.nova-accordion-toggle-icon>span {
 }
 
 /* Flèche pour vertical: vers la droite */
-.nova-icon-menu-vertical .nova-has-submenu>a .NOVA-dropdown-icon {
+.nova-icon-menu-vertical .NOVA-has-submenu>a .NOVA-dropdown-icon {
 	margin-left: auto;
 }
 
-.nova-icon-menu-vertical .nova-has-submenu:hover>a .NOVA-dropdown-icon {
+.nova-icon-menu-vertical .NOVA-has-submenu:hover>a .NOVA-dropdown-icon {
 	transform: rotate(0deg);
 }
 
-.nova-icon-menu-vertical .nova-icon-menu-list .nova-has-submenu.nova-submenu-open>a .NOVA-dropdown-icon {
+.nova-icon-menu-vertical .nova-has-submenu.nova-submenu-open>a .NOVA-dropdown-icon {
 	transform: rotate(180deg);
 }
 
@@ -596,7 +596,7 @@ span.nova-accordion-toggle-icon>span {
 	}
 
 	/* Icône dropdown pointant vers le bas */
-.nova-icon-menu-horizontal .nova-has-submenu>a .NOVA-dropdown-icon {
+	.nova-icon-menu-horizontal .NOVA-has-submenu>a .NOVA-dropdown-icon {
 		margin-left: auto;
 	}
 }

@@ -14,9 +14,6 @@
 		debugPrefix: '[NOVA Stacking Cards]',
 
 		onDocumentReady: function () {
-			if (window.NOVA_NATIVE_SCROLL_MODE === true) {
-				return;
-			}
 			if (!this.dependenciesReady()) {
 				return;
 			}
@@ -54,7 +51,6 @@
 		},
 
 		init: function (context) {
-			return; // TEMPORARILY DISABLED TO DEBUG SCROLL
 			const scope = context || document;
 			const $scope = scope instanceof jQuery ? scope : $(scope);
 			let widgets = $scope.find(this.selectors.widget).toArray();
@@ -177,8 +173,6 @@
 					end: scrollDistanceFn,
 					scrub: config.scrub,
 					pin: true,
-					pinSpacing: true,
-					pinType: 'fixed',
 					anticipatePin: 1,
 					markers: config.debug,
 					invalidateOnRefresh: true,

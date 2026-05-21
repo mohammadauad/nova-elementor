@@ -4738,9 +4738,14 @@ class Carousel_Widget extends Widget_Base {
 	 * @return array
 	 */
 	private function get_post_types() {
-		return function_exists( 'nova_addons_get_elementor_post_type_options' )
-			? nova_addons_get_elementor_post_type_options()
-			: array();
+		$post_types = get_post_types( [ 'public' => true ], 'objects' );
+		$options = [];
+
+		foreach ( $post_types as $post_type ) {
+			$options[ $post_type->name ] = $post_type->label;
+		}
+
+		return $options;
 	}
 
 	/**
@@ -4908,14 +4913,23 @@ class Carousel_Widget extends Widget_Base {
 			return isset( $settings[ $key ]['size'] ) ? (float) $settings[ $key ]['size'] : $default;
 		};
 
+		// Slides visibles (responsive) : Elementor peut envoyer '' ou 0 → ne pas les propager au JS.
+		$slides_per_view_desktop = isset( $settings['slides_to_show'] ) && '' !== $settings['slides_to_show'] ? max( 1, (int) $settings['slides_to_show'] ) : 3;
+		$slides_per_view_tablet  = ( isset( $settings['slides_to_show_tablet'] ) && '' !== $settings['slides_to_show_tablet'] && (int) $settings['slides_to_show_tablet'] > 0 )
+			? (int) $settings['slides_to_show_tablet']
+			: min( $slides_per_view_desktop, 2 );
+		$slides_per_view_mobile  = ( isset( $settings['slides_to_show_mobile'] ) && '' !== $settings['slides_to_show_mobile'] && (int) $settings['slides_to_show_mobile'] > 0 )
+			? (int) $settings['slides_to_show_mobile']
+			: 1;
+
 		// ============================================
 		// CONFIGURATION DU SLIDER - Organisée par catégories
 		// ============================================
 		$slider_config = [
 			// --- Configuration de base ---
-			'slidesToShow' => isset( $settings['slides_to_show'] ) ? (int) $settings['slides_to_show'] : 3,
-			'slidesToShowTablet' => isset( $settings['slides_to_show_tablet'] ) ? (int) $settings['slides_to_show_tablet'] : 2,
-			'slidesToShowMobile' => isset( $settings['slides_to_show_mobile'] ) ? (int) $settings['slides_to_show_mobile'] : 1,
+			'slidesToShow' => $slides_per_view_desktop,
+			'slidesToShowTablet' => $slides_per_view_tablet,
+			'slidesToShowMobile' => $slides_per_view_mobile,
 			'slidesToScroll' => isset( $settings['slides_to_scroll'] ) ? (int) $settings['slides_to_scroll'] : 1,
 			'slidesToScrollTablet' => isset( $settings['slides_to_scroll_tablet'] ) ? (int) $settings['slides_to_scroll_tablet'] : 1,
 			'slidesToScrollMobile' => isset( $settings['slides_to_scroll_mobile'] ) ? (int) $settings['slides_to_scroll_mobile'] : 1,
@@ -5027,6 +5041,10 @@ class Carousel_Widget extends Widget_Base {
 			'swiperFanDeckOverflowVisible'   => $sw( 'swiper_fan_deck_overflow_visible', true ),
 		];
 
+		if ( $is_swiper_widget ) {
+			$slider_config = $this->prepare_swiper_slider_config( $slider_config, $settings );
+		}
+
 		// Préparer la configuration de largeur créative pour JavaScript
 		$creative_width_config = [];
 		if ( $creative_background_enable && ! empty( $settings['card_creative_width'] ) ) {
@@ -5046,6 +5064,10 @@ class Carousel_Widget extends Widget_Base {
 			$wrapper_classes .= ' slider-mode';
 		}
 
+		if ( $is_swiper_widget ) {
+			$wrapper_classes .= ' nova-carousel-engine-swiper';
+		}
+
 		if ( $is_swiper_widget && $is_mixed_display_mode ) {
 			$wrapper_classes .= ' responsive-display-mode';
 			$wrapper_classes .= ' display-desktop-' . sanitize_html_class( $display_mode_desktop );
@@ -5058,6 +5080,9 @@ class Carousel_Widget extends Widget_Base {
 			. '--grid-cols-mobile:' . esc_attr( $grid_columns_mobile ) . ';';
 		?>
 		<div class="<?php echo esc_attr( $wrapper_classes ); ?>"
+			<?php if ( $is_swiper_widget ) : ?>
+				data-carousel-engine="swiper"
+			<?php endif; ?>
 			<?php if ( ! $is_grid_mode && $has_any_slider_mode ) : ?>
 				data-slider-config="<?php echo esc_attr( wp_json_encode( $slider_config ) ); ?>"
 				data-hover-effect="<?php echo esc_attr( $slider_config['hoverEffect'] ); ?>"
@@ -5609,7 +5634,11 @@ class Carousel_Widget extends Widget_Base {
 							</div>
 						<?php endforeach; ?>
 					<?php if ( ! $is_grid_mode && $slider_config['showDots'] ) : ?>
-						<div class="owl-dots"></div>
+						<?php if ( $is_swiper_widget ) : ?>
+							<div class="swiper-pagination"></div>
+						<?php else : ?>
+							<div class="owl-dots"></div>
+						<?php endif; ?>
 					<?php endif; ?>
 				</div>
 				<?php if ( $show_arrows && $navigation_position === 'outside' ) : ?>

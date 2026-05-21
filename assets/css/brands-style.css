@@ -2,7 +2,7 @@
    NOVA BRANDS WIDGET
    ============================================ */
 
-.nova-brands-widget {
+   .nova-brands-widget {
 	width: 100%;
 	position: relative;
 }
@@ -252,5 +252,50 @@
 	.nova-brands-grid,
 	.nova-brands-grid-inner {
 		gap: 15px;
+	}
+}
+
+/* Affichage responsive : slider / grille par breakpoint */
+.nova-brands-widget:not([data-brands-mode-applied]) .nova-brands-variant--slider,
+.nova-brands-widget:not([data-brands-mode-applied]) .nova-brands-variant--grid {
+	display: none !important;
+}
+
+.nova-brands-widget.nova-brands-fallback-slider:not([data-brands-mode-applied]) .nova-brands-variant--slider,
+.nova-brands-widget.nova-brands-fallback-grid:not([data-brands-mode-applied]) .nova-brands-variant--grid {
+	display: block !important;
+}
+
+.nova-brands-widget[data-brands-mode-applied] .nova-brands-variant {
+	display: none !important;
+}
+
+.nova-brands-widget[data-brands-mode-applied].nova-brands-widget--mode-slider .nova-brands-variant--slider {
+	display: block !important;
+}
+
+.nova-brands-widget[data-brands-mode-applied].nova-brands-widget--mode-grid .nova-brands-variant--grid {
+	display: block !important;
+}
+
+/* Défilement continu type bandeau d'actualités */
+.nova-brands-swiper--marquee .swiper-wrapper {
+	transition-timing-function: linear !important;
+}
+
+.nova-brands-swiper--marquee .swiper-slide {
+	width: auto;
+	flex-shrink: 0;
+}
+
+.nova-brands-swiper--marquee .nova-brands-logo img {
+	max-height: 48px;
+	width: auto;
+}
+
+@media (max-width: 767px) {
+	.nova-brands-swiper.swiper,
+	.nova-brands-swiper.swiper > .swiper-wrapper {
+		touch-action: pan-x pan-y pinch-zoom;
 	}
 }

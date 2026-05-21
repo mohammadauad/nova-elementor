@@ -11,11 +11,11 @@
  * until window.load event fires.
  */
 
-(function () {
+(function() {
 	'use strict';
 
 	const DEBUG = window.DEBUG || false;
-	const log = DEBUG ? console.log.bind(console) : function () { };
+	const log = DEBUG ? console.log.bind(console) : function() {};
 
 	let pageTransitionElement = null;
 	let isPageFullyLoaded = false;
@@ -31,10 +31,10 @@
 
 		const check = () => {
 			attempts++;
-
+			
 			// Try to find the element
 			const element = document.querySelector('e-page-transition');
-
+			
 			if (element) {
 				log('✅ Elementor Page Transition element found');
 				callback(element);
@@ -65,15 +65,15 @@
 			mutations.forEach((mutation) => {
 				if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
 					const classes = element.classList;
-
+					
 					// If transition is trying to hide (entered class added)
 					// but page is not fully loaded, prevent it
 					if (classes.contains('e-page-transition--entered') && !isPageFullyLoaded) {
 						log('⚠️  Transition trying to hide before page load, preventing...');
-
+						
 						// Remove the entered class temporarily
 						element.classList.remove('e-page-transition--entered');
-
+						
 						// Also remove entering class if present (to reset state)
 						if (classes.contains('e-page-transition--entering')) {
 							element.classList.remove('e-page-transition--entering');
@@ -112,7 +112,7 @@
 			// Check if element still exists
 			if (pageTransitionElement && document.body.contains(pageTransitionElement)) {
 				const classes = pageTransitionElement.classList;
-
+				
 				// If transition is still in entering state, complete it
 				if (classes.contains('e-page-transition--entering') && !classes.contains('e-page-transition--entered')) {
 					log('▶️  Completing transition manually');

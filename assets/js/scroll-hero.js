@@ -25,7 +25,6 @@
 		 * Initialize
 		 */
 		init: function () {
-			return; // TEMPORARILY DISABLED TO DEBUG SCROLL
 			if (this.initialized || !this.validateDependencies()) {
 				return;
 			}
@@ -50,9 +49,11 @@
 			if (typeof ScrollTrigger !== 'undefined') {
 				ScrollTrigger.config({
 					ignoreMobileResize: true,
+					refreshPriority: -1
 				});
 				ScrollTrigger.defaults({
-					/* anticipatePin: 1, */
+					anticipatePin: 1,
+					refreshPriority: -1
 				});
 			}
 

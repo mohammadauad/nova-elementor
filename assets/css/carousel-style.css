@@ -7,7 +7,7 @@
    MAIN WIDGET CONTAINER
    ============================================ */
 
-.nova-carousel-widget {
+   .nova-carousel-widget {
 	width: 100%;
 	position: relative;
 	box-sizing: border-box;
@@ -30,7 +30,7 @@
 
 /* Permettre au padding Elementor de s'appliquer avec une spécificité plus élevée */
 .elementor-element .nova-carousel-container {
-	/* Le padding sera défini par Elementor - cette règle permet de s'assurer qu'il s'applique */
+	min-height: 0;
 }
 
 .nova-carousel-container>* {
@@ -424,33 +424,70 @@
    SWIPER.JS SPECIFIC STYLES
    ============================================ */
 
-/* S'assurer que le conteneur Swiper commence à gauche */
-.nova-carousel-slider .swiper {
+/* Swiper horizontal : pan-x + pan-y (pan-y seul → pointercancel sur drag horizontal souris) */
+.nova-carousel-engine-swiper .nova-carousel-slider.swiper,
+.nova-carousel-slider.swiper {
 	width: 100%;
 	overflow: hidden;
 	padding-left: 0 !important;
 	margin-left: 0 !important;
+	touch-action: pan-x pan-y pinch-zoom;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
-.nova-carousel-slider .swiper-wrapper {
-	display: flex;
-	align-items: stretch;
-	justify-content: flex-start;
+.nova-carousel-engine-swiper .nova-carousel-slider.swiper .swiper-wrapper,
+.nova-carousel-engine-swiper .nova-carousel-slider.swiper .swiper-slide,
+.nova-carousel-slider.swiper .swiper-wrapper,
+.nova-carousel-slider.swiper .swiper-slide {
+	touch-action: inherit;
+	pointer-events: auto;
 }
 
-/* S'assurer que le premier slide est complètement visible et aligné à gauche */
-.nova-carousel-slider .swiper-slide {
+/* Mobile / petit écran : laisser le geste horizontal au Swiper, le vertical à la page (Lenis).
+   Sans ça, le navigateur mélange scroll vertical et swipe → plusieurs slides d’un coup. */
+@media (max-width: 767px) {
+	.nova-carousel-engine-swiper .nova-carousel-slider.swiper,
+	.nova-carousel-slider.swiper {
+		overscroll-behavior-x: contain;
+		overscroll-behavior-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+/* Mode fixe (slidesPerView nombre) : la slide suit la largeur calculée par Swiper */
+.nova-carousel-slider.swiper.nova-swiper-slides-fixed .swiper-slide {
 	margin-left: 0 !important;
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+/*
+ * Mode auto : .nova-carousel-item EST la .swiper-slide (même nœud).
+ * Ne pas mettre min-width:0 ici — ça écrase les 410px Elementor et fausse snapGrid / translate.
+ */
+.nova-carousel-slider.swiper.nova-swiper-slides-auto .swiper-slide.nova-carousel-item {
+	margin-left: 0 !important;
+	box-sizing: border-box;
+	flex-shrink: 0;
+	width: auto;
+	height: auto;
+}
+
+/* Mode fixe : carte = 100% de la largeur de slide calculée par Swiper */
+.nova-carousel-slider.swiper.nova-swiper-slides-fixed .swiper-slide.nova-carousel-item {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 }
 
 .nova-carousel-slider .swiper-slide:first-child {
 	margin-left: 0 !important;
 }
 
-/* Si centeredSlides est désactivé, forcer l'alignement à gauche */
-.nova-carousel-slider .swiper:not(.swiper-centered) .swiper-wrapper {
-	transform: translate3d(0px, 0, 0) !important;
-}
+/* Ne pas forcer transform sur .swiper-wrapper : Swiper le pilote en JS.
+   Un translate3d(0) !important cassait le drag mobile et pouvait provoquer des sauts bizarres. */
 
 /* S'assurer que le conteneur parent n'a pas de padding qui décale */
 .nova-carousel-slider-wrapper .nova-carousel-slider {
@@ -546,6 +583,26 @@
 	height: auto;
 	display: block;
 	object-fit: cover;
+	-webkit-user-drag: none;
+	user-drag: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+}
+
+/* Empêche le drag natif HTML5 des images/vidéos dans le carousel
+   (sinon le navigateur démarre son propre drag-and-drop → pointercancel → Swiper coupe le drag) */
+.nova-carousel-engine-swiper .nova-carousel-slider img,
+.nova-carousel-engine-swiper .nova-carousel-slider video,
+.nova-carousel-slider.swiper img,
+.nova-carousel-slider.swiper video,
+.nova-carousel-item img,
+.nova-carousel-item video {
+	-webkit-user-drag: none;
+	user-drag: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
 }
 
 /* Image Overlay */
@@ -789,6 +846,20 @@ a.nova-carousel-item-button:hover .nova-carousel-item-button-icon {
 	text-decoration: none;
 	cursor: pointer;
 	box-sizing: border-box;
+	/* Overlay plein écran : sans ça, le lien capte pointer/touch et Swiper ne reçoit jamais le drag */
+	pointer-events: none;
+}
+
+/* Curseur drag sur le carrousel Swiper NOVA */
+.nova-carousel-engine-swiper .nova-carousel-slider.swiper {
+	cursor: grab;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.nova-carousel-engine-swiper .nova-carousel-slider.swiper.nova-swiper-dragging {
+	cursor: grabbing;
+	touch-action: none;
 }
 
 /* ============================================
@@ -1304,22 +1375,50 @@ div#nova-cursor-tooltip p {
    MODE FAN DECK (rotation alternée, style photo de groupe)
    ============================================ */
 
-/* Toute la chaîne de parents doit laisser déborder */
+/* Parents visibles ; .swiper reste overflow:hidden (obligatoire pour le drag Swiper) */
 .nova-carousel-widget.nova-fan-deck-mode,
 .nova-carousel-widget.nova-fan-deck-mode .nova-carousel-container,
-.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider-wrapper,
-.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider,
-.nova-carousel-widget.nova-fan-deck-mode .swiper,
-.nova-carousel-widget.nova-fan-deck-mode .swiper-wrapper {
+.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider-wrapper {
 	overflow: visible !important;
 }
 
+.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider.swiper,
+.nova-carousel-widget.nova-fan-deck-mode .swiper {
+	overflow: hidden !important;
+	touch-action: pan-x pan-y;
+	padding-top: 32px;
+	padding-bottom: 32px;
+	box-sizing: border-box;
+}
+
+.nova-carousel-widget.nova-fan-deck-mode .swiper-wrapper {
+	align-items: center;
+	overflow: visible;
+}
+
+/* .swiper-slide = hitbox drag Swiper ; .nova-carousel-item = rotation visuelle */
 .nova-carousel-widget.nova-fan-deck-mode .swiper-slide {
-	overflow: visible !important;
 	position: relative;
-	transform-origin: center center;
+	height: auto !important;
+	align-self: center;
+	overflow: visible;
+	pointer-events: auto;
+}
+
+.nova-carousel-widget.nova-fan-deck-mode .swiper-slide > .nova-carousel-item {
+	display: block;
+	width: 100%;
+	height: 100%;
+	transform-origin: center bottom;
 	will-change: transform, box-shadow;
-	cursor: pointer;
+	backface-visibility: hidden;
+	border-radius: inherit;
+	pointer-events: auto;
+	cursor: grab;
+}
+
+.nova-carousel-widget.nova-fan-deck-mode .nova-carousel-slider.swiper.nova-swiper-dragging {
+	cursor: grabbing;
 }
 
 .nova-carousel-widget.nova-fan-deck-mode .swiper-slide:hover {
@@ -1343,13 +1442,16 @@ div#nova-cursor-tooltip p {
 .nova-carousel-widget.nova-fan-mode .swiper-slide {
 	overflow: visible !important;
 	position: relative;
-	transform-origin: center bottom;
-	will-change: transform, box-shadow;
 	cursor: pointer;
 }
 
-.nova-carousel-widget.nova-fan-mode .swiper-slide:hover {
-	z-index: 10 !important;
+.nova-carousel-widget.nova-fan-mode .swiper-slide > .nova-carousel-item {
+	transform-origin: center bottom;
+	will-change: transform, box-shadow;
+}
+
+.nova-carousel-widget.nova-fan-mode .swiper-slide:hover > .nova-carousel-item {
+	z-index: 10;
 }
 
 /* ============================================

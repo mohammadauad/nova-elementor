@@ -6,7 +6,7 @@
 (function ($) {
 	'use strict';
 
-	const DEBUG = true;
+	const DEBUG = false;
 	const EDITOR_ACTIVE = (function () {
 		try {
 			const doc = document.documentElement || document.body;
@@ -23,12 +23,56 @@
 		} catch (e) {}
 		return false;
 	})();
+	/**
+	 * Bornes de drag : Swiper 11 (min=0, max=négatif) + recalcul DOM (scrollWidth) pour atteindre la dernière slide.
+	 */
+	function getSwiperTranslateBounds(swiperInstance) {
+		let lower = 0;
+		let upper = 0;
+		if (swiperInstance && typeof swiperInstance.minTranslate === 'function') {
+			const a = swiperInstance.minTranslate();
+			const b = swiperInstance.maxTranslate();
+			if (typeof a === 'number' && !isNaN(a) && typeof b === 'number' && !isNaN(b)) {
+				lower = Math.min(a, b);
+				upper = Math.max(a, b);
+			}
+		}
+		const grid = swiperInstance && swiperInstance.snapGrid;
+		if (grid && grid.length) {
+			let gmin = grid[0];
+			let gmax = grid[0];
+			for (let i = 1; i < grid.length; i++) {
+				if (grid[i] < gmin) gmin = grid[i];
+				if (grid[i] > gmax) gmax = grid[i];
+			}
+			lower = Math.min(lower, gmin);
+			upper = Math.max(upper, gmax);
+		}
+		const el = swiperInstance && swiperInstance.el;
+		const wrapper = swiperInstance && swiperInstance.wrapperEl;
+		if (el && wrapper) {
+			const containerW = el.clientWidth || 0;
+			const contentW = wrapper.scrollWidth || 0;
+			if (contentW > containerW + 1) {
+				const overflowMin = containerW - contentW;
+				lower = Math.min(lower, overflowMin);
+			}
+		}
+		return { lower: lower, upper: upper };
+	}
+
+	function clampSwiperTranslate(swiperInstance, value) {
+		if (!swiperInstance) {
+			return value;
+		}
+		const bounds = getSwiperTranslateBounds(swiperInstance);
+		return Math.max(Math.min(value, bounds.upper), bounds.lower);
+	}
+
 	const DEBUG_ENABLED = (function () {
 		try {
 			if (window.NOVA_SWIPER_DEBUG === true) return true;
 			if (typeof localStorage !== 'undefined' && localStorage.getItem('NOVA_SWIPER_DEBUG') === '1') return true;
-			if (EDITOR_ACTIVE) return true;
-
 			const trySearch = function (search) {
 				if (!search) return false;
 				const params = new URLSearchParams(search);
@@ -48,21 +92,230 @@
 		return false;
 	})();
 
-	const log = function () {
-		if (DEBUG && DEBUG_ENABLED) console.log('[NOVA Swiper]', ...arguments);
-	};
-	const warn = function () {
-		if (DEBUG && DEBUG_ENABLED) console.warn('[NOVA Swiper]', ...arguments);
+	/**
+	 * Debug ultra-détaillé (slider 1 Fan Deck par défaut).
+	 * Activer : ?nova_swiper_debug=1
+	 * Filtrer  : ?nova_swiper_debug_widget=ebe2c8c  (ou "all" pour tous les carousels)
+	 * Console  : localStorage.setItem('NOVA_SWIPER_DEBUG','1')
+	 */
+	const ULTRA_DEBUG_WIDGET_IDS = (function () {
+		if (!DEBUG_ENABLED) {
+			return null;
+		}
+		try {
+			const readParam = function (search) {
+				if (!search) {
+					return '';
+				}
+				return new URLSearchParams(search).get('nova_swiper_debug_widget') || '';
+			};
+			let raw = '';
+			try { raw = readParam(window.location && window.location.search); } catch (e) {}
+			if (!raw) {
+				try {
+					if (window.self !== window.top && window.top) {
+						raw = readParam(window.top.location && window.top.location.search);
+					}
+				} catch (e) {}
+			}
+			if (!raw && window.parent) {
+				try { raw = readParam(window.parent.location && window.parent.location.search); } catch (e) {}
+			}
+			if (window.NOVA_SWIPER_DEBUG_WIDGET) {
+				raw = String(window.NOVA_SWIPER_DEBUG_WIDGET);
+			}
+			if (raw === 'all' || raw === '*') {
+				return [];
+			}
+			if (raw) {
+				return raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+			}
+			// Slider 1 Fan Deck (id Elementor connu sur la page d'accueil)
+			return ['ebe2c8c'];
+		} catch (e) {
+			return ['ebe2c8c'];
+		}
+	})();
+
+	const ultraDebugSeq = {};
+
+	const shouldUltraDebugWidget = function (widgetId, config) {
+		if (!DEBUG_ENABLED) {
+			return false;
+		}
+		if (ULTRA_DEBUG_WIDGET_IDS === null) {
+			return false;
+		}
+		if (ULTRA_DEBUG_WIDGET_IDS.length === 0) {
+			return true;
+		}
+		const id = widgetId ? String(widgetId) : '';
+		if (ULTRA_DEBUG_WIDGET_IDS.some(function (needle) { return id.indexOf(needle) !== -1; })) {
+			return true;
+		}
+		if (config && (config.swiperFanDeckEnabled === true || config.swiperFanDeckEnabled === 'yes')) {
+			return true;
+		}
+		return false;
 	};
 
-	if (DEBUG && DEBUG_ENABLED) {
-		try {
-			console.log('[NOVA Swiper] debug ON', {
-				src: 'carousel-swiper.js',
-				search: window.location && window.location.search ? window.location.search : '',
+	const ultraDebugNextSeq = function (widgetId) {
+		const key = widgetId || '_';
+		ultraDebugSeq[key] = (ultraDebugSeq[key] || 0) + 1;
+		return ultraDebugSeq[key];
+	};
+
+	const snapshotTouchEvent = function (e) {
+		if (!e) {
+			return null;
+		}
+		const out = {
+			type: e.type,
+			pointerType: e.pointerType,
+			pointerId: e.pointerId,
+			button: e.button,
+			clientX: e.clientX,
+			clientY: e.clientY,
+			pageX: e.pageX,
+			pageY: e.pageY,
+			target: e.target && e.target.className ? String(e.target.className).slice(0, 120) : (e.target && e.target.nodeName),
+		};
+		if (e.changedTouches && e.changedTouches.length) {
+			out.changedTouches = Array.from(e.changedTouches).map(function (t) {
+				return { id: t.identifier, x: t.clientX, y: t.clientY };
 			});
+		}
+		return out;
+	};
+
+	const snapshotSwiperState = function (swiperInstance) {
+		if (!swiperInstance || swiperInstance.destroyed) {
+			return { destroyed: true };
+		}
+		const data = swiperInstance.touchEventsData || {};
+		const bounds = getSwiperTranslateBounds(swiperInstance);
+		return {
+			enabled: swiperInstance.enabled,
+			isLocked: swiperInstance.isLocked,
+			destroyed: swiperInstance.destroyed,
+			allowTouchMove: swiperInstance.allowTouchMove,
+			params: {
+				allowTouchMove: swiperInstance.params && swiperInstance.params.allowTouchMove,
+				simulateTouch: swiperInstance.params && swiperInstance.params.simulateTouch,
+				touchEventsTarget: swiperInstance.params && swiperInstance.params.touchEventsTarget,
+				centeredSlides: swiperInstance.params && swiperInstance.params.centeredSlides,
+				spaceBetween: swiperInstance.params && swiperInstance.params.spaceBetween,
+				slidesPerView: swiperInstance.params && swiperInstance.params.slidesPerView,
+				speed: swiperInstance.params && swiperInstance.params.speed,
+				threshold: swiperInstance.params && swiperInstance.params.threshold,
+				preventClicks: swiperInstance.params && swiperInstance.params.preventClicks,
+			},
+			translate: swiperInstance.translate,
+			getTranslate: typeof swiperInstance.getTranslate === 'function' ? swiperInstance.getTranslate() : null,
+			bounds: bounds,
+			activeIndex: swiperInstance.activeIndex,
+			realIndex: swiperInstance.realIndex,
+			snapIndex: swiperInstance.snapIndex,
+			previousIndex: swiperInstance.previousIndex,
+			isBeginning: swiperInstance.isBeginning,
+			isEnd: swiperInstance.isEnd,
+			progress: swiperInstance.progress,
+			swipeDirection: swiperInstance.swipeDirection,
+			touchEventsData: {
+				isTouched: data.isTouched,
+				isMoved: data.isMoved,
+				startMoving: data.startMoving,
+				isScrolling: data.isScrolling,
+				pointerId: data.pointerId,
+				touchId: data.touchId,
+				currentTranslate: data.currentTranslate,
+				startTranslate: data.startTranslate,
+				allowThresholdMove: data.allowThresholdMove,
+			},
+			touches: swiperInstance.touches ? {
+				startX: swiperInstance.touches.startX,
+				startY: swiperInstance.touches.startY,
+				currentX: swiperInstance.touches.currentX,
+				currentY: swiperInstance.touches.currentY,
+				diff: swiperInstance.touches.diff,
+			} : null,
+			snapGrid: {
+				length: (swiperInstance.snapGrid || []).length,
+				first5: (swiperInstance.snapGrid || []).slice(0, 5),
+				last3: (swiperInstance.snapGrid || []).slice(-3),
+			},
+			slidesLength: swiperInstance.slides ? swiperInstance.slides.length : 0,
+			dom: {
+				containerW: swiperInstance.el ? swiperInstance.el.clientWidth : null,
+				wrapperScrollW: swiperInstance.wrapperEl ? swiperInstance.wrapperEl.scrollWidth : null,
+				sliderClasses: swiperInstance.el ? swiperInstance.el.className : '',
+				hasNovaDragging: swiperInstance.el ? swiperInstance.el.classList.contains('nova-swiper-dragging') : false,
+				releaseGuardBound: swiperInstance.el ? !!swiperInstance.el.novaDragReleaseGuardBound : false,
+			},
+			ctor: {
+				NovaSwiperBundle: !!window.NovaSwiperBundle,
+				globalSwiper: typeof window.Swiper !== 'undefined',
+			},
+		};
+	};
+
+	const ultraLog = function (widgetId, phase, payload, level) {
+		if (!shouldUltraDebugWidget(widgetId)) {
+			return;
+		}
+		const seq = ultraDebugNextSeq(widgetId);
+		const ts = (typeof performance !== 'undefined' && performance.now) ? performance.now().toFixed(1) : Date.now();
+		const label = '[NOVA Slider #' + (widgetId || '?') + ' | ' + seq + ' | ' + ts + 'ms] ' + phase;
+		const fn = level === 'warn' ? console.warn : (level === 'error' ? console.error : console.log);
+		try {
+			fn('%c' + label, 'color:#0666DD;font-weight:700', payload !== undefined ? payload : '');
+		} catch (e) {
+			fn(label, payload);
+		}
+	};
+
+	if (DEBUG_ENABLED) {
+		try {
+			console.log(
+				'%c[NOVA Swiper ULTRA DEBUG ON]',
+				'color:#FFD034;background:#123B09;padding:4px 8px;font-weight:bold',
+				{
+					widgetFilter: ULTRA_DEBUG_WIDGET_IDS && ULTRA_DEBUG_WIDGET_IDS.length
+						? ULTRA_DEBUG_WIDGET_IDS
+						: 'ALL carousels',
+					hint: 'Ajoutez ?nova_swiper_debug=1&nova_swiper_debug_widget=ebe2c8c à l’URL (ou localStorage NOVA_SWIPER_DEBUG=1)',
+				}
+			);
 		} catch (e) {}
 	}
+
+	/**
+	 * Log complet de la config (widget + options Swiper) sans activer tout le debug Swiper.
+	 * Activer sur le site : ?nova_carousel_swiper_config=1
+	 * ou localStorage.setItem('NOVA_CAROUSEL_SWIPER_LOG_CONFIG','1')
+	 * ou window.NOVA_CAROUSEL_SWIPER_LOG_CONFIG = true
+	 */
+	const shouldLogNovaCarouselSwiperConfig = function () {
+		try {
+			if (window.NOVA_CAROUSEL_SWIPER_LOG_CONFIG === true) return true;
+			if (typeof localStorage !== 'undefined' && localStorage.getItem('NOVA_CAROUSEL_SWIPER_LOG_CONFIG') === '1') return true;
+			const params = new URLSearchParams(window.location && window.location.search ? window.location.search : '');
+			return params.get('nova_carousel_swiper_config') === '1';
+		} catch (e) {
+			return false;
+		}
+	};
+
+	const log = function () {
+		if (DEBUG_ENABLED) console.log('[NOVA Swiper]', ...arguments);
+	};
+	const warn = function () {
+		if (DEBUG_ENABLED) console.warn('[NOVA Swiper]', ...arguments);
+	};
+
+	const getSwiperConstructor = function () {
+		return window.NovaSwiperBundle || window.Swiper;
+	};
 
 	const NovaCarouselSwiper = {
 		instances: [],
@@ -91,16 +344,20 @@
 		init: function () {
 			const self = this;
 
-			log('Script chargé. isEditor:', self.isElementorEditor(), '| Swiper disponible:', typeof Swiper !== 'undefined', '| elementorFrontend:', typeof elementorFrontend !== 'undefined');
+			log('Script chargé. isEditor:', self.isElementorEditor(), '| Swiper:', typeof Swiper !== 'undefined', '| NovaSwiperBundle:', !!window.NovaSwiperBundle, '| elementorFrontend:', typeof elementorFrontend !== 'undefined');
 
 			const registerHook = function () {
+				if (window.NovaCarouselSwiperElementReadyHooked) {
+					return;
+				}
 				if (typeof elementorFrontend === 'undefined' || !elementorFrontend.hooks) {
 					log('elementorFrontend pas encore prêt, retry...');
 					setTimeout(registerHook, 100);
 					return;
 				}
 
-				log('elementorFrontend disponible — enregistrement du hook frontend/element_ready');
+				window.NovaCarouselSwiperElementReadyHooked = true;
+				log('elementorFrontend disponible — enregistrement du hook frontend/element_ready (une seule fois)');
 
 				elementorFrontend.hooks.addAction('frontend/element_ready/nova-carousel-swiper.default', function ($scope) {
 					log('Hook frontend/element_ready déclenché, scope:', $scope);
@@ -123,87 +380,109 @@
 				registerHook();
 			});
 
-			// Fallback DOM ready — scanner les widgets déjà présents
+			// Fallback DOM ready (un seul passage + retry léger si Elementor charge tard)
 			$(document).ready(function () {
-				const $widgets = $('.elementor-widget-nova-carousel-swiper .nova-carousel-widget');
-				log('DOM ready — widgets trouvés:', $widgets.length);
-				$widgets.each(function () {
-					self.initInstance($(this));
-				});
-
-				// Retry après un délai pour les widgets rendus après le DOM ready
-				setTimeout(function () {
-					const $w = $('.elementor-widget-nova-carousel-swiper .nova-carousel-widget');
-					log('DOM ready +500ms — widgets trouvés:', $w.length);
-					$w.each(function () {
+				const scanSwiperWidgets = function () {
+					$('.elementor-widget-nova-carousel-swiper .nova-carousel-widget').each(function () {
 						self.initInstance($(this));
 					});
-				}, 500);
-
-				setTimeout(function () {
-					const $w = $('.elementor-widget-nova-carousel-swiper .nova-carousel-widget');
-					log('DOM ready +1500ms — widgets trouvés:', $w.length);
-					$w.each(function () {
-						self.initInstance($(this));
-					});
-				}, 1500);
+				};
+				scanSwiperWidgets();
+				setTimeout(scanSwiperWidgets, 400);
 			});
 		},
 
 		/**
-		 * Charger Swiper depuis Elementor/CDN si nécessaire
+		 * Garantir Swiper bundle complet (module Touch). Elementor expose souvent un Swiper sans drag.
 		 */
 		ensureSwiper: function (callback) {
-			if (typeof Swiper !== 'undefined') {
-				log('Swiper déjà disponible');
+			const finish = function () {
+				const Ctor = getSwiperConstructor();
+				if (typeof Ctor === 'undefined') {
+					warn('ensureSwiper: constructeur Swiper introuvable');
+					return;
+				}
+				if (!window.NovaSwiperBundle) {
+					window.NovaSwiperBundle = Ctor;
+				}
+				log('Swiper prêt (NovaSwiperBundle:', !!window.NovaSwiperBundle, ')');
 				callback();
+			};
+
+			if (window.NovaSwiperBundle) {
+				finish();
 				return;
 			}
 
-			log('Swiper non disponible, polling...');
-			let attempts = 0;
-			const maxAttempts = 50; // 5s max
-			const interval = setInterval(() => {
-				attempts++;
-				if (typeof Swiper !== 'undefined') {
-					log('Swiper trouvé après', attempts, 'tentatives');
-					clearInterval(interval);
-					callback();
-				} else if (attempts >= maxAttempts) {
-					clearInterval(interval);
-					warn('Swiper introuvable après 5s — chargement CDN fallback');
-
-					// Fallback : charger Swiper depuis CDN
-					if (window.NovaCarouselSwiperLoading) {
-						return;
-					}
-					window.NovaCarouselSwiperLoading = true;
-
-					// CSS
-					if (!document.querySelector('link[href*="swiper-bundle.min.css"]')) {
-						const cssLink = document.createElement('link');
-						cssLink.rel = 'stylesheet';
-						cssLink.href = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css';
-						document.head.appendChild(cssLink);
-					}
-
-					// JS
-					const jsScript = document.createElement('script');
-					jsScript.src = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js';
-					jsScript.onload = () => {
-						window.NovaCarouselSwiperLoading = false;
-						log('Swiper chargé depuis CDN');
-						if (typeof Swiper !== 'undefined') {
-							callback();
-						}
-					};
-					jsScript.onerror = () => {
-						window.NovaCarouselSwiperLoading = false;
-						warn('Échec chargement Swiper CDN');
-					};
-					document.head.appendChild(jsScript);
+			if (typeof Swiper !== 'undefined') {
+				// Script inline après nova-swiper-bundle OU Swiper global déjà = bundle
+				const scriptBundle = document.querySelector('script[src*="swiper-bundle"]');
+				if (scriptBundle) {
+					window.NovaSwiperBundle = Swiper;
+					finish();
+					return;
 				}
-			}, 100);
+				// Swiper Elementor sans bundle : charger le bundle nous-mêmes
+				warn('Swiper détecté sans swiper-bundle — chargement du bundle complet pour le drag');
+			}
+
+			this.loadSwiperBundle(finish);
+		},
+
+		/**
+		 * Retire les clés Owl du JSON partagé ; force 1 slide par geste Swiper.
+		 */
+		sanitizeSwiperConfig: function (config) {
+			if (!config || typeof config !== 'object') {
+				return {};
+			}
+			const clean = {};
+			Object.keys(config).forEach(function (key) {
+				if (/^owl/i.test(String(key))) {
+					return;
+				}
+				clean[key] = config[key];
+			});
+			clean.slidesToScroll = 1;
+			clean.slidesToScrollTablet = 1;
+			clean.slidesToScrollMobile = 1;
+			clean.carouselEngine = 'swiper';
+			return clean;
+		},
+
+		loadSwiperBundle: function (callback) {
+			if (window.NovaCarouselSwiperBundleLoading) {
+				const wait = setInterval(function () {
+					if (window.NovaSwiperBundle) {
+						clearInterval(wait);
+						callback();
+					}
+				}, 50);
+				setTimeout(function () { clearInterval(wait); }, 8000);
+				return;
+			}
+			window.NovaCarouselSwiperBundleLoading = true;
+
+			if (!document.querySelector('link[href*="swiper-bundle.min.css"]')) {
+				const cssLink = document.createElement('link');
+				cssLink.rel = 'stylesheet';
+				cssLink.href = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css';
+				document.head.appendChild(cssLink);
+			}
+
+			const jsScript = document.createElement('script');
+			jsScript.src = 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js';
+			jsScript.onload = function () {
+				window.NovaCarouselSwiperBundleLoading = false;
+				window.NovaSwiperBundle = window.Swiper;
+				log('swiper-bundle chargé (fallback)');
+				callback();
+			};
+			jsScript.onerror = function () {
+				window.NovaCarouselSwiperBundleLoading = false;
+				warn('Échec chargement swiper-bundle');
+			};
+			document.head.appendChild(jsScript);
 		},
 
 		/**
@@ -249,6 +528,17 @@
 				log('Config déjà objet JS');
 			}
 
+			config = self.sanitizeSwiperConfig(config);
+
+			if (shouldLogNovaCarouselSwiperConfig()) {
+				try {
+					const wid = $widget.data('widget-id') || $widget.attr('data-widget-id') || '';
+					console.log('[NOVA Carousel Swiper] data-slider-config (parsé depuis le widget)', wid, JSON.parse(JSON.stringify(config)));
+				} catch (e) {
+					console.log('[NOVA Carousel Swiper] data-slider-config (objet non sérialisable)', config);
+				}
+			}
+
 			$widget.data('nova-carousel-swiper-bound', true);
 			$widget.data('nova-carousel-swiper-config', config);
 
@@ -283,6 +573,799 @@
 				}
 			}
 			return data;
+		},
+
+		/**
+		 * Détecte une largeur de carte fixe (ex. 410px Elementor) sur la slide.
+		 */
+		detectFixedSlideWidth: function (slideEl) {
+			if (!slideEl || typeof window.getComputedStyle !== 'function') {
+				return 0;
+			}
+			const cs = window.getComputedStyle(slideEl);
+			const w = parseFloat(cs.width);
+			const minW = parseFloat(cs.minWidth);
+			const maxW = parseFloat(cs.maxWidth);
+			if (!isNaN(w) && w >= 60) {
+				if (!isNaN(minW) && minW >= 60 && Math.abs(minW - w) < 2) {
+					return Math.round(w);
+				}
+				if (!isNaN(maxW) && maxW >= 60 && Math.abs(maxW - w) < 2) {
+					return Math.round(w);
+				}
+			}
+			return 0;
+		},
+
+		/**
+		 * Prépare les slides avant init Swiper (largeurs mesurées, pas de margin inline parasite).
+		 */
+		prepareSlidesForSwiper: function ($slider, $slides, mode) {
+			if (!$slider || !$slider.length || !$slides || !$slides.length) {
+				return;
+			}
+
+			$slider.removeClass('nova-swiper-slides-auto nova-swiper-slides-fixed');
+
+			$slides.each(function () {
+				this.style.marginRight = '';
+				this.style.marginLeft = '';
+			});
+
+			if (mode === 'auto') {
+				$slider.addClass('nova-swiper-slides-auto');
+				this.syncAutoSlideWidths($slides);
+			} else {
+				$slider.addClass('nova-swiper-slides-fixed');
+				$slides.each(function () {
+					this.style.width = '';
+					this.style.flexShrink = '';
+				});
+			}
+		},
+
+		/**
+		 * Mesure les largeurs réelles (Elementor 410px + padding) et les fixe pour Swiper slidesPerView:auto.
+		 */
+		syncAutoSlideWidths: function ($slides) {
+			if (!$slides || !$slides.length) {
+				return;
+			}
+			$slides.each(function () {
+				const slide = this;
+				const item = slide.querySelector && slide.querySelector(':scope > .nova-carousel-item');
+				const measureEl = item || slide;
+				slide.style.width = '';
+				slide.style.flexShrink = '0';
+				slide.style.boxSizing = 'border-box';
+				if (item) {
+					item.style.width = '';
+					item.style.flexShrink = '0';
+					item.style.boxSizing = 'border-box';
+				}
+				const w = Math.round(measureEl.getBoundingClientRect().width);
+				if (w >= 40) {
+					slide.style.width = w + 'px';
+				}
+			});
+		},
+
+		getCarouselItemFromSlide: function (slideEl) {
+			if (!slideEl) {
+				return null;
+			}
+			if (slideEl.classList && slideEl.classList.contains('nova-carousel-item')) {
+				return slideEl;
+			}
+			return slideEl.querySelector(':scope > .nova-carousel-item') || null;
+		},
+
+		unwrapFanDeckFaces: function ($slider) {
+			if (!$slider || !$slider.length) {
+				return;
+			}
+			$slider.find('.nova-fan-deck-rotate, .nova-fan-deck-face').each(function () {
+				const wrap = this;
+				const item = wrap.closest('.nova-carousel-item');
+				if (!item) {
+					return;
+				}
+				while (wrap.firstChild) {
+					item.insertBefore(wrap.firstChild, wrap);
+				}
+				wrap.remove();
+			});
+		},
+
+		/**
+		 * Désactive le drag natif HTML5 sur les <img>/<video> du slider.
+		 * Sinon le navigateur déclenche un dragstart natif → pointercancel ~50 ms
+		 * → Swiper interrompt le drag (logs : pointercancel + translate: 0).
+		 */
+		disableNativeImageDrag: function ($slider) {
+			if (!$slider || !$slider.length || !$slider[0]) {
+				return;
+			}
+			const root = $slider[0];
+			if (root.novaImgDragDisabled) {
+				root.querySelectorAll('img, video').forEach(function (el) {
+					el.setAttribute('draggable', 'false');
+				});
+				return;
+			}
+			root.novaImgDragDisabled = true;
+			root.querySelectorAll('img, video').forEach(function (el) {
+				el.setAttribute('draggable', 'false');
+			});
+			root.addEventListener('dragstart', function (e) {
+				const t = e.target;
+				if (t && (t.tagName === 'IMG' || t.tagName === 'VIDEO' || (t.closest && t.closest('.nova-carousel-item')))) {
+					e.preventDefault();
+				}
+			}, true);
+		},
+
+		ensureSwiperSlideWrappers: function ($slider) {
+			if (!$slider || !$slider.length) {
+				return;
+			}
+			const stripSlideClasses = function (el) {
+				if (!el || !el.classList) {
+					return;
+				}
+				el.classList.remove(
+					'swiper-slide',
+					'swiper-slide-active',
+					'swiper-slide-next',
+					'swiper-slide-prev',
+					'swiper-slide-visible',
+					'swiper-slide-duplicate',
+					'swiper-slide-duplicate-active',
+					'swiper-slide-duplicate-next',
+					'swiper-slide-duplicate-prev'
+				);
+				el.removeAttribute('data-swiper-slide-index');
+			};
+
+			$slider.find('.nova-carousel-item').each(function () {
+				const item = this;
+				const parent = item.parentElement;
+				if (parent && parent.classList.contains('swiper-slide') && parent.querySelector(':scope > .nova-carousel-item') === item) {
+					stripSlideClasses(item);
+					return;
+				}
+				if (!item.classList.contains('swiper-slide')) {
+					return;
+				}
+				const wrapper = document.createElement('div');
+				wrapper.className = 'swiper-slide';
+				const host = item.parentNode;
+				if (!host) {
+					return;
+				}
+				host.insertBefore(wrapper, item);
+				stripSlideClasses(item);
+				wrapper.appendChild(item);
+			});
+		},
+
+		isFanDeckWidget: function ($widget) {
+			return !!($widget && $widget.length && $widget.hasClass('nova-fan-deck-mode'));
+		},
+
+		isFanDeckSwiperEl: function (swiperInstance) {
+			const el = swiperInstance && swiperInstance.el;
+			return !!(el && el.closest && el.closest('.nova-fan-deck-mode'));
+		},
+
+		/**
+		 * Recalcule snapGrid sans perdre la position (updateSlides seul remet translate à 0).
+		 */
+		refreshSwiperSnap: function (swiperInstance, $slides, options) {
+			if (!swiperInstance || swiperInstance.destroyed) {
+				return;
+			}
+			options = options || {};
+			const el = swiperInstance.el;
+			if (el && el.classList && el.classList.contains('nova-swiper-dragging')) {
+				return;
+			}
+
+			const prevTranslate = typeof swiperInstance.getTranslate === 'function'
+				? swiperInstance.getTranslate()
+				: swiperInstance.translate;
+
+			const fanDeck = this.isFanDeckSwiperEl(swiperInstance);
+
+			if (options.syncWidths === true && !fanDeck) {
+				if ($slides && $slides.length && swiperInstance.params && swiperInstance.params.slidesPerView === 'auto') {
+					this.syncAutoSlideWidths($slides);
+				} else if (swiperInstance.slides && swiperInstance.params && swiperInstance.params.slidesPerView === 'auto') {
+					this.syncAutoSlideWidths($(swiperInstance.slides));
+				}
+			}
+
+			swiperInstance.updateSize();
+			if (!fanDeck) {
+				swiperInstance.updateSlides();
+			}
+
+			if (typeof prevTranslate === 'number' && !isNaN(prevTranslate)) {
+				const restored = clampSwiperTranslate(swiperInstance, prevTranslate);
+				swiperInstance.setTransition(0);
+				swiperInstance.setTranslate(restored);
+				swiperInstance.translate = restored;
+			}
+
+			if (swiperInstance.isLocked && typeof swiperInstance.unlock === 'function') {
+				swiperInstance.unlock();
+			}
+
+			this.fixCarouselEndReach(swiperInstance);
+
+			if (swiperInstance.navigation && typeof swiperInstance.navigation.update === 'function') {
+				swiperInstance.navigation.update();
+			}
+		},
+
+		/**
+		 * Permet d'aligner la dernière slide dans le viewport (slidesOffsetAfter + recalcul Swiper).
+		 */
+		fixCarouselEndReach: function (swiperInstance) {
+			if (!swiperInstance || swiperInstance.destroyed) {
+				return;
+			}
+			if (this.isFanDeckSwiperEl(swiperInstance)) {
+				return;
+			}
+			const el = swiperInstance.el;
+			const slides = swiperInstance.slides;
+			if (!el || !slides || !slides.length) {
+				return;
+			}
+
+			const containerW = el.getBoundingClientRect().width || el.clientWidth || 0;
+			const lastSlide = slides[slides.length - 1];
+			const lastW = lastSlide
+				? (lastSlide.getBoundingClientRect().width || lastSlide.offsetWidth || 0)
+				: 0;
+			const offsetAfter = Math.max(0, Math.round(containerW - lastW));
+
+			if (!swiperInstance.params || swiperInstance.params.slidesOffsetAfter === offsetAfter) {
+				return;
+			}
+
+			const prevTranslate = typeof swiperInstance.getTranslate === 'function'
+				? swiperInstance.getTranslate()
+				: swiperInstance.translate;
+
+			swiperInstance.params.slidesOffsetAfter = offsetAfter;
+			swiperInstance.updateSize();
+			swiperInstance.updateSlides();
+
+			if (typeof prevTranslate === 'number' && !isNaN(prevTranslate)) {
+				const restored = clampSwiperTranslate(swiperInstance, prevTranslate);
+				swiperInstance.setTranslate(restored);
+				swiperInstance.translate = restored;
+			}
+		},
+
+		/**
+		 * Swiper 11 : si pointerup/touchend est ignoré (pointerId / touchId), isTouched reste true
+		 * et le slider suit la souris jusqu'au prochain clic. Force la fin du drag au relâchement.
+		 */
+		forceEndSwiperDrag: function (swiperInstance, sourceEvent) {
+			if (!swiperInstance || swiperInstance.destroyed) {
+				return;
+			}
+			const data = swiperInstance.touchEventsData;
+			if (!data || !data.isTouched) {
+				return;
+			}
+			try {
+				const widEl = swiperInstance.el && swiperInstance.el.closest('[data-widget-id]');
+				const wid = widEl ? (widEl.getAttribute('data-widget-id') || '') : '';
+				ultraLog(wid, 'forceEndSwiperDrag (isTouched encore true)', {
+					before: snapshotSwiperState(swiperInstance),
+					event: snapshotTouchEvent(sourceEvent),
+				}, 'warn');
+			} catch (e) {}
+
+			const speed = (swiperInstance.params && swiperInstance.params.speed) || 600;
+			const touches = swiperInstance.touches || {};
+			const px = sourceEvent && typeof sourceEvent.pageX === 'number'
+				? sourceEvent.pageX
+				: (touches.currentX || 0);
+			const py = sourceEvent && typeof sourceEvent.pageY === 'number'
+				? sourceEvent.pageY
+				: (touches.currentY || 0);
+
+			// Swiper 11 ignore pointerup si touchId ou pointerId ne correspondent pas → isTouched bloqué.
+			data.pointerId = null;
+			data.touchId = null;
+
+			if (typeof swiperInstance.onTouchEnd === 'function') {
+				try {
+					const touchObj = {
+						identifier: 0,
+						clientX: px,
+						clientY: py,
+						pageX: px,
+						pageY: py,
+					};
+					swiperInstance.onTouchEnd({
+						type: 'touchend',
+						changedTouches: [touchObj],
+						target: (sourceEvent && sourceEvent.target) || swiperInstance.el,
+					});
+				} catch (e) {}
+				if (data.isTouched) {
+					try {
+						swiperInstance.onTouchEnd({
+							type: 'pointerup',
+							pointerType: 'mouse',
+							pointerId: 1,
+							clientX: px,
+							clientY: py,
+							pageX: px,
+							pageY: py,
+							target: (sourceEvent && sourceEvent.target) || swiperInstance.el,
+						});
+					} catch (err) {}
+				}
+			}
+
+			if (data.isTouched) {
+				const wasMoved = data.isMoved;
+				data.isTouched = false;
+				data.isMoved = false;
+				data.startMoving = false;
+				data.preventTouchMoveFromPointerMove = false;
+				data.pointerId = null;
+				data.touchId = null;
+				swiperInstance.setTransition(speed);
+				if (wasMoved && typeof swiperInstance.slideToClosest === 'function') {
+					swiperInstance.slideToClosest(speed);
+				}
+				if (swiperInstance.params && swiperInstance.params.grabCursor &&
+					typeof swiperInstance.setGrabCursor === 'function') {
+					swiperInstance.setGrabCursor(false);
+				}
+			}
+
+			if (swiperInstance.el) {
+				swiperInstance.el.classList.remove('nova-swiper-dragging');
+			}
+		},
+
+		/**
+		 * Classe dragging + touch-action:none (sans setPointerCapture sur le slider :
+		 * la capture retarget les events vers .swiper et casse le popup délégué).
+		 */
+		bindSwiperPointerCaptureFix: function (swiperInstance, sliderEl) {
+			if (!swiperInstance || !sliderEl || sliderEl.novaPointerCaptureFixBound) {
+				return;
+			}
+			sliderEl.novaPointerCaptureFixBound = true;
+
+			const endDragClass = function () {
+				sliderEl.classList.remove('nova-swiper-dragging');
+			};
+
+			sliderEl.addEventListener('pointerdown', function (e) {
+				if (e.pointerType === 'mouse') {
+					sliderEl.classList.add('nova-swiper-dragging');
+				}
+			}, true);
+
+			sliderEl.addEventListener('pointerup', endDragClass, true);
+			sliderEl.addEventListener('pointercancel', endDragClass, true);
+		},
+
+		/**
+		 * Correctif Swiper 11 + souris : si pointerup manque après pointercancel, finir sur mouseup document.
+		 * Ne pas utiliser buttons===0 sur mousemove (faux positif après pointercancel).
+		 */
+		bindSwiperDragReleaseGuard: function (swiperInstance, sliderEl) {
+			if (!swiperInstance || !sliderEl || sliderEl.novaDragReleaseGuardBound) {
+				return;
+			}
+			const self = this;
+			sliderEl.novaDragReleaseGuardBound = true;
+
+			let sessionActive = false;
+
+			const endSession = function () {
+				if (!sessionActive) {
+					return;
+				}
+				sessionActive = false;
+				window.removeEventListener('pointerup', onRelease, true);
+				window.removeEventListener('mouseup', onRelease, true);
+				window.removeEventListener('touchend', onRelease, true);
+				window.removeEventListener('blur', onRelease);
+			};
+
+			const finishDrag = function (e, reason) {
+				const data = swiperInstance.touchEventsData;
+				if (!data || !data.isTouched) {
+					endSession();
+					return;
+				}
+				const widEl = sliderEl.closest('[data-widget-id]');
+				ultraLog(widEl ? widEl.getAttribute('data-widget-id') : '', 'touchRelease: ' + reason, null);
+				endSession();
+				if (data.isMoved) {
+					self.forceEndSwiperDrag(swiperInstance, e);
+				} else {
+					data.isTouched = false;
+					data.isMoved = false;
+					data.pointerId = null;
+					data.touchId = null;
+					sliderEl.classList.remove('nova-swiper-dragging');
+				}
+			};
+
+			const onRelease = function (e) {
+				finishDrag(e, 'mouseup/pointerup');
+			};
+
+			const beginSession = function (e) {
+				if (sessionActive || swiperInstance.destroyed) {
+					return;
+				}
+				const data = swiperInstance.touchEventsData;
+				if (!data || !data.isTouched) {
+					return;
+				}
+				if (e && e.pointerType === 'mouse') {
+					data.touchId = null;
+				}
+				sliderEl.classList.add('nova-swiper-dragging');
+				sessionActive = true;
+				window.addEventListener('pointerup', onRelease, true);
+				window.addEventListener('mouseup', onRelease, true);
+				window.addEventListener('touchend', onRelease, true);
+				window.addEventListener('blur', onRelease);
+			};
+
+			swiperInstance.on('touchStart', beginSession);
+			swiperInstance.on('touchEnd', function () {
+				endSession();
+				sliderEl.classList.remove('nova-swiper-dragging');
+			});
+		},
+
+		/**
+		 * Trace complète touch/drag/snap pour diagnostiquer le slider 1 (Fan Deck).
+		 */
+		bindSwiperUltraDebug: function (swiperInstance, $widget, $slider, config) {
+			if (!DEBUG_ENABLED || !swiperInstance || !$slider || !$slider[0]) {
+				return;
+			}
+			const widgetId = ($widget && ($widget.data('widget-id') || $widget.attr('data-widget-id'))) || '';
+			if (!shouldUltraDebugWidget(widgetId, config)) {
+				return;
+			}
+			const sliderEl = $slider[0];
+			if (sliderEl.novaUltraDebugBound) {
+				ultraLog(widgetId, 'bindSwiperUltraDebug: déjà actif (skip)', null);
+				return;
+			}
+			sliderEl.novaUltraDebugBound = true;
+
+			const fanDeck = !!(config && (config.swiperFanDeckEnabled === true || config.swiperFanDeckEnabled === 'yes'));
+
+			ultraLog(widgetId, '═══ ULTRA DEBUG INIT ═══', {
+				fanDeck: fanDeck,
+				config: config ? JSON.parse(JSON.stringify(config)) : null,
+				swiper: snapshotSwiperState(swiperInstance),
+				dom: {
+					sliderHTML: sliderEl.outerHTML ? sliderEl.outerHTML.slice(0, 280) + '…' : '',
+					slideCount: $slider.find('.swiper-slide').length,
+					duplicateCount: $slider.find('.swiper-slide-duplicate').length,
+					widgetClasses: $widget.attr('class'),
+				},
+			});
+
+			const phases = [
+				'touchStart', 'touchMove', 'touchEnd', 'touchMoveOpposite',
+				'sliderFirstMove', 'sliderMove', 'setTranslate',
+				'transitionStart', 'transitionEnd',
+				'slideChange', 'activeIndexChange', 'snapIndexChange',
+				'reachBeginning', 'reachEnd', 'fromEdge', 'toEdge',
+				'click', 'tap', 'doubleTap',
+			];
+
+			phases.forEach(function (phase) {
+				swiperInstance.on(phase, function (e) {
+					const payload = {
+						event: snapshotTouchEvent(e),
+						swiper: snapshotSwiperState(swiperInstance),
+					};
+					if (phase === 'setTranslate' || phase === 'touchMove' || phase === 'sliderMove') {
+						// Éviter flood : log 1 sur 8 pour move
+						sliderEl.novaUltraMoveLog = (sliderEl.novaUltraMoveLog || 0) + 1;
+						if (sliderEl.novaUltraMoveLog % 8 !== 0) {
+							return;
+						}
+						payload.throttled = true;
+						payload.moveCount = sliderEl.novaUltraMoveLog;
+					}
+					ultraLog(widgetId, 'swiper:' + phase, payload);
+				});
+			});
+
+			// Événements DOM bruts sur le slider (capture)
+			['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'mousedown', 'mousemove', 'mouseup', 'touchstart', 'touchmove', 'touchend'].forEach(function (type) {
+				sliderEl.addEventListener(type, function (e) {
+					if (type.indexOf('move') !== -1) {
+						sliderEl.novaUltraDomMoveLog = (sliderEl.novaUltraDomMoveLog || 0) + 1;
+						if (sliderEl.novaUltraDomMoveLog % 10 !== 0) {
+							return;
+						}
+					}
+					ultraLog(widgetId, 'dom:' + type + ' (slider)', {
+						event: snapshotTouchEvent(e),
+						swiperTouch: snapshotSwiperState(swiperInstance).touchEventsData,
+						translate: swiperInstance.translate,
+					});
+				}, type.indexOf('down') !== -1 || type.indexOf('start') !== -1 ? { capture: true } : false);
+			});
+
+			// Document : détecter mouseup/pointerup perdus
+			document.addEventListener('pointerup', function (e) {
+				const data = swiperInstance.touchEventsData;
+				if (!data || !data.isTouched) {
+					return;
+				}
+				const inSlider = sliderEl.contains(e.target);
+				ultraLog(widgetId, 'doc:pointerup PENDANT isTouched=true', {
+					inSlider: inSlider,
+					event: snapshotTouchEvent(e),
+					swiper: snapshotSwiperState(swiperInstance),
+					warning: !inSlider ? 'Relâchement HORS slider — risque drag bloqué' : null,
+				}, inSlider ? 'log' : 'warn');
+			}, true);
+
+			document.addEventListener('mouseup', function (e) {
+				const data = swiperInstance.touchEventsData;
+				if (!data || !data.isTouched) {
+					return;
+				}
+				ultraLog(widgetId, 'doc:mouseup PENDANT isTouched=true', {
+					event: snapshotTouchEvent(e),
+					swiper: snapshotSwiperState(swiperInstance),
+				}, 'warn');
+			}, true);
+
+			// Polling court après init : détecter isTouched coincé
+			let pollCount = 0;
+			const poll = setInterval(function () {
+				pollCount += 1;
+				if (pollCount > 40 || swiperInstance.destroyed) {
+					clearInterval(poll);
+					return;
+				}
+				const data = swiperInstance.touchEventsData;
+				if (data && data.isTouched && !sliderEl.matches(':active')) {
+					ultraLog(widgetId, '⚠ STUCK isTouched=true sans :active', {
+						swiper: snapshotSwiperState(swiperInstance),
+					}, 'warn');
+				}
+			}, 500);
+
+			ultraLog(widgetId, 'Listeners ultra debug attachés', { phases: phases.length });
+		},
+
+		/**
+		 * Desktop (souris) : pointer drag. Mobile = touch natif Swiper (allowTouchMove).
+		 */
+		shouldUseNovaPointerDrag: function () {
+			try {
+				if (typeof window.matchMedia !== 'function') {
+					return !('ontouchstart' in window);
+				}
+				if (window.matchMedia('(pointer: coarse)').matches) {
+					return false;
+				}
+				return window.matchMedia('(pointer: fine)').matches;
+			} catch (e) {
+				return !('ontouchstart' in window);
+			}
+		},
+
+		/**
+		 * Fin de drag : snap Swiper natif ; dernière carte si proche de la fin du scroll.
+		 */
+		snapAfterPointerDrag: function (swiperInstance, speed) {
+			if (!swiperInstance || swiperInstance.destroyed) {
+				return;
+			}
+			const speedVal = typeof speed === 'number' ? speed : (swiperInstance.params.speed || 600);
+			const current = typeof swiperInstance.getTranslate === 'function'
+				? swiperInstance.getTranslate()
+				: swiperInstance.translate;
+			const bounds = getSwiperTranslateBounds(swiperInstance);
+			const lastIdx = swiperInstance.slides ? swiperInstance.slides.length - 1 : 0;
+
+			if (lastIdx > 0 && typeof current === 'number' && current <= bounds.lower + 60) {
+				swiperInstance.slideTo(lastIdx, speedVal);
+				return;
+			}
+
+			if (typeof swiperInstance.slideToClosest === 'function') {
+				swiperInstance.slideToClosest(speedVal);
+				return;
+			}
+			if (typeof swiperInstance.slideTo === 'function') {
+				swiperInstance.slideTo(swiperInstance.activeIndex, speedVal);
+			}
+		},
+
+		/**
+		 * Drag souris / tactile via Pointer Events (évite overlay .nova-carousel-item-link + conflits Lenis/Swiper).
+		 * Swiper allowTouchMove reste false pour ne pas doubler les handlers.
+		 */
+		bindNovaPointerDrag: function (sliderEl, swiperInstance) {
+			if (!sliderEl || !swiperInstance || sliderEl.novaPointerDragBound) {
+				return;
+			}
+			const carouselApi = this;
+			sliderEl.novaPointerDragBound = true;
+
+			let isDragging = false;
+			let startX = 0;
+			let startY = 0;
+			let startTranslate = 0;
+			let moved = false;
+			const dragThreshold = 6;
+
+			const isInteractiveTarget = function (target) {
+				if (!target || !target.closest) {
+					return false;
+				}
+				return !!target.closest(
+					'.nova-carousel-nav, .swiper-button-prev, .swiper-button-next, .swiper-pagination, .swiper-scrollbar, button, input, textarea, select, label'
+				);
+			};
+
+			const setLenisPrevent = function (on) {
+				if (on) {
+					sliderEl.classList.add('lenis-prevent');
+				} else {
+					sliderEl.classList.remove('lenis-prevent');
+				}
+			};
+
+			const finishDrag = function (e) {
+				if (!isDragging) {
+					return;
+				}
+				isDragging = false;
+				sliderEl.classList.remove('nova-swiper-dragging');
+				setLenisPrevent(false);
+				if (e && e.pointerId !== undefined && sliderEl.releasePointerCapture) {
+					try {
+						sliderEl.releasePointerCapture(e.pointerId);
+					} catch (err) {}
+				}
+
+				if (!moved) {
+					const slide = e && e.target && e.target.closest ? e.target.closest('.swiper-slide') : null;
+					if (slide) {
+						const link = slide.querySelector('.nova-carousel-item-link[href]');
+						const href = link && link.getAttribute('href');
+						if (href && href !== '#' && !isInteractiveTarget(e.target)) {
+							window.location.href = href;
+						}
+					}
+					return;
+				}
+
+				const speed = swiperInstance.params && swiperInstance.params.speed
+					? swiperInstance.params.speed
+					: 600;
+				swiperInstance.setTransition(speed);
+				if (carouselApi && typeof carouselApi.snapAfterPointerDrag === 'function') {
+					carouselApi.snapAfterPointerDrag(swiperInstance, speed);
+				} else if (typeof swiperInstance.slideToClosest === 'function') {
+					swiperInstance.slideToClosest(speed);
+				} else if (typeof swiperInstance.slideTo === 'function') {
+					swiperInstance.slideTo(swiperInstance.activeIndex, speed);
+				}
+				if (typeof sliderEl.novaFanDeckRefreshRotations === 'function') {
+					requestAnimationFrame(function () {
+						sliderEl.novaFanDeckRefreshRotations(true);
+					});
+				}
+			};
+
+			sliderEl.addEventListener('pointerdown', function (e) {
+				if (swiperInstance.destroyed) {
+					return;
+				}
+				if (e.isPrimary === false) {
+					return;
+				}
+				if (typeof e.button === 'number' && e.button !== 0) {
+					return;
+				}
+				if (isInteractiveTarget(e.target)) {
+					return;
+				}
+
+				isDragging = true;
+				moved = false;
+				sliderEl.novaPointerDragLoggedMove = false;
+				startX = e.clientX;
+				startY = e.clientY;
+				startTranslate = typeof swiperInstance.getTranslate === 'function'
+					? swiperInstance.getTranslate()
+					: swiperInstance.translate;
+
+				sliderEl.classList.add('nova-swiper-dragging');
+				setLenisPrevent(true);
+				swiperInstance.setTransition(0);
+
+				if (e.pointerId !== undefined && sliderEl.setPointerCapture) {
+					try {
+						sliderEl.setPointerCapture(e.pointerId);
+					} catch (err) {}
+				}
+
+				if (DEBUG_ENABLED) {
+					const wid = sliderEl.closest('[data-widget-id]');
+					const id = wid ? (wid.getAttribute('data-widget-id') || '') : '';
+					log('[NOVA Swiper' + (id ? ' ' + id : '') + '] pointerdown', { x: startX, y: startY, translate: startTranslate });
+				}
+			});
+
+			sliderEl.addEventListener('pointermove', function (e) {
+				if (!isDragging || swiperInstance.destroyed) {
+					return;
+				}
+				const dx = e.clientX - startX;
+				const dy = e.clientY - startY;
+
+				if (!moved) {
+					if (Math.abs(dx) < dragThreshold && Math.abs(dy) < dragThreshold) {
+						return;
+					}
+					if (Math.abs(dy) > Math.abs(dx) * 1.85) {
+						isDragging = false;
+						sliderEl.classList.remove('nova-swiper-dragging');
+						setLenisPrevent(false);
+						return;
+					}
+					moved = true;
+				}
+
+				e.preventDefault();
+				const next = clampSwiperTranslate(swiperInstance, startTranslate + dx);
+				// Ne pas appeler updateActiveIndex pendant le drag : Swiper remet translate à 0 à chaque frame.
+				swiperInstance.setTransition(0);
+				swiperInstance.setTranslate(next);
+				swiperInstance.translate = next;
+
+				if (DEBUG_ENABLED && moved && !sliderEl.novaPointerDragLoggedMove) {
+					sliderEl.novaPointerDragLoggedMove = true;
+					const wid = sliderEl.closest('[data-widget-id]');
+					const id = wid ? (wid.getAttribute('data-widget-id') || '') : '';
+					const b = getSwiperTranslateBounds(swiperInstance);
+					log('[NOVA Swiper' + (id ? ' ' + id : '') + '] pointerdrag', {
+						dx: dx,
+						translate: next,
+						bounds: b,
+						wrapperScrollW: swiperInstance.wrapperEl ? swiperInstance.wrapperEl.scrollWidth : null,
+						containerW: swiperInstance.el ? swiperInstance.el.clientWidth : null,
+					});
+				}
+			}, { passive: false });
+
+			sliderEl.addEventListener('pointerup', finishDrag);
+			sliderEl.addEventListener('pointercancel', finishDrag);
+			sliderEl.addEventListener('lostpointercapture', finishDrag);
 		},
 
 		getViewportMode: function ($widget) {
@@ -327,6 +1410,15 @@
 						self.destroySwiperInstance($widget, $slider);
 					}
 					self.clearGridInlineStyles($slider);
+				} else {
+					const hasSwiperInst = !!($slider[0] && $slider[0].swiper && !$slider[0].swiper.destroyed);
+					if (!hasSwiperInst) {
+						const config = self.parseJsonMaybe($widget.data('nova-carousel-swiper-config')) || self.parseJsonMaybe($widget.data('slider-config')) || {};
+						self.ensureSwiper(function () {
+							self.clearGridInlineStyles($slider);
+							self.buildSwiper($widget, $slider, config);
+						});
+					}
 				}
 				return;
 			}
@@ -347,9 +1439,11 @@
 		},
 
 		destroySwiperInstance: function ($widget, $slider) {
+			let inst = null;
 			try {
-				const inst = $slider[0] && $slider[0].swiper ? $slider[0].swiper : null;
+				inst = $slider[0] && $slider[0].swiper ? $slider[0].swiper : null;
 				if (inst && !inst.destroyed) {
+					inst.novaFanDeckSwiperBound = false;
 					inst.destroy(true, true);
 				}
 			} catch (e) {}
@@ -360,20 +1454,28 @@
 				? $slider.children('.swiper-wrapper')
 				: $slider.find('> .swiper > .swiper-wrapper').first();
 
-			if ($wrapper && $wrapper.length) {
-				const $children = $wrapper.children().removeClass('swiper-slide');
-				$slider.empty();
-				$children.each(function () {
-					$slider.append(this);
+			const unwrapToItems = function ($nodes) {
+				$nodes.each(function () {
+					const node = this;
+					const $item = $(node).children('.nova-carousel-item').first();
+					if ($item.length) {
+						$slider.append($item);
+					} else {
+						$slider.append(node);
+					}
 				});
+			};
+
+			if ($wrapper && $wrapper.length) {
+				const $children = $wrapper.children();
+				$slider.empty();
+				unwrapToItems($children);
 			} else {
 				const $nestedWrapper = $slider.find('.swiper-wrapper').first();
 				if ($nestedWrapper.length) {
-					const $children = $nestedWrapper.children().removeClass('swiper-slide');
+					const $children = $nestedWrapper.children();
 					$slider.empty();
-					$children.each(function () {
-						$slider.append(this);
-					});
+					unwrapToItems($children);
 				}
 			}
 
@@ -395,11 +1497,67 @@
 
 			$slider.find('.swiper-pagination, .swiper-scrollbar').remove();
 			$slider.find('.swiper').removeClass('swiper swiper-initialized swiper-horizontal swiper-vertical swiper-backface-hidden');
-			$slider.removeClass('swiper swiper-initialized swiper-horizontal swiper-vertical swiper-backface-hidden');
-			if ($slider[0] && $slider[0].swiper) {
+			$slider.removeClass('swiper swiper-initialized swiper-horizontal swiper-vertical swiper-backface-hidden lenis-prevent');
+			if ($widget && $widget.length) {
+				$widget.removeClass('lenis-prevent');
+			}
+			if ($slider && $slider.length) {
+				$slider.removeClass('lenis-prevent');
+			}
+			if ($slider[0]) {
+				$slider[0].novaPointerDragBound = false;
+				$slider[0].novaDragReleaseGuardBound = false;
+				$slider.removeClass('nova-swiper-dragging');
+				delete $slider[0].novaFanDeckRefreshRotations;
 				try { delete $slider[0].swiper; } catch (e) { $slider[0].swiper = undefined; }
 			}
+			$slider.off('.fanDeck');
+			$widget.removeClass('nova-fan-deck-mode');
+			$widget.removeData('nova-fan-deck-ui-bound');
 			$widget.removeData('nova-carousel-swiper-initialized');
+		},
+
+		/**
+		 * Secours : événement click Swiper (allowClick) quand le clic natif est bloqué.
+		 */
+		bindSwiperPopupClick: function (swiperInstance, $widget) {
+			if (!swiperInstance || swiperInstance.novaPopupClickBound || !$widget || !$widget.length) {
+				return;
+			}
+			const widgetId = $widget.data('widget-id') || '';
+			const $overlay = $('#nova-popup-overlay-' + widgetId);
+			if (!$overlay.length) {
+				return;
+			}
+			swiperInstance.novaPopupClickBound = true;
+			swiperInstance.on('click', function (swiper, e) {
+				if (!swiper.allowClick || !e || !e.target) {
+					return;
+				}
+				const item = e.target.closest('.nova-carousel-item[data-popup-index]');
+				if (!item) {
+					return;
+				}
+				if ($(e.target).closest('a[href]').length && !$(e.target).closest('.nova-popup-btn').length) {
+					return;
+				}
+				const idx = item.getAttribute('data-popup-index');
+				if (idx === null || idx === undefined) {
+					return;
+				}
+				$overlay.find('.nova-popup-content').hide();
+				const $content = $overlay.find('.nova-popup-content[data-popup-index="' + idx + '"]');
+				$content.show();
+				$overlay.attr('aria-hidden', 'false');
+				document.body.style.overflow = 'hidden';
+				$overlay[0].offsetHeight; // eslint-disable-line no-unused-expressions
+				$overlay.addClass('nova-popup-open');
+				const video = $content.find('video.nova-popup-video')[0];
+				if (video) {
+					video.currentTime = 0;
+					video.play().catch(function () {});
+				}
+			});
 		},
 
 		/**
@@ -407,43 +1565,99 @@
 		 */
 		initPopup: function ($widget) {
 			const widgetId = $widget.data('widget-id') || '';
-			if (!widgetId) return;
+			if (!widgetId) {
+				return;
+			}
 
 			const $overlay = $('#nova-popup-overlay-' + widgetId);
-			if (!$overlay.length) return;
+			if (!$overlay.length) {
+				return;
+			}
 
-			const $box = $overlay.find('.nova-popup-box');
+			const TAP_MOVE_MAX = 10;
 
-			// ── Ouvrir le popup ────────────────────────────────────────────
-			$widget.on('click', '.nova-carousel-item[data-popup-index]', function (e) {
-				// Ne pas ouvrir si clic sur un lien interne
-				if ($(e.target).closest('a').length && !$(e.target).closest('.nova-popup-btn').length) return;
+			function closePopup() {
+				$overlay.removeClass('nova-popup-open');
+				$overlay.attr('aria-hidden', 'true');
+				document.body.style.overflow = '';
+				$overlay.find('video.nova-popup-video').each(function () {
+					this.pause();
+				});
+			}
 
-				const idx = $(this).data('popup-index');
-				if (idx === undefined) return;
+			function openPopupForItem($item) {
+				const idx = $item.data('popup-index');
+				if (idx === undefined) {
+					return;
+				}
 
-				// Afficher le bon contenu
 				$overlay.find('.nova-popup-content').hide();
 				const $content = $overlay.find('.nova-popup-content[data-popup-index="' + idx + '"]');
 				$content.show();
 
-				// Ouvrir
 				$overlay.attr('aria-hidden', 'false');
 				document.body.style.overflow = 'hidden';
-
-				// Forcer reflow puis animer
 				$overlay[0].offsetHeight; // eslint-disable-line no-unused-expressions
 				$overlay.addClass('nova-popup-open');
 
-				// Relancer la vidéo si autoplay activé (ne fonctionne qu'au 1er chargement sinon)
 				const $video = $content.find('video.nova-popup-video');
 				if ($video.length) {
 					const video = $video[0];
 					video.currentTime = 0;
-					video.play().catch(function () {
-						// Autoplay bloqué par le navigateur (politique autoplay) — silencieux
-					});
+					video.play().catch(function () {});
 				}
+			}
+
+			function isBlockedLinkClick($target) {
+				return $target.closest('a[href]').length && !$target.closest('.nova-popup-btn').length;
+			}
+
+			$widget.off('.novaPopup');
+
+			// Tap / clic : closest() car setPointerCapture / Swiper peuvent retarget le slider
+			$widget.on('pointerdown.novaPopup', '.nova-carousel-item[data-popup-index]', function (e) {
+				if (isBlockedLinkClick($(e.target))) {
+					return;
+				}
+				this._novaPopupTap = { x: e.clientX, y: e.clientY, moved: false };
+			});
+
+			$widget.on('pointermove.novaPopup', '.nova-carousel-item[data-popup-index]', function (e) {
+				const t = this._novaPopupTap;
+				if (!t || t.moved) {
+					return;
+				}
+				if (Math.hypot(e.clientX - t.x, e.clientY - t.y) > TAP_MOVE_MAX) {
+					t.moved = true;
+				}
+			});
+
+			$widget.on('pointerup.novaPopup', '.nova-carousel-slider', function (e) {
+				const $item = $(e.target).closest('.nova-carousel-item[data-popup-index]');
+				if (!$item.length || isBlockedLinkClick($(e.target))) {
+					return;
+				}
+				const t = $item[0]._novaPopupTap;
+				$item[0]._novaPopupTap = null;
+				if (t && t.moved) {
+					return;
+				}
+				e.preventDefault();
+				e.stopPropagation();
+				openPopupForItem($item);
+			});
+
+			$widget.on('click.novaPopup', '.nova-carousel-slider', function (e) {
+				if (window.PointerEvent) {
+					return;
+				}
+				const $item = $(e.target).closest('.nova-carousel-item[data-popup-index]');
+				if (!$item.length || isBlockedLinkClick($(e.target))) {
+					return;
+				}
+				e.preventDefault();
+				e.stopPropagation();
+				openPopupForItem($item);
 			});
 
 			// ── Fermer : bouton close ──────────────────────────────────────
@@ -464,17 +1678,6 @@
 					closePopup();
 				}
 			});
-
-			function closePopup() {
-				$overlay.removeClass('nova-popup-open');
-				$overlay.attr('aria-hidden', 'true');
-				document.body.style.overflow = '';
-
-				// Pause toutes les vidéos du popup à la fermeture
-				$overlay.find('video.nova-popup-video').each(function () {
-					this.pause();
-				});
-			}
 
 			// ── Bouton mute custom (vidéo hébergée) ───────────────────────
 			// Délégation sur document pour éviter les problèmes de scope overlay
@@ -657,9 +1860,18 @@
 		 * Construire et initialiser Swiper sur le slider
 		 */
 		buildSwiper: function ($widget, $slider, config) {
-			log('buildSwiper appelé. Swiper disponible:', typeof Swiper !== 'undefined', '| widget-id:', $widget.data('widget-id'));
+			const self = this;
+			const buildWidgetId = $widget.data('widget-id') || $widget.attr('data-widget-id') || '';
+			const SwiperCtor = getSwiperConstructor();
+			ultraLog(buildWidgetId, 'buildSwiper START', {
+				config: config ? JSON.parse(JSON.stringify(config)) : null,
+				SwiperCtor: typeof SwiperCtor !== 'undefined',
+				NovaSwiperBundle: !!window.NovaSwiperBundle,
+				existingSwiper: !!($slider[0] && $slider[0].swiper),
+			});
+			log('buildSwiper appelé. SwiperCtor:', typeof SwiperCtor !== 'undefined', '| NovaSwiperBundle:', !!window.NovaSwiperBundle, '| widget-id:', buildWidgetId);
 
-			if (typeof Swiper === 'undefined') {
+			if (typeof SwiperCtor === 'undefined') {
 				warn('buildSwiper: Swiper undefined, abandon');
 				return;
 			}
@@ -672,8 +1884,59 @@
 			}
 
 			if ($slider[0] && $slider[0].swiper && !$slider[0].swiper.destroyed) {
+				const existing = $slider[0].swiper;
+				self.ensureSwiperSlideWrappers($slider);
+				self.unwrapFanDeckFaces($slider);
+				self.disableNativeImageDrag($slider);
+				if (existing.isLocked && typeof existing.unlock === 'function') {
+					existing.unlock();
+				}
+				existing.allowTouchMove = true;
+				if (existing.params) {
+					existing.params.allowTouchMove = true;
+					existing.params.simulateTouch = true;
+				}
+				const fanDeckEarly = bool(config.swiperFanDeckEnabled, false);
+				const fanEarly = bool(config.swiperFanEnabled, false);
+				if (fanDeckEarly) {
+					$widget.addClass('nova-fan-deck-mode');
+					if (existing.params) {
+						existing.params.slideToClickedSlide = false;
+						existing.params.preventClicks = false;
+						existing.params.preventClicksPropagation = false;
+					}
+					self.applyFanDeckMode($widget, $slider, existing, config);
+				} else {
+					$widget.removeClass('nova-fan-deck-mode');
+					if (fanEarly) {
+						self.applyFanMode($widget, $slider, existing, config);
+					} else {
+						$widget.removeClass('nova-fan-mode');
+						self.clearNovaSlideRotateTransforms($slider);
+						self.refreshSwiperSnap(existing, $slider.find('.swiper-slide'), { syncWidths: false });
+					}
+				}
+				if ($slider[0]) {
+					self.bindSwiperPointerCaptureFix(existing, $slider[0]);
+					if (!$slider[0].novaDragReleaseGuardBound) {
+						self.bindSwiperDragReleaseGuard(existing, $slider[0]);
+					}
+					if (!$slider[0].novaUltraDebugBound) {
+						self.bindSwiperUltraDebug(existing, $widget, $slider, config);
+					}
+					if ($widget.find('.nova-carousel-item[data-popup-index]').length) {
+						self.bindSwiperPopupClick(existing, $widget);
+					}
+				}
+				ultraLog(buildWidgetId, 'buildSwiper EARLY RETURN (swiper existant)', {
+					swiper: snapshotSwiperState(existing),
+				});
 				return;
 			}
+			if ($widget.data('nova-carousel-swiper-building')) {
+				return;
+			}
+			$widget.data('nova-carousel-swiper-building', true);
 			$widget.data('nova-carousel-swiper-initialized', true);
 
 			/**
@@ -709,8 +1972,21 @@
 			 */
 			let $items = $slider.find('.nova-carousel-item');
 			if ($items.length === 0) {
+				$widget.removeData('nova-carousel-swiper-building');
 				return;
 			}
+
+			const bool = function (value, defaultValue) {
+				if (value === undefined || value === null || value === '') return !!defaultValue;
+				if (value === true || value === false) return value;
+				if (value === 1 || value === 0) return value === 1;
+				if (typeof value === 'string') {
+					const v = value.toLowerCase();
+					if (v === 'yes' || v === 'true' || v === '1') return true;
+					if (v === 'no' || v === 'false' || v === '0') return false;
+				}
+				return !!value;
+			};
 
 			// Nettoyer d'éventuelles anciennes classes Swiper sur les items
 			$items.removeClass('swiper-slide');
@@ -719,12 +1995,23 @@
 
 			$items.each(function () {
 				const $item = $(this);
-				$item.addClass('swiper-slide');
-				$wrapper.append($item);
+				const $slide = $('<div class="swiper-slide"></div>');
+				$slide.append($item);
+				$wrapper.append($slide);
 			});
 
+			this.unwrapFanDeckFaces($slider);
+
+			const fanDeckModeEarly = bool(config.swiperFanDeckEnabled, false);
+			if (fanDeckModeEarly) {
+				$widget.addClass('nova-fan-deck-mode');
+			}
+
 			// Remplacer le contenu du slider par une structure Swiper propre
-			$slider.empty().addClass('swiper').append($wrapper);
+			$slider.empty().addClass('swiper lenis-prevent').append($wrapper);
+			$widget.addClass('lenis-prevent');
+
+			const $slides = $wrapper.children('.swiper-slide');
 
 			// Créer la pagination à l'intérieur du slider si nécessaire
 			if (config.showDots === true || config.showDots === 'yes') {
@@ -734,10 +2021,14 @@
 
 			}
 
-			// Calcul des valeurs Swiper à partir de la config existante
-			const slidesPerViewDesktop = parseInt(config.slidesToShow, 10) || 3;
-			const slidesPerViewTablet = parseInt(config.slidesToShowTablet, 10) || Math.min(slidesPerViewDesktop, 2);
-			const slidesPerViewMobile = parseInt(config.slidesToShowMobile, 10) || 1;
+			// Calcul des valeurs Swiper à partir de la config existante (0 = non défini côté Elementor).
+			const normalizeSpv = function (value, fallback) {
+				const n = parseInt(value, 10);
+				return n > 0 ? n : fallback;
+			};
+			const slidesPerViewDesktop = normalizeSpv(config.slidesToShow, 3);
+			const slidesPerViewTablet = normalizeSpv(config.slidesToShowTablet, Math.min(slidesPerViewDesktop, 2));
+			const slidesPerViewMobile = normalizeSpv(config.slidesToShowMobile, 1);
 
 			const slidesPerGroupDesktop = parseInt(config.slidesToScroll, 10) || 1;
 			const slidesPerGroupTablet = parseInt(config.slidesToScrollTablet, 10) || 1;
@@ -762,33 +2053,45 @@
 
 			// Paramètres Swiper avancés venant du widget
 			const direction = config.swiperDirection || 'horizontal';
+			const viewportW = typeof window !== 'undefined'
+				? (window.innerWidth || document.documentElement.clientWidth || 0)
+				: 1024;
+			const isNarrowViewport = viewportW < 768;
 			const effect = config.swiperEffect || 'slide';
-			const bool = function (value, defaultValue) {
-				if (value === undefined || value === null || value === '') return !!defaultValue;
-				if (value === true || value === false) return value;
-				if (value === 1 || value === 0) return value === 1;
-				if (typeof value === 'string') {
-					const v = value.toLowerCase();
-					if (v === 'yes' || v === 'true' || v === '1') return true;
-					if (v === 'no' || v === 'false' || v === '0') return false;
-				}
-				return !!value;
-			};
 
 			const slidesPerViewMode = config.swiperSlidesPerViewMode || 'fixed';
-			const autoWidthEnabled = bool(config.owlAutoWidth, false);
-			const effectiveSlidesPerViewMode = autoWidthEnabled ? 'auto' : slidesPerViewMode;
+			let autoWidthEnabled =
+				slidesPerViewMode === 'auto' ||
+				bool(config.swiperAutoWidth, false);
+
+			// Cartes Elementor en px (ex. 410px) : largeur sur .nova-carousel-item → forcer mode auto.
+			if (!autoWidthEnabled && $slides.length) {
+				const probe = self.getCarouselItemFromSlide($slides[0]) || $slides[0];
+				const fixedW = self.detectFixedSlideWidth(probe);
+				if (fixedW > 0) {
+					autoWidthEnabled = true;
+					log('Largeur fixe détectée sur la carte (' + fixedW + 'px) → slidesPerView auto + autoWidth');
+				}
+			}
+
+			let effectiveSlidesPerViewMode = autoWidthEnabled ? 'auto' : slidesPerViewMode;
+
+			// Mesurer les slides dans le DOM (styles Elementor appliqués) avant new Swiper().
+			self.prepareSlidesForSwiper($slider, $slides, effectiveSlidesPerViewMode);
 
 			const centeredSlides = bool(config.swiperCenteredSlides, false);
 			const grabCursor = bool(config.swiperGrabCursor, false);
 			const freeMode = bool(config.swiperFreeMode, false);
 			const freeModeSticky = bool(config.swiperFreeModeSticky, false);
 			const freeModeMomentum = bool(config.swiperFreeModeMomentum, true);
+			const mousewheelEnabled = bool(config.swiperMousewheelEnabled, false);
+			const pointerCoarse = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+			// Sur téléphone, le module mousewheel reçoit souvent des événements wheel / inertie → rafales de slideNext.
+			const skipMousewheelOnCoarseMobile = !!(mousewheelEnabled && isNarrowViewport && pointerCoarse);
+
 			const rewind = bool(config.swiperRewind, false);
 			const slideToClickedSlide = bool(config.swiperSlideToClickedSlide, false);
-			const allowTouchMove = bool(config.swiperAllowTouchMove, true);
-			const simulateTouch = bool(config.swiperSimulateTouch, true);
-			const watchOverflow = bool(config.swiperWatchOverflow, true);
+			const watchOverflow = false;
 			const autoHeight = bool(config.swiperAutoHeight, false);
 
 			// Mode Fan
@@ -799,12 +2102,24 @@
 			const fanDeckEnabled = bool(config.swiperFanDeckEnabled, false);
 			const fanDeckOverlap = fanDeckEnabled ? (parseInt(config.swiperFanDeckOverlap, 10) || -20) : spaceBetween;
 
+			// Fan deck : drag natif Swiper (allowTouchMove + simulateTouch), comme le carousel témoignages.
+			// Le pointer drag custom + allowTouchMove:false cassait le drag sur desktop.
+			const allowTouchMove = true;
+			const simulateTouch = true;
+			const hasPopupSlides = $widget.find('.nova-carousel-item[data-popup-index]').length > 0;
+
 			// Résolution du spaceBetween effectif
 			const effectiveSpaceBetween = fanDeckEnabled ? fanDeckOverlap : (fanEnabled ? fanOverlap : spaceBetween);
+			// Mobile : même idée que nova-brands (brands.js) — espace max 15 sur le plus petit breakpoint
+			const spaceBetweenMobileBrands = (!fanEnabled && !fanDeckEnabled)
+				? Math.min(effectiveSpaceBetween, 15)
+				: effectiveSpaceBetween;
 			// centeredSlides forcé si Fan Deck avec carte centrale droite
 			const fanDeckCenterUpright = bool(config.swiperFanDeckCenterUpright, true);
 			const effectiveCenteredSlides = fanDeckEnabled ? (fanDeckCenterUpright ? true : centeredSlides) : (fanEnabled ? true : centeredSlides);
-			const finalCenteredSlides = (autoWidthEnabled && !fanEnabled && !fanDeckEnabled) ? false : effectiveCenteredSlides;
+			const finalCenteredSlides = (autoWidthEnabled && !fanEnabled && !fanDeckEnabled)
+				? false
+				: effectiveCenteredSlides;
 
 			log('Config widget:', JSON.parse(JSON.stringify(config || {})));
 			log('Computed:', {
@@ -816,32 +2131,102 @@
 				effectiveCenteredSlides,
 				finalCenteredSlides,
 				freeMode,
+				mousewheelEnabled,
+				skipMousewheelOnCoarseMobile,
+				pointerCoarse,
 				rewind,
 				loop,
+				fanDeckEnabled,
 			});
 
+			// Swiper : un geste = une slide (slidesToScroll Elementor = slideBy Owl, ignoré ici).
+			let gMobile = 1;
+			let gTablet = 1;
+			let gDesktop = 1;
+			if (slidesPerGroupMobile > 1 || slidesPerGroupTablet > 1 || slidesPerGroupDesktop > 1) {
+				log('slidesPerGroup forcé à 1 (ancien slidesToScroll Owl ignoré)');
+			}
+
+			// Vitesse : >800 ms + snap donne une impression de « saut » après un petit drag (ex. 2000 ms dans Elementor).
+			const swiperSpeed = parseInt(config.speed, 10) || 600;
+			const swiperSpeedCap = freeMode ? swiperSpeed : (pointerCoarse || isNarrowViewport ? 700 : 900);
+			const swiperSpeedResolved = Math.min(swiperSpeed, swiperSpeedCap);
+			if (swiperSpeed > swiperSpeedResolved) {
+				log('Vitesse plafonnée', swiperSpeed + 'ms → ' + swiperSpeedResolved + 'ms (réglage Elementor trop élevé pour un swipe fluide)');
+			}
+			if (mousewheelEnabled && !skipMousewheelOnCoarseMobile && swiperSpeed > 1200) {
+				try {
+					console.warn(
+						'[NOVA Carousel Swiper]',
+						buildWidgetId || '(widget)',
+						'Vitesse transition',
+						swiperSpeed + 'ms',
+						'avec molette : risque de sauts cumulés (Lenis / deltas). Recommandé : 400–800 ms dans Elementor (réglage Speed).'
+					);
+				} catch (e) {}
+			}
+
+			// Base Swiper alignée sur nova-brands (assets/js/brands.js initSlider ~L341+),
+			// en conservant les options Elementor (effet, rewind, grab, etc.) et la molette/Lenis ci-dessous.
 			const swiperConfig = {
 				direction,
 				effect,
 				loop: loop && !rewind, // loop incompatible avec rewind
-				speed: parseInt(config.speed, 10) || 500,
+				speed: swiperSpeedResolved,
 				spaceBetween: effectiveSpaceBetween,
-				observer: true,
-				observeParents: true,
+				// Hors éditeur : observer désactivé — sinon un update() après les classes Swiper peut recalculer
+				// le snapGrid et ramener translate à 0 (rebond -2008 → 0 dans les logs).
+				observer: this.isElementorEditor(),
+				observeParents: this.isElementorEditor(),
 				centeredSlides: finalCenteredSlides,
-				grabCursor,
+				grabCursor: grabCursor || true,
 				rewind,
-				slideToClickedSlide: (fanEnabled || fanDeckEnabled) ? true : slideToClickedSlide,
+				slideToClickedSlide: fanDeckEnabled ? false : ((fanEnabled) ? true : slideToClickedSlide),
 				allowTouchMove,
 				simulateTouch,
+				touchEventsTarget: 'wrapper',
+				followFinger: true,
+				touchReleaseOnEdges: true,
+				threshold: 5,
+				touchStartPreventDefault: false,
+				preventClicks: fanDeckEnabled ? false : !hasPopupSlides,
+				preventClicksPropagation: fanDeckEnabled ? false : !hasPopupSlides,
+				resistance: true,
+				resistanceRatio: 0.85,
 				watchOverflow,
 				autoHeight,
 				initialSlide: 0,
-				preventInteractionOnTransition: true,
-				threshold: 10,
-				longSwipesRatio: 0.65,
-				longSwipesMs: 300,
+				slidesPerGroupSkip: 0,
+				slidesPerGroupAuto: false,
+				roundLengths: effectiveSlidesPerViewMode !== 'auto',
+				on: {
+					init: function () {
+						if (!fanDeckEnabled) {
+							self.fixCarouselEndReach(this);
+						}
+					},
+					resize: function () {
+						if (!fanDeckEnabled) {
+							self.fixCarouselEndReach(this);
+						}
+					},
+					breakpoint: function () {
+						if (!fanDeckEnabled) {
+							self.fixCarouselEndReach(this);
+						}
+					},
+				},
 			};
+			// Fan deck : centeredSlidesBounds ramène translate à 0 après drag (conflit overlap négatif).
+			if (!freeMode && finalCenteredSlides && !fanDeckEnabled) {
+				swiperConfig.centerInsufficientSlides = true;
+				swiperConfig.centeredSlidesBounds = true;
+			}
+			if (direction !== 'vertical' && mousewheelEnabled && !skipMousewheelOnCoarseMobile) {
+				swiperConfig.nested = true;
+			}
+
+			// Pas de surcharge touch (passiveListeners / touchStartPreventDefault) : défauts Swiper = drag OK.
 
 			// Free Mode
 			if (freeMode) {
@@ -856,23 +2241,24 @@
 			if (effectiveSlidesPerViewMode === 'auto') {
 				swiperConfig.slidesPerView = 'auto';
 				swiperConfig.slidesPerGroup = 1;
+				swiperConfig.autoWidth = true;
 			} else {
 				swiperConfig.slidesPerView = slidesPerViewMobile;
-				swiperConfig.slidesPerGroup = slidesPerGroupMobile;
+				swiperConfig.slidesPerGroup = gMobile;
 				swiperConfig.breakpoints = {
 					0: {
 						slidesPerView: slidesPerViewMobile,
-						slidesPerGroup: slidesPerGroupMobile,
-						spaceBetween: effectiveSpaceBetween,
+						slidesPerGroup: gMobile,
+						spaceBetween: spaceBetweenMobileBrands,
 					},
 					768: {
 						slidesPerView: slidesPerViewTablet,
-						slidesPerGroup: slidesPerGroupTablet,
+						slidesPerGroup: gTablet,
 						spaceBetween: effectiveSpaceBetween,
 					},
 					1024: {
 						slidesPerView: slidesPerViewDesktop,
-						slidesPerGroup: slidesPerGroupDesktop,
+						slidesPerGroup: gDesktop,
 						spaceBetween: effectiveSpaceBetween,
 					},
 				};
@@ -949,14 +2335,19 @@
 				};
 			}
 
-			// Mousewheel
-			if (config.swiperMousewheelEnabled === true || config.swiperMousewheelEnabled === 'yes') {
+			// Mousewheel (desktop / trackpad). Désactivé sur mobile tactile : évite les sauts liés aux wheel synthétiques.
+			if (mousewheelEnabled && !skipMousewheelOnCoarseMobile) {
+				const td = parseFloat(config.swiperMousewheelThresholdDelta);
+				const tt = parseFloat(config.swiperMousewheelThresholdTime);
 				swiperConfig.mousewheel = {
 					enabled: true,
 					invert: !!config.swiperMousewheelInvert,
 					forceToAxis: !!config.swiperMousewheelForceToAxis,
 					sensitivity: parseFloat(config.swiperMousewheelSensitivity) || 1,
-					releaseOnEdges: true, // ✅ Permet de continuer le scroll de la page quand le slider est fini
+					releaseOnEdges: true,
+					// Inertie trackpad / Lenis : debounce entre événements wheel (API Swiper 9+)
+					thresholdDelta: (!isNaN(td) && td > 0) ? td : 48,
+					thresholdTime: (!isNaN(tt) && tt > 0) ? tt : 380,
 				};
 			}
 
@@ -1013,13 +2404,22 @@
 
 			let swiperInstance;
 
+			if (shouldLogNovaCarouselSwiperConfig()) {
+				try {
+					console.log('[NOVA Carousel Swiper] options passées à new Swiper()', buildWidgetId, JSON.parse(JSON.stringify(swiperConfig)));
+				} catch (e) {
+					console.log('[NOVA Carousel Swiper] options passées à new Swiper()', buildWidgetId, swiperConfig);
+				}
+			}
+
 			try {
-
-				swiperInstance = new Swiper($slider[0], swiperConfig);
+				swiperInstance = new SwiperCtor($slider[0], swiperConfig);
 			} catch (e) {
-
+				$widget.removeData('nova-carousel-swiper-building');
 				return;
 			}
+
+			$widget.removeData('nova-carousel-swiper-building');
 
 			if (swiperInstance) {
 				this.instances.push({
@@ -1030,27 +2430,99 @@
 				const widgetId = $widget.data('widget-id') || $widget.attr('data-widget-id') || '';
 				const debugPrefix = widgetId ? `[NOVA Swiper ${widgetId}]` : '[NOVA Swiper]';
 				const d = function () {
-					if (DEBUG && DEBUG_ENABLED) console.log(debugPrefix, ...arguments);
+					if (DEBUG_ENABLED) console.log(debugPrefix, ...arguments);
 				};
 
-				// Forcer l'affichage du premier slide à gauche si centeredSlides est désactivé
-				if (!swiperConfig.centeredSlides && swiperInstance.slides && swiperInstance.slides.length > 0) {
-					// Attendre que Swiper soit complètement initialisé
-					setTimeout(() => {
-						if (swiperInstance && !swiperInstance.destroyed) {
-							swiperInstance.slideTo(0, 0); // Aller au slide 0 sans animation
-							// Forcer la mise à jour de la position
-							swiperInstance.update();
+				swiperInstance.allowTouchMove = allowTouchMove;
+				if (swiperInstance.params) {
+					swiperInstance.params.allowTouchMove = allowTouchMove;
+					swiperInstance.params.simulateTouch = simulateTouch;
+				}
+				if (fanDeckEnabled && swiperInstance.enabled === false && typeof swiperInstance.enable === 'function') {
+					swiperInstance.enable();
+				}
+				self.bindSwiperPointerCaptureFix(swiperInstance, $slider[0]);
+				if (!$slider[0].novaDragReleaseGuardBound) {
+					self.bindSwiperDragReleaseGuard(swiperInstance, $slider[0]);
+				}
+				if (!$slider[0].novaUltraDebugBound) {
+					self.bindSwiperUltraDebug(swiperInstance, $widget, $slider, config);
+				}
+				if (hasPopupSlides) {
+					self.bindSwiperPopupClick(swiperInstance, $widget);
+				}
+				self.disableNativeImageDrag($slider);
+				ultraLog(buildWidgetId, 'buildSwiper new Swiper OK', { swiper: snapshotSwiperState(swiperInstance) });
+				const $slidesRef = $slider.find('.swiper-slide');
+				let refreshPass = 0;
+				let refreshTimer;
+				const runRefresh = function (syncWidths) {
+					refreshPass += 1;
+					self.disableNativeImageDrag($slider);
+					if (fanDeckEnabled) {
+						const $fdSlides = $slidesRef.not('.swiper-slide-duplicate');
+						if (
+							refreshPass === 1 &&
+							swiperInstance.params &&
+							swiperInstance.params.slidesPerView === 'auto' &&
+							$fdSlides.length
+						) {
+							self.syncAutoSlideWidths($fdSlides);
 						}
-					}, 100);
+						swiperInstance.updateSize();
+						if ($slider[0] && typeof $slider[0].novaFanDeckRefreshRotations === 'function') {
+							$slider[0].novaFanDeckRefreshRotations(false);
+						}
+						if (swiperInstance.navigation && typeof swiperInstance.navigation.update === 'function') {
+							swiperInstance.navigation.update();
+						}
+						return;
+					}
+					self.refreshSwiperSnap(swiperInstance, $slidesRef, {
+						syncWidths: syncWidths === true || refreshPass === 1,
+					});
+					if (DEBUG_ENABLED && refreshPass >= 2) {
+						d('bounds après mesure DOM', getSwiperTranslateBounds(swiperInstance), {
+							wrapperScrollW: swiperInstance.wrapperEl ? swiperInstance.wrapperEl.scrollWidth : null,
+							containerW: swiperInstance.el ? swiperInstance.el.clientWidth : null,
+							snapCount: (swiperInstance.snapGrid || []).length,
+						});
+					}
+				};
+				// Fan deck avant refresh : évite updateSlides sans rotations + conflits clic Swiper
+				if (fanDeckEnabled) {
+					this.applyFanDeckMode($widget, $slider, swiperInstance, config);
 				}
 
-				if (DEBUG && DEBUG_ENABLED) {
+				requestAnimationFrame(function () {
+					runRefresh(true);
+					requestAnimationFrame(function () {
+						runRefresh(false);
+					});
+				});
+				$slider.find('img').on('load.nova-swiper-' + widgetId, function () {
+					clearTimeout(refreshTimer);
+					refreshTimer = setTimeout(function () {
+						runRefresh(false);
+					}, 120);
+				});
+				$(window).one('load.nova-swiper-' + widgetId, function () {
+					runRefresh(false);
+				});
+
+				if (DEBUG_ENABLED) {
 					try {
 						d('Init state', {
 							params: {
 								slidesPerView: swiperInstance.params.slidesPerView,
 								slidesPerGroup: swiperInstance.params.slidesPerGroup,
+								allowTouchMove: swiperInstance.params.allowTouchMove,
+								touchEventsTarget: swiperInstance.params.touchEventsTarget,
+								simulateTouch: swiperInstance.params.simulateTouch,
+								isLocked: swiperInstance.isLocked,
+								enabled: swiperInstance.enabled,
+								watchOverflow: swiperInstance.params.watchOverflow,
+								ctorIsNovaBundle: !!window.NovaSwiperBundle,
 								centeredSlides: swiperInstance.params.centeredSlides,
 								loop: swiperInstance.params.loop,
 								rewind: swiperInstance.params.rewind,
@@ -1065,7 +2537,28 @@
 						});
 
 						const snapSummary = (swiperInstance.snapGrid || []).slice(0, 12);
-						d('snapGrid (first 12)', snapSummary);
+						const spv = swiperInstance.params.slidesPerView;
+						const slideCount = swiperInstance.slides ? swiperInstance.slides.length : 0;
+						const expectedSnaps = (spv === 'auto' && slideCount > 0)
+							? slideCount
+							: ((typeof spv === 'number' && spv >= 1 && slideCount > 0)
+								? Math.max(1, slideCount - Math.floor(spv) + 1)
+								: snapSummary.length);
+						const step0 = snapSummary.length > 1 ? Math.abs(snapSummary[1] - snapSummary[0]) : 0;
+						d('snapGrid (first 12)', snapSummary, {
+							slidesPerView: spv,
+							autoWidth: swiperInstance.params.autoWidth,
+							slidesPerGroup: swiperInstance.params.slidesPerGroup,
+							slideCount,
+							snapPositions: snapSummary.length,
+							expectedSnapPositions: expectedSnaps,
+							snapStepPx: step0,
+							hint: spv === 'auto'
+								? 'Mode auto : 1 snap ≈ largeur carte (' + step0 + 'px) + spaceBetween. Garder width en px sur .swiper-slide.nova-carousel-item.'
+								: ((typeof spv === 'number' && spv > 1)
+									? 'slidesPerView=' + spv + ' : 1 swipe = 1 carte qui entre. Pour 1 seule visible : Slides à afficher = 1.'
+									: 'slidesPerView=1 : un swipe = une slide.'),
+						});
 					} catch (e) {}
 
 					const logState = function (label) {
@@ -1094,17 +2587,6 @@
 					swiperInstance.on('setTranslate', function () { logState('setTranslate'); });
 				}
 
-				// ── Mode Fan Deck : rotation alternée style photo de groupe ────
-				const fanDeckEnabled = bool(config.swiperFanDeckEnabled, false);
-				if (fanDeckEnabled) {
-					// console.log('[NOVA Swiper] Mode Fan Deck activé', {
-					// 	angle: config.swiperFanDeckAngle,
-					// 	step: config.swiperFanDeckAngleStep,
-					// 	overlap: config.swiperFanDeckOverlap,
-					// });
-					this.applyFanDeckMode($widget, $slider, swiperInstance, config);
-				}
-
 				// ── Mode Fan : rotation aléatoire (seulement si Fan Deck inactif) ──
 				const fanEnabled = bool(config.swiperFanEnabled, false);
 				if (fanEnabled && !fanDeckEnabled) {
@@ -1116,6 +2598,37 @@
 					// console.log('[NOVA Swiper] Aucun mode Fan actif');
 				}
 			}
+		},
+
+		paintCarouselItemRotation: function (item, angle, animate, transitionCSS, noTransitionCSS) {
+			if (!item) {
+				return;
+			}
+			item.style.transformOrigin = 'center bottom';
+			item.style.transition = animate ? transitionCSS : noTransitionCSS;
+			item.style.transform = 'rotate(' + angle + 'deg) scale(1)';
+		},
+
+		clearNovaSlideRotateTransforms: function ($slider) {
+			if (!$slider || !$slider.length) {
+				return;
+			}
+			this.unwrapFanDeckFaces($slider);
+			$slider.find('.nova-carousel-item').each(function () {
+				this.style.transform = '';
+				this.style.boxShadow = '';
+				this.style.zIndex = '';
+				this.style.transition = '';
+				delete this.dataset.novaFanAngle;
+				delete this.dataset.novaFanOrigZIndex;
+				delete this.dataset.novaFanDeckAngle;
+				delete this.dataset.novaFanDeckBaseAngle;
+				delete this.dataset.novaFanDeckOrigZIndex;
+			});
+			$slider.find('.swiper-slide').each(function () {
+				this.style.transform = '';
+				this.style.zIndex = '';
+			});
 		},
 
 		/**
@@ -1131,139 +2644,242 @@
 		 *  - Au hover : redressement à 0° + scale + ombre optionnelle
 		 */
 		applyFanDeckMode: function ($widget, $slider, swiperInstance, config) {
+			if (!swiperInstance || swiperInstance.destroyed || !$slider || !$slider[0]) {
+				return;
+			}
+			const self = this;
+
+			const fanDeckWidgetId = ($widget && ($widget.data('widget-id') || $widget.attr('data-widget-id'))) || '';
+			ultraLog(fanDeckWidgetId, 'applyFanDeckMode START', {
+				swiper: snapshotSwiperState(swiperInstance),
+			});
+
 			const baseAngle = parseFloat(config.swiperFanDeckAngle) || 3;
 			const angleStep = parseFloat(config.swiperFanDeckAngleStep) || 1;
 			const hoverScale = parseFloat(config.swiperFanDeckHoverScale) || 1.08;
 			const hoverRotRange = config.swiperFanDeckHoverRotationRange !== undefined
 				? parseFloat(config.swiperFanDeckHoverRotationRange)
-				: 2; // ±2° par défaut
+				: 2;
 			const duration = parseInt(config.swiperFanDeckTransitionDuration, 10) || 400;
 			const centerUpright = config.swiperFanDeckCenterUpright !== false && config.swiperFanDeckCenterUpright !== 'no';
 			const hoverShadow = config.swiperFanDeckHoverShadow !== false && config.swiperFanDeckHoverShadow !== 'no';
 			const overflowVisible = config.swiperFanDeckOverflowVisible !== false && config.swiperFanDeckOverflowVisible !== 'no';
 
 			$widget.addClass('nova-fan-deck-mode');
+			self.unwrapFanDeckFaces($slider);
+			self.ensureSwiperSlideWrappers($slider);
 
 			if (overflowVisible) {
-				// Forcer overflow visible sur toute la chaîne de parents jusqu'au widget
-				$slider.css('overflow', 'visible');
-				$slider.find('.swiper-wrapper').css('overflow', 'visible');
+				$slider.css({
+					overflow: 'hidden',
+					paddingTop: '32px',
+					paddingBottom: '32px',
+					boxSizing: 'border-box',
+				});
 				$slider.closest('.nova-carousel-slider-wrapper').css('overflow', 'visible');
 				$slider.closest('.nova-carousel-container').css('overflow', 'visible');
 				$widget.css('overflow', 'visible');
-				// Couvrir aussi les wrappers Elementor directs
-				$widget.parent().css('overflow', 'visible');
 			}
 
 			const easing = 'cubic-bezier(0.25, 1, 0.5, 1)';
-			const transitionCSS = `transform ${duration}ms ${easing}, box-shadow ${duration}ms ${easing}, z-index 0s`;
-			const noTransitionCSS = 'none'; // utilisé pendant l'init pour éviter l'animation parasite
+			const transitionCSS = 'transform ' + duration + 'ms ' + easing + ', box-shadow ' + duration + 'ms ' + easing;
+			const noTransitionCSS = 'none';
 
-			// Flag : true = Swiper est prêt, on peut animer
 			let isReady = false;
+			let hoveredSlideEl = null;
 
-			/**
-			 * Applique les rotations directement sur .swiper-slide
-			 * Chaque slide reçoit un angle aléatoire unique mémorisé dans dataset.
-			 * @param {boolean} animate
-			 */
-			const applyDeckRotations = (animate) => {
-				const slides = Array.from($slider[0].querySelectorAll('.swiper-slide:not(.swiper-slide-duplicate)'));
-				const total = slides.length;
-				if (!total) return;
+			const getFanDeckSlide = function (el) {
+				if (!el) {
+					return null;
+				}
+				return el.classList && el.classList.contains('nova-carousel-item') ? el : el.closest('.nova-carousel-item');
+			};
 
-				slides.forEach((slide, i) => {
-					// Générer un angle aléatoire unique une seule fois par slide
-					if (slide.dataset.novaFanDeckAngle === undefined || slide.dataset.novaFanDeckAngle === '') {
-						// Angle aléatoire entre -baseAngle et +baseAngle, avec variation par angleStep
-						const maxAngle = baseAngle + i * angleStep * 0.3;
-						const angle = (Math.random() * maxAngle * 2) - maxAngle;
-						slide.dataset.novaFanDeckAngle = angle;
+			const paintFanDeckTransform = function (item, angle, animate) {
+				self.paintCarouselItemRotation(item, angle, animate, transitionCSS, noTransitionCSS);
+			};
+
+			const ensureBaseDeckAngle = function (item, index) {
+				if (!item) {
+					return 0;
+				}
+				if (item.dataset.novaFanDeckBaseAngle) {
+					return parseFloat(item.dataset.novaFanDeckBaseAngle) || 0;
+				}
+				const maxAngleCap = Math.max(baseAngle + angleStep * 6, baseAngle + 2);
+				const sign = index % 2 === 0 ? -1 : 1;
+				const spread = baseAngle + (index % 5) * angleStep * 0.4;
+				const jitter = Math.random() * angleStep * 2.5;
+				let angle = sign * (spread + jitter);
+				angle = Math.max(-maxAngleCap, Math.min(maxAngleCap, angle));
+				if (Math.abs(angle) < baseAngle * 0.5) {
+					angle = sign * baseAngle;
+				}
+				item.dataset.novaFanDeckBaseAngle = String(angle);
+				return angle;
+			};
+
+			const applyDeckRotations = function (animate) {
+				if ($slider[0].classList.contains('nova-swiper-dragging')) {
+					ultraLog(fanDeckWidgetId, 'applyDeckRotations SKIP (drag en cours)', {
+						animate: animate,
+					});
+					return;
+				}
+				const items = Array.from($slider[0].querySelectorAll(
+					'.swiper-slide:not(.swiper-slide-duplicate) > .nova-carousel-item'
+				));
+				const total = items.length;
+				if (!total) {
+					return;
+				}
+
+				const activeIndex = typeof swiperInstance.activeIndex === 'number' ? swiperInstance.activeIndex : 0;
+
+				items.forEach(function (item, i) {
+					if (hoveredSlideEl && item === hoveredSlideEl) {
+						return;
 					}
-
-					const angle = parseFloat(slide.dataset.novaFanDeckAngle);
-					const zIdx = String(total - i);
-
-					slide.dataset.novaFanDeckOrigZIndex = zIdx;
-					slide.style.zIndex = zIdx;
-					slide.style.position = 'relative';
-					slide.style.transformOrigin = 'center center';
-					slide.style.transition = animate ? transitionCSS : noTransitionCSS;
-					slide.style.transform = `rotate(${angle}deg) scale(1)`;
+					let angle = ensureBaseDeckAngle(item, i);
+					if (centerUpright && i === activeIndex) {
+						angle = 0;
+					}
+					const zIdx = String(total - Math.abs(i - activeIndex));
+					const slideWrap = item.parentElement;
+					item.dataset.novaFanDeckAngle = String(angle);
+					item.dataset.novaFanDeckOrigZIndex = zIdx;
+					item.style.position = 'relative';
+					item.style.height = 'auto';
+					item.style.overflow = 'visible';
+					item.style.transform = '';
+					item.style.boxShadow = '';
+					if (slideWrap && slideWrap.classList.contains('swiper-slide')) {
+						slideWrap.style.zIndex = zIdx;
+						slideWrap.style.overflow = 'visible';
+					}
+					paintFanDeckTransform(item, angle, animate);
 				});
 
-				// Slides dupliquées (loop) — copier l'angle de l'original
-				const dupes = $slider[0].querySelectorAll('.swiper-slide-duplicate');
-				dupes.forEach((dupe) => {
+				$slider[0].querySelectorAll('.swiper-slide-duplicate > .nova-carousel-item').forEach(function (dupe) {
 					const origIndex = parseInt(dupe.dataset.swiperSlideIndex, 10);
-					if (!isNaN(origIndex) && slides[origIndex]) {
-						const angle = parseFloat(slides[origIndex].dataset.novaFanDeckAngle) || 0;
-						dupe.style.transformOrigin = 'center center';
-						dupe.style.transition = animate ? transitionCSS : noTransitionCSS;
-						dupe.style.transform = `rotate(${angle}deg) scale(1)`;
-						dupe.style.zIndex = slides[origIndex].style.zIndex;
+					if (isNaN(origIndex) || !items[origIndex]) {
+						return;
 					}
+					const orig = items[origIndex];
+					const angle = parseFloat(orig.dataset.novaFanDeckAngle) || 0;
+					dupe.dataset.novaFanDeckAngle = String(angle);
+					dupe.dataset.novaFanDeckBaseAngle = orig.dataset.novaFanDeckBaseAngle || String(angle);
+					const dupeWrap = dupe.parentElement;
+					if (dupeWrap) {
+						dupeWrap.style.zIndex = orig.parentElement ? orig.parentElement.style.zIndex : '';
+					}
+					paintFanDeckTransform(dupe, angle, animate);
 				});
 			};
 
-			// ── Init sans animation ────────────────────────────────────────
-			// Appliquer immédiatement sans transition (Swiper n'est pas encore stable)
-			applyDeckRotations(false);
+			$slider[0].novaFanDeckRefreshRotations = applyDeckRotations;
 
-			// Swiper déclenche 'init' une fois qu'il est complètement prêt
-			// (slides clonées créées, position initiale calculée)
-			swiperInstance.on('init', () => {
+			if (!swiperInstance.novaFanDeckSwiperBound) {
+				swiperInstance.novaFanDeckSwiperBound = true;
+				const sliderEl = $slider[0];
+				swiperInstance.on('touchStart', function () {
+					if (sliderEl) {
+						sliderEl.classList.add('nova-swiper-dragging');
+					}
+					ultraLog(fanDeckWidgetId, 'fanDeck: touchStart (+nova-swiper-dragging)', {
+						swiper: snapshotSwiperState(swiperInstance),
+					});
+				});
+				swiperInstance.on('touchEnd', function () {
+					ultraLog(fanDeckWidgetId, 'fanDeck: touchEnd', {
+						swiper: snapshotSwiperState(swiperInstance),
+					});
+					requestAnimationFrame(function () {
+						applyDeckRotations(isReady);
+					});
+				});
+				swiperInstance.on('slideChange', function () {
+					applyDeckRotations(isReady);
+				});
+				swiperInstance.on('activeIndexChange', function () {
+					applyDeckRotations(isReady);
+				});
+				swiperInstance.on('transitionEnd', function () {
+					applyDeckRotations(isReady);
+				});
+				swiperInstance.on('resize', function () {
+					applyDeckRotations(isReady);
+				});
+
+			}
+
+			if (!$widget.data('nova-fan-deck-ui-bound')) {
+				$widget.data('nova-fan-deck-ui-bound', true);
+
+				$slider.on('mouseenter.fanDeck', '.nova-carousel-item', function () {
+					const item = getFanDeckSlide(this);
+					if (!item) {
+						return;
+					}
+					hoveredSlideEl = item;
+					if (!item.dataset.novaFanDeckOrigZIndex) {
+						item.dataset.novaFanDeckOrigZIndex = item.style.zIndex || '1';
+					}
+					const hoverAngle = (Math.random() * hoverRotRange * 2) - hoverRotRange;
+					item.style.transition = transitionCSS;
+					item.style.transformOrigin = 'center bottom';
+					item.style.transform = 'rotate(' + hoverAngle + 'deg) scale(' + hoverScale + ')';
+					const slideWrap = item.parentElement;
+					if (slideWrap && slideWrap.classList.contains('swiper-slide')) {
+						slideWrap.style.zIndex = '999';
+					}
+					if (hoverShadow) {
+						item.style.boxShadow = '0 12px 28px rgba(0,0,0,0.18)';
+					}
+				});
+
+				$slider.on('mouseleave.fanDeck', '.nova-carousel-item', function () {
+					const item = getFanDeckSlide(this);
+					if (!item) {
+						return;
+					}
+					if (hoveredSlideEl === item) {
+						hoveredSlideEl = null;
+					}
+					const baseAngleStored = parseFloat(item.dataset.novaFanDeckBaseAngle);
+					const activeIdx = typeof swiperInstance.activeIndex === 'number' ? swiperInstance.activeIndex : 0;
+					const itemList = Array.from($slider[0].querySelectorAll(
+						'.swiper-slide:not(.swiper-slide-duplicate) > .nova-carousel-item'
+					));
+					const slideIndex = itemList.indexOf(item);
+					let angle = !isNaN(baseAngleStored) ? baseAngleStored : (parseFloat(item.dataset.novaFanDeckAngle) || 0);
+					if (centerUpright && slideIndex === activeIdx) {
+						angle = 0;
+					}
+					item.style.boxShadow = '';
+					const slideWrap = item.parentElement;
+					if (slideWrap && slideWrap.classList.contains('swiper-slide')) {
+						slideWrap.style.zIndex = item.dataset.novaFanDeckOrigZIndex || '1';
+					}
+					paintFanDeckTransform(item, angle, true);
+				});
+			}
+
+			applyDeckRotations(false);
+			requestAnimationFrame(function () {
 				applyDeckRotations(false);
 			});
-
-			// Après un court délai, activer les transitions et recalculer
-			// (couvre les cas où 'init' est déjà passé avant notre listener)
-			setTimeout(() => {
-				applyDeckRotations(false); // recalcul final sans animation
-				isReady = true;            // à partir d'ici, les slideChange animent
+			setTimeout(function () {
+				applyDeckRotations(false);
+				isReady = true;
 			}, 300);
-
-			// ── Changements de slide (avec animation) ─────────────────────
-			swiperInstance.on('slideChange', () => {
-				applyDeckRotations(isReady); // animate seulement si prêt
-			});
-
-			swiperInstance.on('update', () => {
-				applyDeckRotations(isReady);
-			});
-
-			swiperInstance.on('resize', () => {
-				applyDeckRotations(isReady);
-			});
-
-			// ── Hover : rotation aléatoire légère + scale centré ──────────
-			$slider.on('mouseenter', '.swiper-slide', function () {
-				if (!this.dataset.novaFanDeckOrigZIndex) {
-					this.dataset.novaFanDeckOrigZIndex = this.style.zIndex || '1';
-				}
-				const hoverAngle = (Math.random() * hoverRotRange * 2) - hoverRotRange;
-				this.style.transition = transitionCSS;
-				this.style.transformOrigin = 'center center';
-				this.style.transform = `rotate(${hoverAngle}deg) scale(${hoverScale})`;
-				this.style.zIndex = '999';
-				if (hoverShadow) this.style.boxShadow = '0 12px 28px rgba(0,0,0,0.18)';
-			});
-
-			$slider.on('mouseleave', '.swiper-slide', function () {
-				const angle = parseFloat(this.dataset.novaFanDeckAngle) || 0;
-				const origZ = this.dataset.novaFanDeckOrigZIndex || '1';
-				this.style.transition = transitionCSS;
-				this.style.transformOrigin = 'center center';
-				this.style.transform = `rotate(${angle}deg) scale(1)`;
-				this.style.zIndex = origZ;
-				this.style.boxShadow = '';
-			});
 		},
 
 		/**
 		 * Mode Fan : rotation aléatoire sur chaque slide + redressement au hover.
 		 */
 		applyFanMode: function ($widget, $slider, swiperInstance, config) {
+			const self = this;
 			const angleMin = parseFloat(config.swiperFanAngleMin) || -5;
 			const angleMax = parseFloat(config.swiperFanAngleMax) || 5;
 			const hoverScale = parseFloat(config.swiperFanHoverScale) || 1.15;
@@ -1272,6 +2888,8 @@
 				config.swiperFanOverflowVisible !== 'no';
 
 			$widget.addClass('nova-fan-mode');
+			self.unwrapFanDeckFaces($slider);
+			self.ensureSwiperSlideWrappers($slider);
 
 			if (overflowVisible) {
 				$slider.css('overflow', 'visible');
@@ -1279,59 +2897,72 @@
 			}
 
 			const easing = 'cubic-bezier(0.25, 1, 0.5, 1)';
-			const transitionCSS = `transform ${duration}ms ${easing}, box-shadow ${duration}ms ${easing}`;
+			const transitionCSS = 'transform ' + duration + 'ms ' + easing + ', box-shadow ' + duration + 'ms ' + easing;
 			const noTransitionCSS = 'none';
 
 			let isReady = false;
 
-			const applyRotations = (animate) => {
-				const slides = $slider[0].querySelectorAll('.swiper-slide');
-				slides.forEach((slide) => {
-					if (!slide.dataset.novaFanAngle) {
+			const applyRotations = function (animate) {
+				$slider[0].querySelectorAll('.swiper-slide:not(.swiper-slide-duplicate) > .nova-carousel-item').forEach(function (item) {
+					if (!item.dataset.novaFanAngle) {
 						const angle = Math.random() * (angleMax - angleMin) + angleMin;
-						slide.dataset.novaFanAngle = angle;
+						item.dataset.novaFanAngle = String(angle);
 					}
-					const angle = parseFloat(slide.dataset.novaFanAngle);
-					slide.style.transformOrigin = 'center bottom';
-					slide.style.transition = animate ? transitionCSS : noTransitionCSS;
-					slide.style.transform = `rotate(${angle}deg) scale(1)`;
-					slide.style.position = 'relative';
+					const angle = parseFloat(item.dataset.novaFanAngle);
+					item.style.position = 'relative';
+					self.paintCarouselItemRotation(item, angle, animate, transitionCSS, noTransitionCSS);
 				});
 			};
 
-			// Init sans animation
 			applyRotations(false);
 
-			setTimeout(() => {
+			setTimeout(function () {
 				applyRotations(false);
 				isReady = true;
 			}, 300);
 
-			swiperInstance.on('slideChange', () => applyRotations(isReady));
-			swiperInstance.on('update', () => applyRotations(isReady));
-
-			$slider.on('mouseenter', '.swiper-slide', function () {
-				if (!this.dataset.novaFanOrigZIndex) {
-					this.dataset.novaFanOrigZIndex = this.style.zIndex || '1';
-				}
-				this.style.transition = transitionCSS;
-				this.style.transform = `rotate(0deg) scale(${hoverScale})`;
-				this.style.transformOrigin = 'center bottom';
-				this.style.zIndex = '10';
-				this.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)';
+			swiperInstance.on('slideChange', function () {
+				applyRotations(isReady);
+			});
+			swiperInstance.on('update', function () {
+				applyRotations(isReady);
 			});
 
-			$slider.on('mouseleave', '.swiper-slide', function () {
-				const angle = parseFloat(this.dataset.novaFanAngle) || 0;
-				const origZ = this.dataset.novaFanOrigZIndex || '1';
-				this.style.transition = transitionCSS;
-				this.style.transform = `rotate(${angle}deg) scale(1)`;
-				this.style.transformOrigin = 'center bottom';
-				this.style.zIndex = origZ;
-				this.style.boxShadow = '';
+			$slider.off('mouseenter.fanMode mouseleave.fanMode');
+			$slider.on('mouseenter.fanMode', '.nova-carousel-item', function () {
+				const item = this;
+				if (!item.dataset.novaFanOrigZIndex) {
+					item.dataset.novaFanOrigZIndex = item.style.zIndex || '1';
+				}
+				item.style.transition = transitionCSS;
+				item.style.transform = 'rotate(0deg) scale(' + hoverScale + ')';
+				item.style.transformOrigin = 'center bottom';
+				item.style.zIndex = '10';
+				item.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)';
+				const slideWrap = item.parentElement;
+				if (slideWrap && slideWrap.classList.contains('swiper-slide')) {
+					slideWrap.style.zIndex = '10';
+				}
+			});
+
+			$slider.on('mouseleave.fanMode', '.nova-carousel-item', function () {
+				const item = this;
+				const angle = parseFloat(item.dataset.novaFanAngle) || 0;
+				const origZ = item.dataset.novaFanOrigZIndex || '1';
+				item.style.zIndex = origZ;
+				item.style.boxShadow = '';
+				const slideWrap = item.parentElement;
+				if (slideWrap && slideWrap.classList.contains('swiper-slide')) {
+					slideWrap.style.zIndex = '';
+				}
+				self.paintCarouselItemRotation(item, angle, true, transitionCSS, noTransitionCSS);
 			});
 		},
 	};
+
+	window.NovaCarouselSwiper = NovaCarouselSwiper;
+	window.NOVA_SWIPER_SNAPSHOT = snapshotSwiperState;
+	window.NOVA_SWIPER_ULTRA_LOG = ultraLog;
 
 	// Démarrer
 	NovaCarouselSwiper.init();

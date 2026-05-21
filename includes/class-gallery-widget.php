@@ -1567,9 +1567,14 @@ class Gallery_Widget extends Widget_Base {
 	 * @return array
 	 */
 	private function get_post_types() {
-		return function_exists( 'nova_addons_get_elementor_post_type_options' )
-			? nova_addons_get_elementor_post_type_options()
-			: array();
+		$post_types = get_post_types( [ 'public' => true ], 'objects' );
+		$options = [];
+
+		foreach ( $post_types as $post_type ) {
+			$options[ $post_type->name ] = $post_type->label;
+		}
+
+		return $options;
 	}
 
 	/**

@@ -48,6 +48,15 @@
 		},
 
 		initInstance: function ($widget) {
+			// NOVA Carousel (Swiper) : géré uniquement par carousel-swiper.js (jamais Owl).
+			if (
+				$widget.closest('.elementor-widget-nova-carousel-swiper').length ||
+				$widget.attr('data-carousel-engine') === 'swiper' ||
+				$widget.hasClass('nova-carousel-engine-swiper')
+			) {
+				return;
+			}
+
 			// Mode grid
 			if ($widget.hasClass('grid-mode')) {
 				var $grid = $widget.find('.nova-carousel-grid');

@@ -19,9 +19,6 @@
 		 * Initialize all gallery widgets
 		 */
 		init: function () {
-			if (window.NOVA_NATIVE_SCROLL_MODE === true) {
-				return;
-			}
 			this.initInstances();
 		},
 
@@ -570,8 +567,7 @@
 				endTrigger: $widget[0],
 				end: function () { return isSticky() ? 'bottom top+=' + getOffset() : 'bottom top+=99999'; },
 				pin: isSticky(),
-				pinSpacing: true,
-				pinType: 'fixed',
+				pinSpacing: false,
 				onRefresh: function (self) {
 					self.pin = isSticky();
 				},

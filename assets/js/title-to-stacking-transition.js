@@ -65,7 +65,6 @@
 		 * Initialize transitions in context
 		 */
 		init: function (context) {
-			return; // TEMPORARILY DISABLED TO DEBUG SCROLL
 			const scope = context || document;
 			const $scope = scope instanceof jQuery ? scope : $(scope);
 
@@ -207,7 +206,7 @@
 					scrub: 1.2, // Smooth scrubbing
 					pin: $titleWidget[0], // Pinner le widget title (premier widget)
 					pinSpacing: true,
-					/* anticipatePin: 1, */
+					anticipatePin: 1,
 					markers: false, // Mettre à true pour debug
 					invalidateOnRefresh: true,
 					onEnter: () => {

@@ -52,10 +52,7 @@ class Icon_Menu_Walker extends \Walker_Nav_Menu {
 		}
 
 		// Vérifier si l'élément a des enfants (sous-menu)
-		$has_children = ( is_object( $args ) && ! empty( $args->has_children ) );
-		if ( ! $has_children ) {
-			$classes = array_values( array_diff( $classes, [ 'menu-item-has-children', 'page_item_has_children', 'nova-has-submenu' ] ) );
-		}
+		$has_children = in_array( 'menu-item-has-children', $classes );
 		if ( $has_children ) {
 			$classes[] = 'nova-has-submenu';
 		}

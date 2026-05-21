@@ -2186,7 +2186,6 @@ class Mega_Menu_Widget extends Widget_Base {
 			$logo_link = ! empty( $settings['mobile_logo_link']['url'] ) ? $settings['mobile_logo_link'] : [];
 			
 			?>
-			<style>.nova-mobile-breadcrumb-wrapper { display: none; }</style>
 			<div class="nova-mobile-breadcrumb-wrapper">
 				<?php if ( $enable_logo && ! empty( $logo_image['url'] ) ) : ?>
 					<div class="nova-mobile-breadcrumb-logo">
@@ -2276,19 +2275,9 @@ class Mega_Menu_Widget extends Widget_Base {
 			}
 		}
 
-		// Icônes dropdown globales (pour tous les items avec sous-menus).
-		// Fallback sur le chevron par défaut quand le réglage n'a jamais été sauvegardé
-		// (cas des widgets cr\u00e9\u00e9s avant l'ajout du contr\u00f4le `global_dropdown_icon`).
-		$default_dropdown_icon = [
-			'value'   => 'fas fa-chevron-down',
-			'library' => 'fa-solid',
-		];
-		$normal_icon = ( ! empty( $settings['global_dropdown_icon'] ) && ! empty( $settings['global_dropdown_icon']['value'] ) )
-			? $settings['global_dropdown_icon']
-			: $default_dropdown_icon;
-
+		// Icônes dropdown globales (pour tous les items avec sous-menus)
 		$global_icons = [
-			'icon'        => $normal_icon,
+			'icon'        => ! empty( $settings['global_dropdown_icon'] ) ? $settings['global_dropdown_icon'] : [],
 			'icon_hover'  => ! empty( $settings['global_dropdown_icon_hover'] ) ? $settings['global_dropdown_icon_hover'] : [],
 			'icon_active' => ! empty( $settings['global_dropdown_icon_active'] ) ? $settings['global_dropdown_icon_active'] : [],
 		];

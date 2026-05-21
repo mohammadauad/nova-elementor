@@ -380,15 +380,12 @@
 
 						// Remove elements from DOM after animation
 						setTimeout(() => {
-							if (loader && loader.parentNode) {
+							if (loader.parentNode) {
 								loader.parentNode.removeChild(loader);
 							}
-							if (overlay && overlay.parentNode) {
+							if (overlay.parentNode) {
 								overlay.parentNode.removeChild(overlay);
 							}
-							// ✅ Ensure body scroll is not locked
-							document.body.style.overflow = '';
-							document.documentElement.style.overflow = '';
 							log('✅ Page loader elements removed from DOM');
 						}, 100);
 					}
@@ -460,15 +457,12 @@
 
 						// Remove elements from DOM after animation
 						setTimeout(() => {
-							if (loader && loader.parentNode) {
+							if (loader.parentNode) {
 								loader.parentNode.removeChild(loader);
 							}
-							if (overlay && overlay.parentNode) {
+							if (overlay.parentNode) {
 								overlay.parentNode.removeChild(overlay);
 							}
-							// ✅ Ensure body scroll is not locked
-							document.body.style.overflow = '';
-							document.documentElement.style.overflow = '';
 							log('✅ Page loader elements removed from DOM');
 						}, 100);
 					}, animConfig.phase3Duration * 1000 + 50);

@@ -27,7 +27,7 @@
 			var $this = $(this);
 			var $parent = $this.parent('li');
 			var $submenu = $parent.children('.sub-menu');
-
+			
 			// ✅ LOGIQUE DE SÉPARATION :
 			// 1. Si clic sur le titre (span), on laisse la redirection se faire.
 			// 2. Sinon (icône dropdown), on fait le toggle.
@@ -58,7 +58,7 @@
 			var $this = $(this);
 			var $parent = $this.parent('li');
 			var $submenu = $parent.children('.sub-menu');
-
+			
 			// ✅ LOGIQUE DE SÉPARATION :
 			var isIconClick = $target.closest('.NOVA-dropdown-icon').length > 0;
 
@@ -348,13 +348,7 @@
 				// Only show overlay and lock body scroll for non-expand modes
 				if (animationType !== 'expand') {
 					$overlay.addClass('active');
-					/* 
-					if (window.NOVALenisScroll && typeof window.NOVALenisScroll.stop === 'function') {
-						window.NOVALenisScroll.stop();
-					} else {
-						$('body').css('overflow', 'hidden');
-					}
-					*/
+					$('body').css('overflow', 'hidden');
 				}
 
 				applyPopupAnimation($content, true);
@@ -415,13 +409,7 @@
 				// Only manage overlay and body scroll for non-expand modes
 				if (animationType !== 'expand') {
 					$overlay.removeClass('active');
-					/*
-					if (window.NOVALenisScroll && typeof window.NOVALenisScroll.start === 'function') {
-						window.NOVALenisScroll.start();
-					} else {
-						$('body').css('overflow', '');
-					}
-					*/
+					$('body').css('overflow', '');
 				}
 
 				applyPopupAnimation($content, false);
@@ -480,44 +468,13 @@
 		resizeTimer = setTimeout(applyBreakpoints, 250);
 	});
 
-	function bindElementorHooks() {
-		try {
-			if (typeof elementorFrontend === 'undefined' || !elementorFrontend) return false;
-			if (!elementorFrontend.hooks || typeof elementorFrontend.hooks.addAction !== 'function') return false;
-
-			elementorFrontend.hooks.addAction('frontend/element_ready/nova-mega-menu.default', function () {
-				initMobileBreadcrumb();
-			});
-			elementorFrontend.hooks.addAction('frontend/element_ready/nova-icon-menu.default', function () {
-				initMobileBreadcrumb();
-			});
-
-			return true;
-		} catch (e) {
-			return false;
-		}
+	if (typeof elementorFrontend !== 'undefined') {
+		elementorFrontend.hooks.addAction('frontend/element_ready/nova-mega-menu.default', function () {
+			initMobileBreadcrumb();
+		});
+		elementorFrontend.hooks.addAction('frontend/element_ready/nova-icon-menu.default', function () {
+			initMobileBreadcrumb();
+		});
 	}
-
-	$(window).on('elementor/frontend/init', function () {
-		var attempts = 0;
-		var tryBind = function () {
-			attempts++;
-			if (bindElementorHooks()) return;
-			if (attempts >= 40) return;
-			setTimeout(tryBind, 100);
-		};
-		tryBind();
-	});
-
-	(function () {
-		var attempts = 0;
-		var tryBind = function () {
-			attempts++;
-			if (bindElementorHooks()) return;
-			if (attempts >= 40) return;
-			setTimeout(tryBind, 100);
-		};
-		tryBind();
-	})();
 
 })(jQuery);

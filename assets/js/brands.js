@@ -26,6 +26,115 @@
 			} catch (e) {}
 		},
 
+		parseJsonMaybe: function (raw) {
+			if (!raw) return null;
+			if (typeof raw === 'object') return raw;
+			if (typeof raw === 'string') {
+				try {
+					return JSON.parse(raw.replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+				} catch (e) {
+					return null;
+				}
+			}
+			return null;
+		},
+
+		getViewportMode: function ($widget) {
+			const cfg = this.parseJsonMaybe($widget.data('display-mode-config')) || {};
+			const body = document.body;
+			if (body && body.classList) {
+				if (body.classList.contains('elementor-device-mobile')) {
+					return cfg.mobile || cfg.tablet || cfg.desktop || 'slider';
+				}
+				if (body.classList.contains('elementor-device-tablet')) {
+					return cfg.tablet || cfg.desktop || 'slider';
+				}
+				if (body.classList.contains('elementor-device-desktop')) {
+					return cfg.desktop || 'slider';
+				}
+			}
+			const width = window.innerWidth || document.documentElement.clientWidth || 0;
+			if (width <= 767) return cfg.mobile || cfg.tablet || cfg.desktop || 'slider';
+			if (width <= 1024) return cfg.tablet || cfg.desktop || 'slider';
+			return cfg.desktop || 'slider';
+		},
+
+		destroySlider: function ($widget) {
+			const $swiper = $widget.find('.nova-brands-variant--slider .nova-brands-swiper');
+			if (!$swiper.length) return;
+			const inst = $swiper[0].swiper;
+			if (inst && !inst.destroyed) {
+				try {
+					inst.destroy(true, true);
+				} catch (e) {}
+			}
+			this.instances = this.instances.filter((entry) => entry.widget[0] !== $widget[0]);
+		},
+
+		applyDisplayMode: function ($widget) {
+			if (!$widget || !$widget.length) return;
+
+			const desired = this.getViewportMode($widget);
+			const prev = $widget.data('nova-brands-display-mode') || '';
+
+			if (prev === desired) {
+				if (desired === 'grid') {
+					this.initGrid($widget);
+				} else {
+					const $swiper = $widget.find('.nova-brands-variant--slider .nova-brands-swiper');
+					if ($swiper.length && (!$swiper[0].swiper || $swiper[0].swiper.destroyed)) {
+						let sliderConfig = $widget.data('slider-config') || {};
+						if (typeof sliderConfig === 'string') {
+							sliderConfig = this.parseJsonMaybe(sliderConfig) || {};
+						}
+						this.initSlider($widget, sliderConfig);
+					}
+				}
+				return;
+			}
+
+			if (prev === 'slider') {
+				this.destroySlider($widget);
+			}
+
+			$widget.removeClass('nova-brands-widget--mode-slider nova-brands-widget--mode-grid');
+			$widget.addClass('nova-brands-widget--mode-' + desired);
+			$widget.attr('data-brands-mode-applied', '1');
+			$widget.data('nova-brands-display-mode', desired);
+
+			if (desired === 'slider') {
+				let sliderConfig = $widget.data('slider-config') || {};
+				if (typeof sliderConfig === 'string') {
+					sliderConfig = this.parseJsonMaybe(sliderConfig) || {};
+				}
+				const self = this;
+				const runSlider = function () {
+					if (typeof Swiper !== 'undefined') {
+						self.initSlider($widget, sliderConfig);
+					} else {
+						self.waitForSwiper(function () {
+							self.initSlider($widget, sliderConfig);
+						});
+					}
+				};
+				runSlider();
+			} else {
+				this.initGrid($widget);
+			}
+		},
+
+		waitForSwiper: function (callback) {
+			let attempts = 0;
+			const timer = setInterval(() => {
+				if (typeof Swiper !== 'undefined') {
+					clearInterval(timer);
+					callback();
+				} else if (++attempts >= 50) {
+					clearInterval(timer);
+				}
+			}, 100);
+		},
+
 	/**
 	 * Initialize
 	 */
@@ -158,20 +267,9 @@
 			
 			$widget.data('nova-brands-initialized', true);
 
-			const enableSlider = $widget.data('enable-slider') === '1' || $widget.data('enable-slider') === 1;
-			let sliderConfig = $widget.data('slider-config') || {};
-			const animationConfig = $widget.data('animation-config') || {};
-			
-			// Si sliderConfig est une string JSON, la parser
-			if (typeof sliderConfig === 'string') {
-				try {
-					// Décode les entités HTML (comme &quot;)
-					const decoded = sliderConfig.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-					sliderConfig = JSON.parse(decoded);
-				} catch (e) {
-					// Error parsing slider config
-					sliderConfig = {};
-				}
+			let animationConfig = $widget.data('animation-config') || {};
+			if (typeof animationConfig === 'string') {
+				animationConfig = this.parseJsonMaybe(animationConfig) || {};
 			}
 
 			// Initialize main widget animation (block animation)
@@ -182,29 +280,26 @@
 				$widget.addClass('animated');
 			}
 
-			// Initialize slider if enabled
-			if (enableSlider) {
-				// Wait for Swiper to be available
-				if (typeof Swiper !== 'undefined') {
-					this.initSlider($widget, sliderConfig);
-				} else {
-					// Wait for Swiper to load
-					let swiperAttempts = 0;
-					const maxSwiperAttempts = 50;
-					const checkSwiper = setInterval(() => {
-						swiperAttempts++;
-						if (typeof Swiper !== 'undefined') {
-							clearInterval(checkSwiper);
-							this.initSlider($widget, sliderConfig);
-						} else if (swiperAttempts >= maxSwiperAttempts) {
-							clearInterval(checkSwiper);
-							// Swiper not found after waiting
-						}
-					}, 100);
-				}
-			} else {
-				// Grid mode: appliquer les colonnes responsive dans l'éditeur
-				this.initGrid($widget);
+			delete $widget[0].dataset.novaBrandsDisplayMode;
+			this.applyDisplayMode($widget);
+
+			if (!this._brandsResizeBound) {
+				this._brandsResizeBound = true;
+				const self = this;
+				let resizeTimer;
+				$(window).on('resize.nova-brands-display', function () {
+					clearTimeout(resizeTimer);
+					resizeTimer = setTimeout(function () {
+						$('.nova-brands-widget').each(function () {
+							const $w = $(this);
+							if ($w.data('nova-brands-initialized')) {
+								delete $w[0].dataset.novaBrandsDisplayMode;
+								$w.removeData('nova-brands-display-mode');
+								self.applyDisplayMode($w);
+							}
+						});
+					}, 150);
+				});
 			}
 
 			// Initialize individual item animations (for grid layout only, optional)
@@ -296,7 +391,7 @@
 		 */
 		initSlider: function($widget, config) {
 			
-			const $swiper = $widget.find('.nova-brands-swiper');
+			const $swiper = $widget.find('.nova-brands-variant--slider .nova-brands-swiper');
 
 			if ($swiper.length === 0) {
 				// Swiper container not found
@@ -336,25 +431,46 @@
 			
 			
 			const spaceBetween = parseInt(config.spaceBetween) || 30;
-			
+			const marquee = config.marquee === true || config.marquee === 'true' || config.marquee === 'yes' || config.marquee === 1;
+			const marqueeSpeed = parseInt(config.marqueeSpeed, 10) || 8000;
+			const marqueePauseOnHover = config.marqueePauseOnHover !== false && config.marqueePauseOnHover !== 'false' && config.marqueePauseOnHover !== '0';
+
+			if (marquee) {
+				$swiper.addClass('nova-brands-swiper--marquee');
+			}
+
 			// Configuration de base
 			const swiperConfig = {
 				spaceBetween: spaceBetween,
-				loop: config.loop === true || config.loop === 'true' || config.loop === 'yes',
-				speed: parseInt(config.speed) || 600,
+				loop: marquee || config.loop === true || config.loop === 'true' || config.loop === 'yes',
+				speed: marquee ? marqueeSpeed : (parseInt(config.speed) || 600),
 				initialSlide: 0,
 				watchOverflow: true,
-				centeredSlidesBounds: true,
-				centerInsufficientSlides: true,
-				autoplay: (config.autoplay === true || config.autoplay === 'true' || config.autoplay === 'yes') ? {
+				centeredSlidesBounds: !marquee,
+				centerInsufficientSlides: !marquee,
+				allowTouchMove: true,
+				autoplay: false,
+			};
+
+			if (marquee) {
+				swiperConfig.slidesPerView = 'auto';
+				swiperConfig.autoWidth = true;
+				swiperConfig.autoplay = {
+					delay: 0,
+					disableOnInteraction: false,
+					pauseOnMouseEnter: marqueePauseOnHover,
+				};
+				swiperConfig.freeMode = false;
+			} else if (config.autoplay === true || config.autoplay === 'true' || config.autoplay === 'yes') {
+				swiperConfig.autoplay = {
 					delay: parseInt(config.autoplayDelay) || 3000,
 					disableOnInteraction: false,
 					pauseOnMouseEnter: true,
-				} : false,
-			};
-			
+				};
+			}
+
 			// Si autoWidth est activé, utiliser slidesPerView: 'auto'
-			if (autoWidth) {
+			if (autoWidth || marquee) {
 				swiperConfig.slidesPerView = 'auto';
 				swiperConfig.autoWidth = true;
 			} else {
@@ -551,7 +667,7 @@
 		 * Initialize grid responsive (for editor device mode)
 		 */
 		initGrid: function($widget) {
-			const $grid = $widget.find('.nova-brands-grid-inner');
+			const $grid = $widget.find('.nova-brands-variant--grid .nova-brands-grid-inner');
 			if (!$grid.length) return;
 
 			const gridEl = $grid[0];
@@ -711,7 +827,10 @@
 				'frontend/element_ready/nova-brands.default',
 				function($scope) {
 					const $widget = $scope.find('.nova-brands-widget');
-					if ($widget.length && !$widget.data('nova-brands-initialized')) {
+					if ($widget.length) {
+						NovaBrands.destroySlider($widget);
+						$widget.data('nova-brands-initialized', false);
+						delete $widget[0].dataset.novaBrandsDisplayMode;
 						NovaBrands.initInstance($widget);
 					}
 				}

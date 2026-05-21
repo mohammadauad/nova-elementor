@@ -121,20 +121,13 @@
 
 			this.isInitialized = true; // ✅ MARKER D'INITIALISATION
 
-			// ✅ Masquer le menu immédiatement (sans animation) puis activer les events
+			// ✅ DELAY isReady to avoid early hover/leave triggers (ONLY IF HOVER IS ENABLED)
 			const self = this;
 			if (self.hoverAnimationEnabled) {
-				// Fermeture instantanée au chargement (pas d'animation visible)
-				gsap.set(self.$menu[0], { width: 0 });
-				self.$menu[0].style.setProperty('width', '0', 'important');
-				self.$menu[0].style.setProperty('overflow', 'hidden', 'important');
-				gsap.set(self.$iconImg[0], { rotation: 90 });
-				self.isMenuOpen = false;
-
-				// Activer les interactions après un court délai
 				setTimeout(function () {
 					self.isReady = true;
-				}, 300);
+					self.hideMenu(true);
+				}, 1500); // 1500ms delay
 			} else {
 				// If hover is disabled, menu is already in final state
 				self.isReady = true;
@@ -235,19 +228,19 @@
 					duration: self.config.animDuration,
 					ease: self.config.hoverEasing,
 					onStart: function () {
-					// ✅ Removed !important
-					self.$menu[0].style.setProperty('overflow', 'hidden');
-					self.$menu[0].style.setProperty('width', targetWidth + 'px', 'important');
-				},
-				onUpdate: function () {
-					// ✅ Reapply !important to width
-					self.$menu[0].style.setProperty('width', self.$menu[0].style.width, 'important');
-				},
-				onComplete: function () {
-					// ✅ Reset overflow but keep width
-					self.$menu[0].style.setProperty('overflow', 'visible');
-					self.$menu[0].style.setProperty('width', targetWidth + 'px', 'important');
-				}
+						// ✅ Apply !important to width and overflow DURING animation
+						self.$menu[0].style.setProperty('overflow', 'hidden', 'important');
+						self.$menu[0].style.setProperty('width', targetWidth + 'px', 'important');
+					},
+					onUpdate: function () {
+						// ✅ Reapply !important to width at every frame (GSAP may override it)
+						self.$menu[0].style.setProperty('width', self.$menu[0].style.width, 'important');
+					},
+					onComplete: function () {
+						// ✅ Force width: auto and overflow with !important after animation
+						self.$menu[0].style.setProperty('width', 'auto', 'important');
+						self.$menu[0].style.setProperty('overflow', 'visible', 'important');
+					}
 				});
 
 				// Rotate icon to 0deg
@@ -287,8 +280,8 @@
 				duration: this.config.animDuration,
 				ease: this.config.hoverEasing,
 				onStart: function () {
-					// ✅ Removed !important to avoid blocking conflicts
-					self.$menu[0].style.setProperty('overflow', 'hidden');
+					// ✅ Apply !important to width and overflow DURING animation
+					self.$menu[0].style.setProperty('overflow', 'hidden', 'important');
 					self.$menu[0].style.setProperty('width', '0', 'important');
 				},
 				onUpdate: function () {
@@ -296,9 +289,9 @@
 					self.$menu[0].style.setProperty('width', self.$menu[0].style.width, 'important');
 				},
 				onComplete: function () {
-					// ✅ Removed !important
+					// ✅ Force width: 0 and overflow with !important after animation
 					self.$menu[0].style.setProperty('width', '0', 'important');
-					self.$menu[0].style.setProperty('overflow', 'hidden');
+					self.$menu[0].style.setProperty('overflow', 'hidden', 'important');
 				}
 			});
 

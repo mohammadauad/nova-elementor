@@ -591,3 +591,163 @@ h2.nova-icon-menu-header-title {
 	min-height: var(--card-height, 500px) !important;
 	width: 100% !important;
 }
+
+/* ============================================
+   Responsive variants (stacking / slider / grid) — HTML séparé
+   ============================================ */
+
+/* Avant JS : afficher uniquement le stacking */
+.nova-stacking-cards-2-wrapper:not([data-sc2-mode-applied]) .nova-stacking-cards-2-variant--slider,
+.nova-stacking-cards-2-wrapper:not([data-sc2-mode-applied]) .nova-stacking-cards-2-variant--grid {
+	display: none !important;
+}
+
+.nova-stacking-cards-2-wrapper:not([data-sc2-mode-applied]) .nova-stacking-cards-2-variant--stacking {
+	display: block;
+}
+
+.nova-stacking-cards-2-wrapper[data-sc2-mode-applied] .nova-stacking-cards-2-variant {
+	display: none !important;
+}
+
+.nova-stacking-cards-2-wrapper[data-sc2-mode-applied].nova-stacking-cards-2-wrapper--mode-stacking .nova-stacking-cards-2-variant--stacking {
+	display: block !important;
+}
+
+.nova-stacking-cards-2-wrapper[data-sc2-mode-applied].nova-stacking-cards-2-wrapper--mode-slider .nova-stacking-cards-2-variant--slider {
+	display: block !important;
+}
+
+.nova-stacking-cards-2-wrapper[data-sc2-mode-applied].nova-stacking-cards-2-wrapper--mode-grid .nova-stacking-cards-2-variant--grid {
+	display: block !important;
+}
+
+/* Slider = Owl Carousel (même stack que NOVA Carousel Owl) */
+.nova-stacking-cards-2-variant--slider .nova-sc2-slider.owl-carousel {
+	width: 100%;
+	position: relative;
+}
+
+.nova-stacking-cards-2-variant--slider .nova-sc2-slider .owl-nav button.owl-prev,
+.nova-stacking-cards-2-variant--slider .nova-sc2-slider .owl-nav button.owl-next {
+	font-size: 2rem;
+	line-height: 1;
+}
+
+/* Grille : hauteur minimale, le contenu peut s’allonger */
+.nova-stacking-cards-2-variant--grid .nova-stacking-card-2 {
+	position: relative !important;
+	inset: auto !important;
+	left: auto !important;
+	right: auto !important;
+	width: 100% !important;
+	height: auto !important;
+	min-height: var(--card-height, 500px);
+	overflow: hidden;
+	transform: none !important;
+	opacity: 1 !important;
+}
+
+/* Slider : hauteur naturelle puis égalisation JS (hauteur = carte la plus haute) */
+.nova-stacking-cards-2-variant--slider .nova-stacking-card-2 {
+	position: relative !important;
+	inset: auto !important;
+	left: auto !important;
+	right: auto !important;
+	width: 100% !important;
+	height: auto !important;
+	min-height: 0;
+	max-height: none;
+	overflow: hidden;
+	transform: none !important;
+	opacity: 1 !important;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+}
+
+.nova-stacking-cards-2-variant--slider .nova-stacking-card-2__inner {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.nova-stacking-cards-2-variant--slider .owl-item {
+	width: auto;
+	display: flex;
+	align-items: stretch;
+	align-self: stretch;
+}
+
+.nova-stacking-cards-2-variant--slider .owl-item > .item {
+	box-sizing: border-box;
+	width: var(--sc2-owl-slide-w-m, 300px);
+	flex-shrink: 0;
+	display: flex;
+	align-items: stretch;
+	align-self: stretch;
+	min-height: 0;
+	height: auto;
+}
+
+@media (min-width: 768px) {
+	.nova-stacking-cards-2-variant--slider .owl-item > .item {
+		width: var(--sc2-owl-slide-w-t, 360px);
+	}
+}
+
+@media (min-width: 1025px) {
+	.nova-stacking-cards-2-variant--slider .owl-item > .item {
+		width: var(--sc2-owl-slide-w-d, 400px);
+	}
+}
+
+.nova-stacking-cards-2-variant--slider .owl-item > .item > .nova-stacking-card-2 {
+	flex: 1 1 auto;
+	width: 100%;
+	min-width: 0;
+	align-self: stretch;
+}
+
+/* Grille responsive (variables posées sur le wrapper par PHP) */
+.nova-sc2-grid {
+	display: grid;
+	grid-template-columns: repeat(var(--sc2-grid-cols-m, 1), minmax(0, 1fr));
+	gap: 20px;
+	padding: 16px 20px 32px;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+@media (min-width: 768px) {
+	.nova-sc2-grid {
+		grid-template-columns: repeat(var(--sc2-grid-cols-t, 2), minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1025px) {
+	.nova-sc2-grid {
+		grid-template-columns: repeat(var(--sc2-grid-cols-d, 3), minmax(0, 1fr));
+	}
+}
+
+.nova-sc2-grid__cell {
+	min-width: 0;
+}
+
+@media (max-width: 767px) {
+	.nova-stacking-cards-2-variant--grid .nova-stacking-card-2__inner {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.nova-stacking-cards-2-variant--grid .nova-stacking-card-2--reversed .nova-stacking-card-2__inner {
+		flex-direction: column;
+	}
+
+	.nova-stacking-cards-2-variant--grid .nova-stacking-card-2__media {
+		order: -1;
+		max-width: 100%;
+	}
+}

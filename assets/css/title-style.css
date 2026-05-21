@@ -10,10 +10,6 @@
 	justify-content: center;
 	/* Les propriétés flex (direction, justify-content, align-items, gap) seront gérées par Elementor */
 }
-.elementor-widget-nova-title .nova-title-left-group {
-	display: flex;
-	flex-direction: column;
-}
 .nova-stacking-card-2__inner.nova-stacking-card-2__inner--nova-title, .nova-stacking-card-2__inner.nova-stacking-card-2__inner--nova-title > div {
     padding: 0 !important;
     height: auto !important;
@@ -22,9 +18,7 @@
 	/* Largeur max par défaut - sera surchargée par Elementor si configurée */
 	max-width: 100%;
 }
-.nova-title-text.nova-title-text-2 p:last-child {
-    margin-bottom: 0;
-}
+
 .elementor-widget-nova-title .nova-title-overlay-content .nova-title-text-right {
 	display: flex;
 	flex-direction: column;
@@ -184,7 +178,12 @@
 	transition: transform 0.8s ease;
 	/* left/right, top/bottom et transform sont définis en inline selon align_h, align_v et translate X/Y */
 }
-
+span.nova-title-badge-text * {
+    margin: 0;
+}
+.nova-title-text-1 * {
+    margin: 0;
+}
 .elementor-widget-nova-title .nova-title-decoration-icon-inner {
 	display: inline-flex;
 	align-items: center;

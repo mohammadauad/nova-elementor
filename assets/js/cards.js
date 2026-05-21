@@ -226,12 +226,7 @@
 
 			// Initialize filters if enabled
 			if ($widget.data('enable-filters') === 'yes') {
-				const filterMode = String($widget.data('filter-mode') || 'taxonomy').toLowerCase();
-				if (filterMode === 'meta') {
-					this.initMetaFilters($widget);
-				} else {
-					this.initFilters($widget);
-				}
+				this.initFilters($widget);
 			}
 		},
 
@@ -588,192 +583,14 @@
 		},
 
 		/**
-		 * Filtres par champs meta (select, texte, checkbox) + icônes.
-		 */
-		initMetaFilters: function ($widget) {
-			const $container = $widget.find('.nova-cards-filters--meta');
-			if ($container.length === 0) {
-				return;
-			}
-
-			const self = this;
-			const hideFilterAll = $widget.data('hide-filter-all') === 'yes';
-			const hideFilterAllMobile = !hideFilterAll && $widget.data('hide-filter-all-mobile') === 'yes';
-
-			function parseCardMeta($item) {
-				const raw = $item.attr('data-card-meta');
-				if (!raw) {
-					return {};
-				}
-				try {
-					const parsed = JSON.parse(raw);
-					return parsed && typeof parsed === 'object' ? parsed : {};
-				} catch (e) {
-					return {};
-				}
-			}
-
-			function normalizeVal(v) {
-				if (v === null || v === undefined) {
-					return '';
-				}
-				if (typeof v === 'boolean') {
-					return v ? '1' : '0';
-				}
-				return String(v).trim();
-			}
-
-			function isTruthyMeta(val) {
-				const s = normalizeVal(val).toLowerCase();
-				return s === '1' || s === 'yes' || s === 'oui' || s === 'true' || s === 'on';
-			}
-
-			function collectActiveMetaFilters() {
-				const filters = [];
-				$container.find('.nova-cards-meta-filter-input').each(function () {
-					const $input = $(this);
-					const key = String($input.data('meta-key') || '');
-					const type = String($input.data('field-type') || 'select');
-					if (!key) {
-						return;
-					}
-					if (type === 'checkbox') {
-						if ($input.is(':checked')) {
-							filters.push({ key: key, type: type, value: '1' });
-						}
-						return;
-					}
-					const val = normalizeVal($input.val());
-					if (val !== '') {
-						filters.push({ key: key, type: type, value: val });
-					}
-				});
-				return filters;
-			}
-
-			function cardMatches($item, filters) {
-				if (!filters.length) {
-					return true;
-				}
-				const meta = parseCardMeta($item);
-				for (let i = 0; i < filters.length; i++) {
-					const f = filters[i];
-					const cardVal = normalizeVal(meta[f.key]);
-					if (f.type === 'text') {
-						if (cardVal.toLowerCase().indexOf(String(f.value).toLowerCase()) === -1) {
-							return false;
-						}
-					} else if (f.type === 'checkbox') {
-						if (!isTruthyMeta(cardVal)) {
-							return false;
-						}
-					} else if (cardVal !== f.value) {
-						return false;
-					}
-				}
-				return true;
-			}
-
-			function applyMetaFilters() {
-				const filters = collectActiveMetaFilters();
-				const $currentItems = $widget.find('.nova-card-item');
-				$currentItems.each(function () {
-					const $item = $(this);
-					if (cardMatches($item, filters)) {
-						$item.removeClass('nova-filter-hidden').css('display', '');
-					} else {
-						$item.addClass('nova-filter-hidden').css('display', 'none');
-					}
-				});
-
-				setTimeout(function () {
-					let gridConfig = $widget.data('grid-config') || {};
-					if (typeof gridConfig === 'string') {
-						try {
-							const decoded = gridConfig.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-							gridConfig = JSON.parse(decoded);
-						} catch (e) {
-							gridConfig = {};
-						}
-					}
-					self.applyGridConfig($widget, gridConfig);
-				}, 100);
-			}
-
-			function resetMetaFilters() {
-				$container.find('.nova-cards-meta-filter-input').each(function () {
-					const $input = $(this);
-					if ($input.attr('type') === 'checkbox') {
-						$input.prop('checked', false);
-					} else {
-						$input.val('');
-					}
-				});
-				$container.find('.nova-cards-filter-item').removeClass('active');
-				$container.find('.nova-cards-meta-reset').addClass('active');
-				applyMetaFilters();
-			}
-
-			const handleMobileFilterAll = function () {
-				if (hideFilterAll || !hideFilterAllMobile) {
-					return;
-				}
-				const isMobile = window.innerWidth <= 767;
-				const $reset = $container.find('.nova-cards-meta-reset');
-				if (!$reset.length) {
-					return;
-				}
-				if (isMobile) {
-					$reset.hide();
-				} else {
-					$reset.show();
-				}
-			};
-
-			if (!hideFilterAll) {
-				handleMobileFilterAll();
-			}
-			const widgetId = $widget.attr('data-id') || Math.random().toString(36).substr(2, 9);
-			let resizeTimer;
-			$(window)
-				.off('resize.nova-cards-meta-filters-' + widgetId)
-				.on('resize.nova-cards-meta-filters-' + widgetId, function () {
-					clearTimeout(resizeTimer);
-					resizeTimer = setTimeout(handleMobileFilterAll, 250);
-				});
-
-			if (!hideFilterAll) {
-				$widget
-					.off('click.nova-cards-meta-reset', '.nova-cards-meta-reset')
-					.on('click.nova-cards-meta-reset', '.nova-cards-meta-reset', function (e) {
-						e.preventDefault();
-						resetMetaFilters();
-					});
-			}
-
-			$widget
-				.off('input.nova-cards-meta-filter change.nova-cards-meta-filter', '.nova-cards-meta-filter-input')
-				.on('input.nova-cards-meta-filter change.nova-cards-meta-filter', '.nova-cards-meta-filter-input', function () {
-					$container.find('.nova-cards-filter-item').removeClass('active');
-					applyMetaFilters();
-				});
-
-			applyMetaFilters();
-		},
-
-		/**
 		 * Initialiser les filtres
 		 */
 		initFilters: function ($widget) {
 			const $filtersContainer = $widget.find('.nova-cards-filters');
 			const $filters = $widget.find('.nova-cards-filter-item');
-			const hideFilterAll = $widget.data('hide-filter-all') === 'yes';
-			const hideFilterAllMobile = !hideFilterAll && $widget.data('hide-filter-all-mobile') === 'yes';
+			const hideFilterAllMobile = $widget.data('hide-filter-all-mobile') === 'yes';
 
-			if ($filtersContainer.length === 0) {
-				return;
-			}
-			if ($filters.length === 0 && hideFilterAll) {
+			if ($filtersContainer.length === 0 || $filters.length === 0) {
 				return;
 			}
 
@@ -826,7 +643,7 @@
 
 			// Gérer l'affichage du bouton "Tout" sur mobile
 			const handleMobileFilterAll = function () {
-				if (hideFilterAll || !hideFilterAllMobile) {
+				if (!hideFilterAllMobile) {
 					return;
 				}
 				const isMobile = window.innerWidth <= 767;
@@ -843,14 +660,7 @@
 				}
 			};
 
-			if (!hideFilterAll) {
-				handleMobileFilterAll();
-			} elseif ($filters.length > 0 && !$filters.filter('.active').length) {
-				const $firstFilter = $widget.find('.nova-cards-filter-item:not([data-filter="*"])').first();
-				if ($firstFilter.length) {
-					applyFilter($firstFilter);
-				}
-			}
+			handleMobileFilterAll();
 
 			const widgetId = $widget.attr('data-id') || Math.random().toString(36).substr(2, 9);
 			let resizeTimer;

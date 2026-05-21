@@ -113,29 +113,6 @@ class Tabs_Widget extends Widget_Base
 		return $this->get_nova_title_widgets_options_safe();
 	}
 
-	protected function get_elementor_templates_options()
-	{
-		$options = [
-			'' => esc_html__('— Aucun —', 'NOVA-addons'),
-		];
-
-		if (!class_exists('\Elementor\Plugin')) {
-			return $options;
-		}
-
-		$templates = \Elementor\Plugin::$instance->templates_manager->get_source('local')->get_items();
-		if (!empty($templates) && is_array($templates)) {
-			foreach ($templates as $template) {
-				if (empty($template['template_id'])) {
-					continue;
-				}
-				$options[$template['template_id']] = $template['title'] . ' (ID ' . $template['template_id'] . ')';
-			}
-		}
-
-		return $options;
-	}
-
 	protected function find_nova_title_widgets($elements, &$options)
 	{
 		if (!is_array($elements)) {
@@ -379,7 +356,6 @@ class Tabs_Widget extends Widget_Base
 			'options' => [
 				'wysiwyg' => esc_html__('Éditeur de texte classique', 'NOVA-addons'),
 				'nova_title' => esc_html__('Widget NOVA Title de la page', 'NOVA-addons'),
-				'elementor_template' => esc_html__('Modèle Elementor', 'NOVA-addons'),
 			],
 		]);
 
@@ -389,19 +365,6 @@ class Tabs_Widget extends Widget_Base
 			'description' => esc_html__('Ce texte sera affiché en continu, indépendamment des tabs.', 'NOVA-addons'),
 			'condition' => ['fixed_text_source' => 'wysiwyg'],
 		]);
-
-		$this->add_control(
-			'fixed_text_template',
-			[
-				'label' => esc_html__('Choisir un modèle', 'NOVA-addons'),
-				'type' => Controls_Manager::SELECT,
-				'options' => $this->get_elementor_templates_options(),
-				'default' => '',
-				'condition' => [
-					'fixed_text_source' => 'elementor_template',
-				],
-			]
-		);
 
 		$this->add_control(
 			'selected_nova_title_widget_id',
@@ -526,9 +489,8 @@ class Tabs_Widget extends Widget_Base
 		]);
 
 		$repeater->add_control('content_image', [
-			'label' => esc_html__('Images', 'NOVA-addons'),
-			'type'  => Controls_Manager::GALLERY,
-			'show_label' => true,
+			'label' => esc_html__('Image', 'NOVA-addons'),
+			'type' => Controls_Manager::MEDIA,
 		]);
 
 		$repeater->add_control('content_icon', [
@@ -566,122 +528,6 @@ class Tabs_Widget extends Widget_Base
 			'type' => Controls_Manager::NUMBER,
 			'default' => 1,
 			'min' => 1,
-		]);
-
-		$this->add_control('autoplay', [
-			'label' => esc_html__('Autoplay', 'NOVA-addons'),
-			'type' => Controls_Manager::SWITCHER,
-			'label_on' => esc_html__('Oui', 'NOVA-addons'),
-			'label_off' => esc_html__('Non', 'NOVA-addons'),
-			'return_value' => 'yes',
-			'default' => 'no',
-			'separator' => 'before',
-		]);
-
-		$this->add_control('autoplay_speed', [
-			'label' => esc_html__('Vitesse Autoplay (ms)', 'NOVA-addons'),
-			'type' => Controls_Manager::NUMBER,
-			'default' => 5000,
-			'min' => 1000,
-			'step' => 100,
-			'condition' => [
-				'autoplay' => 'yes',
-			],
-		]);
-
-		$this->add_control('progress_bar_color', [
-			'label' => esc_html__('Couleur barre de progression', 'NOVA-addons'),
-			'type' => Controls_Manager::COLOR,
-			'selectors' => [
-				'{{WRAPPER}} .nova-tab-progress-fill' => 'background-color: {{VALUE}};',
-			],
-			'condition' => [
-				'autoplay' => 'yes',
-			],
-		]);
-
-		$this->add_responsive_control('progress_bar_height', [
-			'label' => esc_html__('Épaisseur barre de progression', 'NOVA-addons'),
-			'type' => Controls_Manager::SLIDER,
-			'size_units' => ['px'],
-			'range' => ['px' => ['min' => 1, 'max' => 20]],
-			'default' => ['size' => 3, 'unit' => 'px'],
-			'selectors' => [
-				'{{WRAPPER}} .nova-tab-progress' => 'height: {{SIZE}}{{UNIT}};',
-			],
-			'condition' => [
-				'autoplay' => 'yes',
-			],
-		]);
-
-		// ── Animation fade du contenu ────────────────────────────
-		$this->add_control('content_fade_heading', [
-			'label' => esc_html__('Animation du contenu', 'NOVA-addons'),
-			'type' => Controls_Manager::HEADING,
-			'separator' => 'before',
-		]);
-
-		$this->add_control('content_fade', [
-			'label' => esc_html__('Activer l\'animation fade-in', 'NOVA-addons'),
-			'type' => Controls_Manager::SWITCHER,
-			'label_on' => esc_html__('Oui', 'NOVA-addons'),
-			'label_off' => esc_html__('Non', 'NOVA-addons'),
-			'return_value' => 'yes',
-			'default' => 'no',
-			'description' => esc_html__('Anime le contenu des tabs à l\'apparition (premier rendu et au scroll quand le widget entre dans le viewport).', 'NOVA-addons'),
-		]);
-
-		$this->add_control('content_fade_trigger', [
-			'label' => esc_html__('Déclencheur', 'NOVA-addons'),
-			'type' => Controls_Manager::SELECT,
-			'default' => 'both',
-			'options' => [
-				'load' => esc_html__('Au chargement de la page', 'NOVA-addons'),
-				'scroll' => esc_html__('À l\'entrée dans le viewport (scroll)', 'NOVA-addons'),
-				'both' => esc_html__('Au chargement ET au scroll (selon visibilité)', 'NOVA-addons'),
-			],
-			'condition' => ['content_fade' => 'yes'],
-		]);
-
-		$this->add_control('content_fade_replay', [
-			'label' => esc_html__('Rejouer à chaque changement de tab', 'NOVA-addons'),
-			'type' => Controls_Manager::SWITCHER,
-			'label_on' => esc_html__('Oui', 'NOVA-addons'),
-			'label_off' => esc_html__('Non', 'NOVA-addons'),
-			'return_value' => 'yes',
-			'default' => 'no',
-			'condition' => ['content_fade' => 'yes'],
-		]);
-
-		$this->add_control('content_fade_duration', [
-			'label' => esc_html__('Durée (ms)', 'NOVA-addons'),
-			'type' => Controls_Manager::NUMBER,
-			'default' => 700,
-			'min' => 100,
-			'max' => 4000,
-			'step' => 50,
-			'condition' => ['content_fade' => 'yes'],
-		]);
-
-		$this->add_control('content_fade_delay', [
-			'label' => esc_html__('Délai (ms)', 'NOVA-addons'),
-			'type' => Controls_Manager::NUMBER,
-			'default' => 0,
-			'min' => 0,
-			'max' => 3000,
-			'step' => 50,
-			'condition' => ['content_fade' => 'yes'],
-		]);
-
-		$this->add_control('content_fade_translate_y', [
-			'label' => esc_html__('Décalage vertical initial (px)', 'NOVA-addons'),
-			'type' => Controls_Manager::NUMBER,
-			'default' => 20,
-			'min' => 0,
-			'max' => 200,
-			'step' => 2,
-			'description' => esc_html__('0 = pas de translation, fade uniquement.', 'NOVA-addons'),
-			'condition' => ['content_fade' => 'yes'],
 		]);
 
 		$this->end_controls_section();
@@ -769,32 +615,6 @@ class Tabs_Widget extends Widget_Base
 		$this->end_controls_tab();
 
 		$this->end_controls_tabs();
-
-		$this->add_control('tab_static_border_heading', [
-			'label' => esc_html__('Bordure inférieure (statique)', 'NOVA-addons'),
-			'type' => Controls_Manager::HEADING,
-			'separator' => 'before',
-		]);
-
-		$this->add_responsive_control('tab_static_border_width', [
-			'label' => esc_html__('Épaisseur bordure', 'NOVA-addons'),
-			'type' => Controls_Manager::SLIDER,
-			'size_units' => ['px'],
-			'range' => ['px' => ['min' => 0, 'max' => 10]],
-			'default' => ['size' => 1, 'unit' => 'px'],
-			'selectors' => [
-				'{{WRAPPER}} .nova-tab-btn' => '--nova-tab-border-width: {{SIZE}}{{UNIT}}; border-bottom-width: {{SIZE}}{{UNIT}} !important; border-bottom-style: solid;',
-			],
-		]);
-
-		$this->add_control('tab_static_border_color', [
-			'label' => esc_html__('Couleur bordure', 'NOVA-addons'),
-			'type' => Controls_Manager::COLOR,
-			'default' => '#e1e1e1',
-			'selectors' => [
-				'{{WRAPPER}} .nova-tab-btn' => 'border-bottom-color: {{VALUE}} !important;',
-			],
-		]);
 
 		$this->end_controls_section();
 
@@ -1041,30 +861,8 @@ class Tabs_Widget extends Widget_Base
 
 		// ── STYLE IMAGE ──────────────────────────────────────────
 		$this->start_controls_section('section_style_image', [
-			'label' => esc_html__('Images', 'NOVA-addons'),
+			'label' => esc_html__('Image', 'NOVA-addons'),
 			'tab' => Controls_Manager::TAB_STYLE,
-		]);
-
-		$this->add_responsive_control('images_columns', [
-			'label'   => esc_html__('Colonnes', 'NOVA-addons'),
-			'type'    => Controls_Manager::NUMBER,
-			'min'     => 1,
-			'max'     => 6,
-			'default' => 1,
-			'selectors' => [
-				'{{WRAPPER}} .nova-tab-content-image' => 'grid-template-columns: repeat({{VALUE}}, 1fr);',
-			],
-		]);
-
-		$this->add_responsive_control('images_gap', [
-			'label'      => esc_html__('Espacement entre images', 'NOVA-addons'),
-			'type'       => Controls_Manager::SLIDER,
-			'size_units' => ['px', 'em'],
-			'range'      => ['px' => ['min' => 0, 'max' => 80]],
-			'default'    => ['size' => 12, 'unit' => 'px'],
-			'selectors'  => [
-				'{{WRAPPER}} .nova-tab-content-image' => 'gap: {{SIZE}}{{UNIT}};',
-			],
 		]);
 
 		$this->add_responsive_control('image_width', [
@@ -1100,197 +898,6 @@ class Tabs_Widget extends Widget_Base
 			'type' => Controls_Manager::DIMENSIONS,
 			'size_units' => ['px', 'em', '%'],
 			'selectors' => ['{{WRAPPER}} .nova-tab-content-image' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};'],
-		]);
-
-		// ── Style de chaque item (figure) ─────────────────────────
-		$this->add_control('image_item_heading', [
-			'label'     => esc_html__('Style de chaque item', 'NOVA-addons'),
-			'type'      => Controls_Manager::HEADING,
-			'separator' => 'before',
-		]);
-
-		$this->add_group_control(Group_Control_Background::get_type(), [
-			'name'     => 'image_item_bg',
-			'label'    => esc_html__('Arrière-plan', 'NOVA-addons'),
-			'selector' => '{{WRAPPER}} .nova-tab-image-item',
-		]);
-
-		$this->add_responsive_control('image_item_padding', [
-			'label'      => esc_html__('Padding', 'NOVA-addons'),
-			'type'       => Controls_Manager::DIMENSIONS,
-			'size_units' => ['px', 'em', '%'],
-			'selectors'  => ['{{WRAPPER}} .nova-tab-image-item' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};'],
-		]);
-
-		$this->add_responsive_control('image_item_border_radius', [
-			'label'      => esc_html__('Rayon de bordure', 'NOVA-addons'),
-			'type'       => Controls_Manager::DIMENSIONS,
-			'size_units' => ['px', '%'],
-			'selectors'  => ['{{WRAPPER}} .nova-tab-image-item' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};'],
-		]);
-
-		$this->add_group_control(Group_Control_Border::get_type(), [
-			'name'     => 'image_item_border',
-			'selector' => '{{WRAPPER}} .nova-tab-image-item',
-		]);
-
-		$this->add_group_control(Group_Control_Box_Shadow::get_type(), [
-			'name'     => 'image_item_shadow',
-			'selector' => '{{WRAPPER}} .nova-tab-image-item',
-		]);
-
-		$this->add_responsive_control('image_item_align', [
-			'label'   => esc_html__('Alignement du contenu', 'NOVA-addons'),
-			'type'    => Controls_Manager::CHOOSE,
-			'options' => [
-				'flex-start' => ['title' => 'Gauche',  'icon' => 'eicon-align-start-h'],
-				'center'     => ['title' => 'Centre',  'icon' => 'eicon-align-center-h'],
-				'flex-end'   => ['title' => 'Droite',  'icon' => 'eicon-align-end-h'],
-			],
-			'selectors' => ['{{WRAPPER}} .nova-tab-image-item' => 'align-items: {{VALUE}};'],
-		]);
-
-		// ── Flex ──────────────────────────────────────────────────
-		$this->add_control('image_item_flex_heading', [
-			'label'     => esc_html__('Flex', 'NOVA-addons'),
-			'type'      => Controls_Manager::HEADING,
-			'separator' => 'before',
-		]);
-
-		$this->add_responsive_control('image_item_direction', [
-			'label'   => esc_html__('Direction', 'NOVA-addons'),
-			'type'    => Controls_Manager::CHOOSE,
-			'options' => [
-				'column'      => ['title' => esc_html__('Vertical', 'NOVA-addons'),           'icon' => 'eicon-arrow-down'],
-				'row'         => ['title' => esc_html__('Horizontal', 'NOVA-addons'),          'icon' => 'eicon-arrow-right'],
-				'column-reverse' => ['title' => esc_html__('Vertical inversé', 'NOVA-addons'), 'icon' => 'eicon-arrow-up'],
-				'row-reverse' => ['title' => esc_html__('Horizontal inversé', 'NOVA-addons'),  'icon' => 'eicon-arrow-left'],
-			],
-			'default'   => 'column',
-			'selectors' => ['{{WRAPPER}} .nova-tab-image-item' => 'flex-direction: {{VALUE}};'],
-		]);
-
-		$this->add_responsive_control('image_item_justify', [
-			'label'   => esc_html__('Justify Content', 'NOVA-addons'),
-			'type'    => Controls_Manager::SELECT,
-			'options' => [
-				'flex-start'    => 'flex-start',
-				'center'        => 'center',
-				'flex-end'      => 'flex-end',
-				'space-between' => 'space-between',
-				'space-around'  => 'space-around',
-				'space-evenly'  => 'space-evenly',
-			],
-			'selectors' => ['{{WRAPPER}} .nova-tab-image-item' => 'justify-content: {{VALUE}};'],
-		]);
-
-		$this->add_responsive_control('image_item_align_items', [
-			'label'   => esc_html__('Align Items', 'NOVA-addons'),
-			'type'    => Controls_Manager::SELECT,
-			'options' => [
-				'flex-start' => 'flex-start',
-				'center'     => 'center',
-				'flex-end'   => 'flex-end',
-				'stretch'    => 'stretch',
-				'baseline'   => 'baseline',
-			],
-			'selectors' => ['{{WRAPPER}} .nova-tab-image-item' => 'align-items: {{VALUE}};'],
-		]);
-
-		$this->add_responsive_control('image_item_gap', [
-			'label'      => esc_html__('Gap (entre image et titre)', 'NOVA-addons'),
-			'type'       => Controls_Manager::SLIDER,
-			'size_units' => ['px', 'em'],
-			'range'      => ['px' => ['min' => 0, 'max' => 80]],
-			'selectors'  => ['{{WRAPPER}} .nova-tab-image-item' => 'gap: {{SIZE}}{{UNIT}};'],
-		]);
-
-		// ── Position du caption ───────────────────────────────────
-		$this->add_control('image_caption_position_heading', [
-			'label'     => esc_html__('Position du titre/caption', 'NOVA-addons'),
-			'type'      => Controls_Manager::HEADING,
-			'separator' => 'before',
-		]);
-
-		$this->add_control('show_image_caption', [
-			'label'        => esc_html__('Afficher la légende', 'NOVA-addons'),
-			'type'         => Controls_Manager::SWITCHER,
-			'label_on'     => esc_html__('Oui', 'NOVA-addons'),
-			'label_off'    => esc_html__('Non', 'NOVA-addons'),
-			'return_value' => 'yes',
-			'default'      => 'yes',
-		]);
-
-		$this->add_control('image_caption_position', [
-			'label'   => esc_html__('Emplacement', 'NOVA-addons'),
-			'type'    => Controls_Manager::CHOOSE,
-			'options' => [
-				'before' => ['title' => esc_html__('Avant l\'image', 'NOVA-addons'), 'icon' => 'eicon-arrow-up'],
-				'after'  => ['title' => esc_html__('Après l\'image', 'NOVA-addons'),  'icon' => 'eicon-arrow-down'],
-			],
-			'default' => 'after',
-			'condition' => [
-				'show_image_caption' => 'yes',
-			],
-		]);
-
-		$this->add_control('image_caption_heading', [
-			'label'     => esc_html__('Titre / Caption', 'NOVA-addons'),
-			'type'      => Controls_Manager::HEADING,
-			'separator' => 'before',
-		]);
-
-		$this->add_control('image_caption_note', [
-			'type'            => Controls_Manager::RAW_HTML,
-			'raw'             => esc_html__('Le titre affiché sous chaque image est lu depuis le champ "Légende" (ou "Titre") de la médiathèque WordPress.', 'NOVA-addons'),
-			'content_classes' => 'elementor-descriptor',
-		]);
-
-		$this->add_control('image_caption_tag', [
-			'label'   => esc_html__('Balise HTML', 'NOVA-addons'),
-			'type'    => Controls_Manager::SELECT,
-			'default' => 'figcaption',
-			'options' => [
-				'figcaption' => 'figcaption',
-				'p'          => 'p',
-				'span'       => 'span',
-				'h1'         => 'h1',
-				'h2'         => 'h2',
-				'h3'         => 'h3',
-				'h4'         => 'h4',
-				'h5'         => 'h5',
-				'h6'         => 'h6',
-				'div'        => 'div',
-			],
-		]);
-
-		$this->add_group_control(Group_Control_Typography::get_type(), [
-			'name'     => 'image_caption_typography',
-			'selector' => '{{WRAPPER}} .nova-tab-image-caption',
-		]);
-
-		$this->add_control('image_caption_color', [
-			'label'     => esc_html__('Couleur', 'NOVA-addons'),
-			'type'      => Controls_Manager::COLOR,
-			'selectors' => ['{{WRAPPER}} .nova-tab-image-caption' => 'color: {{VALUE}};'],
-		]);
-
-		$this->add_responsive_control('image_caption_align', [
-			'label'   => esc_html__('Alignement', 'NOVA-addons'),
-			'type'    => Controls_Manager::CHOOSE,
-			'options' => [
-				'left'   => ['title' => 'Gauche', 'icon' => 'eicon-text-align-left'],
-				'center' => ['title' => 'Centre', 'icon' => 'eicon-text-align-center'],
-				'right'  => ['title' => 'Droite', 'icon' => 'eicon-text-align-right'],
-			],
-			'selectors' => ['{{WRAPPER}} .nova-tab-image-caption' => 'text-align: {{VALUE}};'],
-		]);
-
-		$this->add_responsive_control('image_caption_margin', [
-			'label'      => esc_html__('Marge', 'NOVA-addons'),
-			'type'       => Controls_Manager::DIMENSIONS,
-			'size_units' => ['px', 'em', '%'],
-			'selectors'  => ['{{WRAPPER}} .nova-tab-image-caption' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};'],
 		]);
 
 		$this->end_controls_section();
@@ -1427,16 +1034,6 @@ class Tabs_Widget extends Widget_Base
 		if (empty($tabs))
 			return;
 
-		$autoplay = $settings['autoplay'] === 'yes';
-		$autoplay_speed = !empty($settings['autoplay_speed']) ? $settings['autoplay_speed'] : 5000;
-
-		$content_fade = isset($settings['content_fade']) && $settings['content_fade'] === 'yes';
-		$content_fade_trigger = $content_fade ? (in_array(($settings['content_fade_trigger'] ?? 'both'), ['load', 'scroll', 'both'], true) ? $settings['content_fade_trigger'] : 'both') : '';
-		$content_fade_replay = $content_fade && isset($settings['content_fade_replay']) && $settings['content_fade_replay'] === 'yes';
-		$content_fade_duration = $content_fade ? max(100, min(4000, (int) ($settings['content_fade_duration'] ?? 700))) : 0;
-		$content_fade_delay = $content_fade ? max(0, min(3000, (int) ($settings['content_fade_delay'] ?? 0))) : 0;
-		$content_fade_translate_y = $content_fade ? max(0, min(200, (int) ($settings['content_fade_translate_y'] ?? 20))) : 0;
-
 		ob_start();
 		?>
 		<div class="nova-tabs-nav" role="tablist">
@@ -1453,29 +1050,13 @@ class Tabs_Widget extends Widget_Base
 						</span>
 					<?php endif; ?>
 					<span class="nova-tab-btn-text"><?php echo esc_html($tab['tab_title']); ?></span>
-					<?php if ($autoplay): ?>
-						<span class="nova-tab-progress">
-							<span class="nova-tab-progress-fill"></span>
-						</span>
-					<?php endif; ?>
 				</button>
 			<?php endforeach; ?>
 		</div>
 		<?php
 		$tabs_nav_html = ob_get_clean();
 		?>
-		<div class="nova-tabs-widget<?php echo $content_fade ? ' nova-tabs--content-fade' : ''; ?>" id="nova-tabs-<?php echo esc_attr($widget_id); ?>"
-			data-autoplay="<?php echo $autoplay ? 'true' : 'false'; ?>"
-			data-autoplay-speed="<?php echo esc_attr($autoplay_speed); ?>"
-			<?php if ($content_fade): ?>
-			data-content-fade="1"
-			data-content-fade-trigger="<?php echo esc_attr($content_fade_trigger); ?>"
-			data-content-fade-replay="<?php echo $content_fade_replay ? '1' : '0'; ?>"
-			data-content-fade-duration="<?php echo esc_attr((string) $content_fade_duration); ?>"
-			data-content-fade-delay="<?php echo esc_attr((string) $content_fade_delay); ?>"
-			data-content-fade-translate-y="<?php echo esc_attr((string) $content_fade_translate_y); ?>"
-			style="--nova-tabs-fade-duration:<?php echo (int) $content_fade_duration; ?>ms;--nova-tabs-fade-delay:<?php echo (int) $content_fade_delay; ?>ms;--nova-tabs-fade-translate-y:<?php echo (int) $content_fade_translate_y; ?>px;"
-			<?php endif; ?>>
+		<div class="nova-tabs-widget" id="nova-tabs-<?php echo esc_attr($widget_id); ?>">
 
 			<div class="nova-tabs-content">
 				<?php foreach ($tabs as $i => $tab):
@@ -1500,19 +1081,12 @@ class Tabs_Widget extends Widget_Base
 							];
 
 							if ($settings['fixed_text_source'] === 'nova_title' && !empty($settings['selected_nova_title_widget_id'])) {
-								$widget_id_title = $settings['selected_nova_title_widget_id'];
-								$html = $this->render_nova_title_widget($widget_id_title);
+								$widget_id = $settings['selected_nova_title_widget_id'];
+								$html = $this->render_nova_title_widget($widget_id);
 								if (!empty($html)) {
-									// Add the original elementor-element-ID class to preserve CSS targeting
-									$html = '<div class="elementor-element elementor-element-' . esc_attr($widget_id_title) . ' elementor-widget elementor-widget-nova-title" data-id="' . esc_attr($widget_id_title) . '" data-element_type="widget" data-widget_type="nova-title.default"><div class="elementor-widget-container">' . $html . '</div></div>';
+									$html = '<div class="elementor-widget elementor-widget-nova-title" data-id="' . esc_attr($widget_id) . '"><div class="elementor-widget-container">' . $html . '</div></div>';
 								}
 								$elements_html['fixed_text'] = '<div class="nova-tabs-fixed-text">' . $html . '</div>';
-							} else if ($settings['fixed_text_source'] === 'elementor_template' && !empty($settings['fixed_text_template'])) {
-								$template_id = intval($settings['fixed_text_template']);
-								if (class_exists('\Elementor\Plugin')) {
-									$html = \Elementor\Plugin::$instance->frontend->get_builder_content_for_display($template_id);
-									$elements_html['fixed_text'] = '<div class="nova-tabs-fixed-text">' . $html . '</div>';
-								}
 							} else if (!empty($settings['global_fixed_text'])) {
 								$elements_html['fixed_text'] = '<div class="nova-tabs-fixed-text">' . wp_kses_post($settings['global_fixed_text']) . '</div>';
 							}
@@ -1524,48 +1098,8 @@ class Tabs_Widget extends Widget_Base
 								$elements_html['icon'] = '<div class="nova-tab-content-icon">' . $icon_val . '</div>';
 							}
 
-							if (!empty($tab['content_image'])) {
-								$imgs_html = '';
-								$show_caption = ! empty( $settings['show_image_caption'] ) && 'yes' === $settings['show_image_caption'];
-								$caption_tag = ! empty( $settings['image_caption_tag'] ) ? $settings['image_caption_tag'] : 'figcaption';
-								// Whitelist pour éviter toute injection
-								$allowed_tags = [ 'figcaption', 'p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div' ];
-								if ( ! in_array( $caption_tag, $allowed_tags, true ) ) {
-									$caption_tag = 'figcaption';
-								}
-								$caption_position = ! empty( $settings['image_caption_position'] ) ? $settings['image_caption_position'] : 'after';
-
-								foreach ( $tab['content_image'] as $img ) {
-									if ( ! empty( $img['url'] ) ) {
-										$caption = '';
-										if ( $show_caption && ! empty( $img['id'] ) ) {
-											$attachment = get_post( $img['id'] );
-											if ( $attachment ) {
-												$caption = trim( $attachment->post_excerpt );
-												if ( empty( $caption ) ) {
-													$caption = trim( $attachment->post_title );
-												}
-											}
-										}
-
-										$caption_html = ( $show_caption && ! empty( $caption ) )
-											? '<' . $caption_tag . ' class="nova-tab-image-caption">' . esc_html( $caption ) . '</' . $caption_tag . '>'
-											: '';
-
-										$img_html = '<img src="' . esc_url( $img['url'] ) . '" alt="' . esc_attr( $caption ) . '">';
-
-										$imgs_html .= '<figure class="nova-tab-image-item">';
-										if ( $show_caption && $caption_position === 'before' ) {
-											$imgs_html .= $caption_html . $img_html;
-										} else {
-											$imgs_html .= $img_html . $caption_html;
-										}
-										$imgs_html .= '</figure>';
-									}
-								}
-								if ( $imgs_html ) {
-									$elements_html['image'] = '<div class="nova-tab-content-image">' . $imgs_html . '</div>';
-								}
+							if (!empty($tab['content_image']['url'])) {
+								$elements_html['image'] = '<div class="nova-tab-content-image"><img src="' . esc_url($tab['content_image']['url']) . '" alt=""></div>';
 							}
 
 							if (!empty($tab['content_text_1'])) {

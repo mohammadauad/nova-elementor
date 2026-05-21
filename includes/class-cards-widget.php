@@ -416,24 +416,7 @@ class Cards_Widget extends Widget_Base {
 				'label_on'    => esc_html__( 'Oui', 'NOVA-addons' ),
 				'label_off'   => esc_html__( 'Non', 'NOVA-addons' ),
 				'default'     => 'no',
-				'description' => esc_html__( 'Mode manuel : catégories par card. Post type : taxonomie ou champs meta (clé + type).', 'NOVA-addons' ),
-			]
-		);
-
-		$this->add_control(
-			'filter_source',
-			[
-				'label'     => esc_html__( 'Type de filtres', 'NOVA-addons' ),
-				'type'      => Controls_Manager::SELECT,
-				'default'   => 'taxonomy',
-				'options'   => [
-					'taxonomy' => esc_html__( 'Taxonomie (boutons)', 'NOVA-addons' ),
-					'meta'     => esc_html__( 'Champs meta (formulaire)', 'NOVA-addons' ),
-				],
-				'condition' => [
-					'enable_filters' => 'yes',
-					'data_source'    => 'post_type',
-				],
+				'description' => esc_html__( 'En mode manuel, les filtres utilisent les catégories définies pour chaque card. En mode post type, ils utilisent la taxonomie sélectionnée.', 'NOVA-addons' ),
 			]
 		);
 
@@ -447,89 +430,8 @@ class Cards_Widget extends Widget_Base {
 				'condition'   => [
 					'enable_filters' => 'yes',
 					'data_source'    => 'post_type',
-					'filter_source'  => 'taxonomy',
 				],
-				'description' => esc_html__( 'Boutons de filtre basés sur les termes de cette taxonomie.', 'NOVA-addons' ),
-			]
-		);
-
-		$meta_filter_rep = new Repeater();
-		$meta_filter_rep->add_control(
-			'meta_key',
-			[
-				'label'       => esc_html__( 'Meta key', 'NOVA-addons' ),
-				'type'        => Controls_Manager::TEXT,
-				'default'     => '',
-				'label_block' => true,
-				'description' => esc_html__( 'Clé post meta (ex. debloque, secteur-activite).', 'NOVA-addons' ),
-			]
-		);
-		$meta_filter_rep->add_control(
-			'field_type',
-			[
-				'label'   => esc_html__( 'Type de champ', 'NOVA-addons' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'select',
-				'options' => [
-					'select'   => esc_html__( 'Liste (select)', 'NOVA-addons' ),
-					'text'     => esc_html__( 'Texte', 'NOVA-addons' ),
-					'checkbox' => esc_html__( 'Case à cocher', 'NOVA-addons' ),
-				],
-			]
-		);
-		$meta_filter_rep->add_control(
-			'label',
-			[
-				'label'       => esc_html__( 'Libellé', 'NOVA-addons' ),
-				'type'        => Controls_Manager::TEXT,
-				'default'     => '',
-				'label_block' => true,
-			]
-		);
-		$meta_filter_rep->add_control(
-			'placeholder',
-			[
-				'label'     => esc_html__( 'Placeholder', 'NOVA-addons' ),
-				'type'      => Controls_Manager::TEXT,
-				'default'   => '',
-				'condition' => [
-					'field_type' => 'text',
-				],
-			]
-		);
-		$meta_filter_rep->add_control(
-			'select_options',
-			[
-				'label'       => esc_html__( 'Options (select)', 'NOVA-addons' ),
-				'type'        => Controls_Manager::TEXTAREA,
-				'default'     => '',
-				'description' => esc_html__( 'Valeurs séparées par des virgules. Vide = toutes les valeurs distinctes de cette meta sur les publications publiées du type choisi (texte ou select d’origine).', 'NOVA-addons' ),
-				'condition'   => [
-					'field_type' => 'select',
-				],
-			]
-		);
-		$meta_filter_rep->add_control(
-			'filter_icon',
-			[
-				'label' => esc_html__( 'Icône à côté du champ', 'NOVA-addons' ),
-				'type'  => Controls_Manager::MEDIA,
-			]
-		);
-
-		$this->add_control(
-			'meta_filters',
-			[
-				'label'       => esc_html__( 'Filtres meta', 'NOVA-addons' ),
-				'type'        => Controls_Manager::REPEATER,
-				'fields'      => $meta_filter_rep->get_controls(),
-				'default'     => [],
-				'title_field' => '{{{ meta_key }}} ({{{ field_type }}})',
-				'condition'   => [
-					'enable_filters' => 'yes',
-					'data_source'    => 'post_type',
-					'filter_source'  => 'meta',
-				],
+				'description' => esc_html__( 'Sélectionnez la taxonomie à utiliser pour les filtres — uniquement pour le mode Post Type.', 'NOVA-addons' ),
 			]
 		);
 
@@ -546,9 +448,9 @@ class Cards_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
-			'hide_filter_all',
+			'hide_filter_all_mobile',
 			[
-				'label'       => esc_html__( 'Masquer le bouton « Tout »', 'NOVA-addons' ),
+				'label'       => esc_html__( 'Masquer "Tout" sur mobile', 'NOVA-addons' ),
 				'type'        => Controls_Manager::SWITCHER,
 				'label_on'    => esc_html__( 'Oui', 'NOVA-addons' ),
 				'label_off'   => esc_html__( 'Non', 'NOVA-addons' ),
@@ -557,22 +459,7 @@ class Cards_Widget extends Widget_Base {
 				'condition'   => [
 					'enable_filters' => 'yes',
 				],
-			]
-		);
-
-		$this->add_control(
-			'hide_filter_all_mobile',
-			[
-				'label'       => esc_html__( 'Masquer « Tout » sur mobile uniquement', 'NOVA-addons' ),
-				'type'        => Controls_Manager::SWITCHER,
-				'label_on'    => esc_html__( 'Oui', 'NOVA-addons' ),
-				'label_off'   => esc_html__( 'Non', 'NOVA-addons' ),
-				'default'     => 'no',
-				'condition'   => [
-					'enable_filters'  => 'yes',
-					'hide_filter_all!' => 'yes',
-				],
-				'description' => esc_html__( 'Masque « Tout » sur mobile ; le premier filtre actif s’applique par défaut.', 'NOVA-addons' ),
+				'description' => esc_html__( 'Si activé, le bouton "Tout" sera masqué sur mobile et le premier filtre sera activé automatiquement.', 'NOVA-addons' ),
 			]
 		);
 
@@ -1461,130 +1348,6 @@ class Cards_Widget extends Widget_Base {
 					'grid_columns_mode' => 'pixels',
 				],
 				'description' => esc_html__( 'Si activé, centre automatiquement les éléments de la grille quand ils ne remplissent pas complètement la ligne. Utile pour centrer la dernière ligne d\'éléments.', 'NOVA-addons' ),
-			]
-		);
-
-		// Flex configuration for each card item (like other widget configs)
-		$this->add_control(
-			'card_item_display',
-			[
-				'label' => esc_html__( 'Card Display', 'NOVA-addons' ),
-				'type' => Controls_Manager::SELECT,
-				'default' => 'block',
-				'options' => [
-					'block' => esc_html__( 'Block', 'NOVA-addons' ),
-					'flex'  => esc_html__( 'Flex', 'NOVA-addons' ),
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-cards-grid > .nova-card-item' => 'display: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_control(
-			'card_item_flex_direction',
-			[
-				'label' => esc_html__( 'Card Flex Direction', 'NOVA-addons' ),
-				'type' => Controls_Manager::SELECT,
-				'default' => 'column',
-				'options' => [
-					'row' => esc_html__( 'Row', 'NOVA-addons' ),
-					'column' => esc_html__( 'Column', 'NOVA-addons' ),
-					'row-reverse' => esc_html__( 'Row Reverse', 'NOVA-addons' ),
-					'column-reverse' => esc_html__( 'Column Reverse', 'NOVA-addons' ),
-				],
-				'condition' => [
-					'card_item_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-cards-grid > .nova-card-item' => 'flex-direction: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_control(
-			'card_item_justify_content',
-			[
-				'label' => esc_html__( 'Card Justify Content', 'NOVA-addons' ),
-				'type' => Controls_Manager::CHOOSE,
-				'options' => [
-					'flex-start' => [
-						'title' => esc_html__( 'Start', 'NOVA-addons' ),
-						'icon' => 'eicon-v-align-top',
-					],
-					'center' => [
-						'title' => esc_html__( 'Center', 'NOVA-addons' ),
-						'icon' => 'eicon-v-align-middle',
-					],
-					'flex-end' => [
-						'title' => esc_html__( 'End', 'NOVA-addons' ),
-						'icon' => 'eicon-v-align-bottom',
-					],
-					'space-between' => [
-						'title' => esc_html__( 'Between', 'NOVA-addons' ),
-						'icon' => 'eicon-justify-space-between-v',
-					],
-				],
-				'default' => 'flex-start',
-				'condition' => [
-					'card_item_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-cards-grid > .nova-card-item' => 'justify-content: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_control(
-			'card_item_align_items',
-			[
-				'label' => esc_html__( 'Card Align Items', 'NOVA-addons' ),
-				'type' => Controls_Manager::CHOOSE,
-				'options' => [
-					'flex-start' => [
-						'title' => esc_html__( 'Start', 'NOVA-addons' ),
-						'icon' => 'eicon-h-align-left',
-					],
-					'center' => [
-						'title' => esc_html__( 'Center', 'NOVA-addons' ),
-						'icon' => 'eicon-h-align-center',
-					],
-					'flex-end' => [
-						'title' => esc_html__( 'End', 'NOVA-addons' ),
-						'icon' => 'eicon-h-align-right',
-					],
-					'stretch' => [
-						'title' => esc_html__( 'Stretch', 'NOVA-addons' ),
-						'icon' => 'eicon-h-align-stretch',
-					],
-				],
-				'default' => 'stretch',
-				'condition' => [
-					'card_item_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-cards-grid > .nova-card-item' => 'align-items: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'card_item_gap',
-			[
-				'label' => esc_html__( 'Card Gap', 'NOVA-addons' ),
-				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em', 'rem' ],
-				'range' => [
-					'px' => [ 'min' => 0, 'max' => 100 ],
-					'em' => [ 'min' => 0, 'max' => 8 ],
-					'rem' => [ 'min' => 0, 'max' => 8 ],
-				],
-				'condition' => [
-					'card_item_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-cards-grid > .nova-card-item' => 'gap: {{SIZE}}{{UNIT}};',
-				],
 			]
 		);
 
@@ -3240,9 +3003,12 @@ class Cards_Widget extends Widget_Base {
 	 * @return array
 	 */
 	private function get_post_types() {
-		return function_exists( 'nova_addons_get_elementor_post_type_options' )
-			? nova_addons_get_elementor_post_type_options()
-			: array();
+		$post_types = get_post_types( [ 'public' => true ], 'objects' );
+		$options    = [];
+		foreach ( $post_types as $pt ) {
+			$options[ $pt->name ] = $pt->label;
+		}
+		return $options;
 	}
 
 	/**
@@ -3310,24 +3076,12 @@ class Cards_Widget extends Widget_Base {
 					}
 				}
 
-				$meta_for_filter = [];
-				$use_meta_filter = ! empty( $settings['enable_filters'] )
-					&& $settings['enable_filters'] === 'yes'
-					&& ! empty( $settings['filter_source'] )
-					&& $settings['filter_source'] === 'meta';
-				if ( $use_meta_filter ) {
-					foreach ( $this->get_meta_filter_keys_from_settings( $settings ) as $meta_key ) {
-						$meta_for_filter[ $meta_key ] = $this->read_post_meta_for_filter( $post_id, $meta_key );
-					}
-				}
-
 				$posts[] = [
 					'id'          => $post_id,
 					'title'       => get_the_title(),
 					'image'       => $image_url,
 					'link'        => get_permalink(),
 					'terms'       => $terms,
-					'meta'        => $meta_for_filter,
 					'excerpt'     => get_the_excerpt(),
 					// ACF Texte 1 (fallback: titre)
 					// Si la valeur est un ID d'image ou une URL d'image → afficher <img>
@@ -3411,266 +3165,6 @@ class Cards_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Normalise une valeur meta pour comparaison / data-attribute JSON.
-	 *
-	 * @param mixed $raw
-	 */
-	private function normalize_meta_value_for_card_filter( $raw ): string {
-		if ( is_array( $raw ) ) {
-			$parts = [];
-			foreach ( $raw as $v ) {
-				if ( is_scalar( $v ) || ( is_object( $v ) && method_exists( $v, '__toString' ) ) ) {
-					$s = trim( (string) $v );
-					if ( $s !== '' ) {
-						$parts[] = $s;
-					}
-				}
-			}
-
-			return implode( ', ', $parts );
-		}
-		if ( is_bool( $raw ) ) {
-			return $raw ? '1' : '0';
-		}
-		if ( ! is_scalar( $raw ) ) {
-			return '';
-		}
-
-		return trim( (string) $raw );
-	}
-
-	/**
-	 * Variantes de clé meta (tirets / underscores), ex. secteur-activite ↔ secteur_activite.
-	 *
-	 * @return list<string>
-	 */
-	private function meta_key_lookup_candidates( string $meta_key ): array {
-		$key     = sanitize_key( $meta_key );
-		$aliases = [ $key ];
-		$under   = str_replace( '-', '_', $key );
-		$hyphen  = str_replace( '_', '-', $key );
-		if ( $under !== $key ) {
-			$aliases[] = $under;
-		}
-		if ( $hyphen !== $key ) {
-			$aliases[] = $hyphen;
-		}
-
-		return array_values( array_unique( $aliases ) );
-	}
-
-	/**
-	 * Lit une meta sur un post (essaie les alias de clé).
-	 */
-	private function read_post_meta_for_filter( int $post_id, string $meta_key ): string {
-		if ( $post_id <= 0 || $meta_key === '' ) {
-			return '';
-		}
-		foreach ( $this->meta_key_lookup_candidates( $meta_key ) as $candidate ) {
-			$raw = get_post_meta( $post_id, $candidate, true );
-			if ( $raw === '' || $raw === null || ( is_array( $raw ) && $raw === [] ) ) {
-				continue;
-			}
-			$normalized = $this->normalize_meta_value_for_card_filter( $raw );
-			if ( $normalized !== '' ) {
-				return $normalized;
-			}
-		}
-
-		return '';
-	}
-
-	/**
-	 * Valeurs distinctes d’une meta sur toutes les publications publiées d’un type (pas seulement la page courante du widget).
-	 *
-	 * @return list<string>
-	 */
-	private function collect_distinct_meta_values_for_post_type( string $post_type, string $meta_key, int $limit = 1000 ): array {
-		$post_type = sanitize_key( $post_type );
-		$meta_key  = sanitize_key( $meta_key );
-		if ( $post_type === '' || $meta_key === '' ) {
-			return [];
-		}
-
-		$q = new \WP_Query(
-			[
-				'post_type'              => $post_type,
-				'post_status'            => 'publish',
-				'posts_per_page'         => max( 1, min( 2000, $limit ) ),
-				'fields'                 => 'ids',
-				'no_found_rows'          => true,
-				'update_post_meta_cache' => true,
-				'update_post_term_cache' => false,
-				'orderby'                => 'date',
-				'order'                  => 'DESC',
-			]
-		);
-
-		$seen    = [];
-		$choices = [];
-		foreach ( $q->posts as $post_id ) {
-			$val = $this->read_post_meta_for_filter( (int) $post_id, $meta_key );
-			if ( $val === '' || isset( $seen[ $val ] ) ) {
-				continue;
-			}
-			$seen[ $val ] = true;
-			$choices[]    = $val;
-		}
-		wp_reset_postdata();
-
-		natcasesort( $choices );
-
-		return array_values( $choices );
-	}
-
-	/**
-	 * @param array<int, array<string, mixed>> $posts Repli si le type de publication est inconnu.
-	 * @return list<array<string, mixed>>
-	 */
-	private function get_normalized_meta_filters_config( array $settings, string $post_type, array $posts = [] ): array {
-		$rows = isset( $settings['meta_filters'] ) && is_array( $settings['meta_filters'] ) ? $settings['meta_filters'] : [];
-		$out  = [];
-		foreach ( $rows as $row ) {
-			if ( ! is_array( $row ) ) {
-				continue;
-			}
-			$key = isset( $row['meta_key'] ) ? sanitize_key( (string) $row['meta_key'] ) : '';
-			if ( $key === '' ) {
-				continue;
-			}
-			$type = isset( $row['field_type'] ) ? sanitize_key( (string) $row['field_type'] ) : 'select';
-			if ( ! in_array( $type, [ 'select', 'text', 'checkbox' ], true ) ) {
-				$type = 'select';
-			}
-			$label = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-			if ( $label === '' ) {
-				$label = $key;
-			}
-			$choices = [];
-			if ( $type === 'select' ) {
-				$manual = isset( $row['select_options'] ) ? trim( (string) $row['select_options'] ) : '';
-				if ( $manual !== '' ) {
-					foreach ( preg_split( '/\s*,\s*/', $manual ) as $part ) {
-						$part = trim( (string) $part );
-						if ( $part !== '' ) {
-							$choices[] = $part;
-						}
-					}
-				} elseif ( $post_type !== '' ) {
-					$choices = $this->collect_distinct_meta_values_for_post_type( $post_type, $key );
-				} else {
-					$seen = [];
-					foreach ( $posts as $post ) {
-						$pid = isset( $post['id'] ) ? (int) $post['id'] : 0;
-						if ( $pid <= 0 ) {
-							continue;
-						}
-						$val = $this->read_post_meta_for_filter( $pid, $key );
-						if ( $val === '' || isset( $seen[ $val ] ) ) {
-							continue;
-						}
-						$seen[ $val ] = true;
-						$choices[]    = $val;
-					}
-					natcasesort( $choices );
-					$choices = array_values( $choices );
-				}
-			}
-			$icon_url = '';
-			if ( ! empty( $row['filter_icon']['url'] ) ) {
-				$icon_url = esc_url( (string) $row['filter_icon']['url'] );
-			}
-			$out[] = [
-				'meta_key'    => $key,
-				'field_type'  => $type,
-				'label'       => $label,
-				'placeholder' => isset( $row['placeholder'] ) ? (string) $row['placeholder'] : '',
-				'choices'     => $choices,
-				'icon_url'    => $icon_url,
-			];
-		}
-
-		return $out;
-	}
-
-	/**
-	 * @param list<array<string, mixed>> $filters
-	 */
-	private function render_meta_filters_bar( array $settings, array $filters ): void {
-		if ( $filters === [] ) {
-			return;
-		}
-		$all_text       = ! empty( $settings['filter_all_text'] ) ? $settings['filter_all_text'] : __( 'Tout', 'NOVA-addons' );
-		$hide_all       = ! empty( $settings['hide_filter_all'] ) && $settings['hide_filter_all'] === 'yes';
-		$hide_all_mobile = ! $hide_all && ! empty( $settings['hide_filter_all_mobile'] ) && $settings['hide_filter_all_mobile'] === 'yes';
-		?>
-		<div class="nova-cards-filters nova-cards-filters--meta" role="search">
-			<?php if ( ! $hide_all ) : ?>
-			<button type="button" class="nova-cards-filter-item nova-cards-meta-reset active<?php echo $hide_all_mobile ? ' hide-on-mobile' : ''; ?>" data-filter="*">
-				<?php echo esc_html( $all_text ); ?>
-			</button>
-			<?php endif; ?>
-			<?php foreach ( $filters as $filter ) : ?>
-				<?php
-				$key   = (string) $filter['meta_key'];
-				$type  = (string) $filter['field_type'];
-				$label = (string) $filter['label'];
-				$icon  = (string) ( $filter['icon_url'] ?? '' );
-				$fid   = 'nova-meta-filter-' . esc_attr( $this->get_id() ) . '-' . esc_attr( $key );
-				?>
-				<div class="nova-cards-meta-filter" data-meta-key="<?php echo esc_attr( $key ); ?>" data-field-type="<?php echo esc_attr( $type ); ?>">
-					<?php if ( $icon !== '' ) : ?>
-						<span class="nova-cards-meta-filter__icon" aria-hidden="true">
-							<img src="<?php echo esc_url( $icon ); ?>" alt="" loading="lazy" decoding="async" width="22" height="22">
-						</span>
-					<?php endif; ?>
-					<div class="nova-cards-meta-filter__control">
-						<?php if ( $type === 'checkbox' ) : ?>
-							<label class="nova-cards-meta-filter__checkbox-label" for="<?php echo esc_attr( $fid ); ?>">
-								<input type="checkbox" class="nova-cards-meta-filter-input" id="<?php echo esc_attr( $fid ); ?>" data-meta-key="<?php echo esc_attr( $key ); ?>" data-field-type="checkbox" value="1">
-								<span><?php echo esc_html( $label ); ?></span>
-							</label>
-						<?php elseif ( $type === 'text' ) : ?>
-							<label class="screen-reader-text" for="<?php echo esc_attr( $fid ); ?>"><?php echo esc_html( $label ); ?></label>
-							<input type="search" class="nova-cards-meta-filter-input" id="<?php echo esc_attr( $fid ); ?>" data-meta-key="<?php echo esc_attr( $key ); ?>" data-field-type="text" placeholder="<?php echo esc_attr( $label . ( ! empty( $filter['placeholder'] ) ? ' — ' . $filter['placeholder'] : '' ) ); ?>" autocomplete="off">
-						<?php else : ?>
-							<label class="screen-reader-text" for="<?php echo esc_attr( $fid ); ?>"><?php echo esc_html( $label ); ?></label>
-							<select class="nova-cards-meta-filter-input" id="<?php echo esc_attr( $fid ); ?>" data-meta-key="<?php echo esc_attr( $key ); ?>" data-field-type="select">
-								<option value=""><?php echo esc_html( $label ); ?></option>
-								<?php foreach ( (array) ( $filter['choices'] ?? [] ) as $choice ) : ?>
-									<option value="<?php echo esc_attr( (string) $choice ); ?>"><?php echo esc_html( (string) $choice ); ?></option>
-								<?php endforeach; ?>
-							</select>
-						<?php endif; ?>
-					</div>
-				</div>
-			<?php endforeach; ?>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Meta keys à exposer sur chaque card (mode filtre meta).
-	 *
-	 * @return list<string>
-	 */
-	private function get_meta_filter_keys_from_settings( array $settings ): array {
-		$keys = [];
-		$rows = isset( $settings['meta_filters'] ) && is_array( $settings['meta_filters'] ) ? $settings['meta_filters'] : [];
-		foreach ( $rows as $row ) {
-			if ( ! is_array( $row ) ) {
-				continue;
-			}
-			$key = isset( $row['meta_key'] ) ? sanitize_key( (string) $row['meta_key'] ) : '';
-			if ( $key !== '' && ! in_array( $key, $keys, true ) ) {
-				$keys[] = $key;
-			}
-		}
-
-		return $keys;
-	}
-
-	/**
 	 * Get available creative background SVG files.
 	 *
 	 * @param string $size_type Size type: 'large' or 'small'.
@@ -3728,18 +3222,13 @@ class Cards_Widget extends Widget_Base {
 		$settings = $this->get_settings_for_display();
 
 		// ─── Source de données ─────────────────────────────────────────────
-		$data_source       = ! empty( $settings['data_source'] ) ? $settings['data_source'] : 'manual';
-		$items             = [];
-		$filter_terms      = [];
-		$meta_filters_cfg  = [];
-		$filter_source     = ! empty( $settings['filter_source'] ) ? $settings['filter_source'] : 'taxonomy';
-		$filters_enabled   = ! empty( $settings['enable_filters'] ) && $settings['enable_filters'] === 'yes';
-		$query_posts       = [];
+		$data_source  = ! empty( $settings['data_source'] ) ? $settings['data_source'] : 'manual';
+		$items        = [];
+		$filter_terms = [];
 
 		if ( $data_source === 'post_type' ) {
 			// Mode Post Type : construire les items depuis WP_Query
-			$posts       = $this->get_posts( $settings );
-			$query_posts = $posts;
+			$posts = $this->get_posts( $settings );
 
 			// Préparer l'icône flèche pour le bouton (une seule fois)
 			$button_arrow_html = '';
@@ -3781,7 +3270,6 @@ class Cards_Widget extends Widget_Base {
 					'card_link'     => [ 'url' => $post['link'], 'is_external' => false, 'nofollow' => false ],
 					'card_button_text' => $button_label,
 					'card_category' => implode( ' ', $post['terms'] ),
-					'card_meta'     => isset( $post['meta'] ) && is_array( $post['meta'] ) ? $post['meta'] : [],
 					// Overlay en mode post type (utilisation des paramètres globaux)
 					'card_overlay_enable'   => 'yes',
 					'card_overlay_mode'     => 'simple',
@@ -3789,13 +3277,9 @@ class Cards_Widget extends Widget_Base {
 				];
 			}
 
-			if ( $filters_enabled ) {
-				if ( $filter_source === 'meta' ) {
-					$pt = ! empty( $settings['post_type'] ) ? sanitize_key( (string) $settings['post_type'] ) : '';
-					$meta_filters_cfg = $this->get_normalized_meta_filters_config( $settings, $pt, $query_posts );
-				} elseif ( ! empty( $settings['filter_taxonomy'] ) ) {
-					$filter_terms = $this->get_filter_terms( $settings['filter_taxonomy'] );
-				}
+			// Récupérer les termes pour les filtres
+			if ( ! empty( $settings['enable_filters'] ) && $settings['enable_filters'] === 'yes' && ! empty( $settings['filter_taxonomy'] ) ) {
+				$filter_terms = $this->get_filter_terms( $settings['filter_taxonomy'] );
 			}
 		} else {
 			// Mode Manuel
@@ -3944,33 +3428,21 @@ class Cards_Widget extends Widget_Base {
 			 data-animation-config="<?php echo esc_attr( wp_json_encode( $animation_config ) ); ?>"
 			 data-grid-config="<?php echo esc_attr( wp_json_encode( $grid_config ) ); ?>"
 			 data-hover-config="<?php echo esc_attr( wp_json_encode( $hover_config ) ); ?>"
-			 data-enable-filters="<?php echo $filters_enabled ? 'yes' : 'no'; ?>"
-			 data-filter-mode="<?php echo esc_attr( $filters_enabled ? $filter_source : '' ); ?>"
-			 data-hide-filter-all="<?php echo ( ! empty( $settings['hide_filter_all'] ) && $settings['hide_filter_all'] === 'yes' ) ? 'yes' : 'no'; ?>"
+			 data-enable-filters="<?php echo ( ! empty( $settings['enable_filters'] ) && $settings['enable_filters'] === 'yes' ) ? 'yes' : 'no'; ?>"
 			 data-hide-filter-all-mobile="<?php echo ( ! empty( $settings['hide_filter_all_mobile'] ) && $settings['hide_filter_all_mobile'] === 'yes' ) ? 'yes' : 'no'; ?>">
 
-			<?php
-			$hide_filter_all_btn = ! empty( $settings['hide_filter_all'] ) && $settings['hide_filter_all'] === 'yes';
-			$hide_filter_all_mob = ! $hide_filter_all_btn && ! empty( $settings['hide_filter_all_mobile'] ) && $settings['hide_filter_all_mobile'] === 'yes';
-			if ( $filters_enabled && $filter_source === 'meta' && $meta_filters_cfg !== [] ) {
-				$this->render_meta_filters_bar( $settings, $meta_filters_cfg );
-			} elseif ( $filters_enabled && $filter_source === 'taxonomy' && $filter_terms !== [] ) {
-				?>
-				<div class="nova-cards-filters nova-cards-filters--taxonomy">
-					<?php if ( ! $hide_filter_all_btn ) : ?>
-					<button type="button" class="nova-cards-filter-item active<?php echo $hide_filter_all_mob ? ' hide-on-mobile' : ''; ?>" data-filter="*">
+			<?php if ( ! empty( $settings['enable_filters'] ) && $settings['enable_filters'] === 'yes' && ! empty( $filter_terms ) ) : ?>
+				<div class="nova-cards-filters">
+					<button class="nova-cards-filter-item active<?php echo ( ! empty( $settings['hide_filter_all_mobile'] ) && $settings['hide_filter_all_mobile'] === 'yes' ) ? ' hide-on-mobile' : ''; ?>" data-filter="*">
 						<?php echo esc_html( ! empty( $settings['filter_all_text'] ) ? $settings['filter_all_text'] : __( 'Tout', 'NOVA-addons' ) ); ?>
 					</button>
-					<?php endif; ?>
 					<?php foreach ( $filter_terms as $term ) : ?>
-						<button type="button" class="nova-cards-filter-item" data-filter=".<?php echo esc_attr( $term['slug'] ); ?>">
+						<button class="nova-cards-filter-item" data-filter=".<?php echo esc_attr( $term['slug'] ); ?>">
 							<?php echo esc_html( $term['name'] ); ?>
 						</button>
 					<?php endforeach; ?>
 				</div>
-				<?php
-			}
-			?>
+			<?php endif; ?>
 
 			<div class="nova-cards-grid"<?php echo $grid_data_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 				<?php foreach ( $items as $index => $item ) : ?>
@@ -4078,13 +3550,6 @@ class Cards_Widget extends Widget_Base {
 					$this->add_render_attribute( $card_key, 'class', $card_classes );
 					$this->add_render_attribute( $card_key, 'data-card-index', $index );
 
-					if ( ! empty( $item['card_meta'] ) && is_array( $item['card_meta'] ) ) {
-						$this->add_render_attribute(
-							$card_key,
-							'data-card-meta',
-							wp_json_encode( $item['card_meta'], JSON_UNESCAPED_UNICODE )
-						);
-					}
 
 					if ( ! empty( $item['card_background_color'] ) ) {
 						$this->add_render_attribute( $card_key, 'style', 'background-color: ' . esc_attr( $item['card_background_color'] ) . ';' );

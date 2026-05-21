@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Brands_Widget extends Widget_Base {
 
 	/**
-	 * Récupère le nom du widget.
+	 * RÃ©cupÃ¨re le nom du widget.
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Récupère le titre du widget.
+	 * RÃ©cupÃ¨re le titre du widget.
 	 *
 	 * @return string
 	 */
@@ -36,7 +36,7 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Récupère l'icône du widget.
+	 * RÃ©cupÃ¨re l'icÃ´ne du widget.
 	 *
 	 * @return string
 	 */
@@ -45,7 +45,7 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Récupère les catégories du widget.
+	 * RÃ©cupÃ¨re les catÃ©gories du widget.
 	 *
 	 * @return array
 	 */
@@ -54,7 +54,7 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Récupère les dépendances de style pour le widget.
+	 * RÃ©cupÃ¨re les dÃ©pendances de style pour le widget.
 	 *
 	 * @return array
 	 */
@@ -63,7 +63,7 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Récupère les dépendances de script pour le widget.
+	 * RÃ©cupÃ¨re les dÃ©pendances de script pour le widget.
 	 *
 	 * @return array
 	 */
@@ -72,7 +72,7 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
-	 * Enregistre les contrôles du widget.
+	 * Enregistre les contrÃ´les du widget.
 	 */
 	protected function register_controls() {
 
@@ -191,7 +191,124 @@ class Brands_Widget extends Widget_Base {
 				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
 				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
 				'default' => 'yes',
-				'description' => esc_html__( 'Afficher les logos en slider/carousel', 'NOVA-addons' ),
+				'description' => esc_html__( 'DÃ©sactivÃ© = grille sur tous les Ã©crans. ActivÃ© = rÃ©glages ci-dessous et affichage responsive.', 'NOVA-addons' ),
+			]
+		);
+
+		$this->add_control(
+			'brands_responsive_display_heading',
+			[
+				'type' => Controls_Manager::HEADING,
+				'label' => esc_html__( 'Affichage responsive (slider / grille)', 'NOVA-addons' ),
+				'condition' => [
+					'enable_slider' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'brands_display_mode_mobile',
+			[
+				'label' => esc_html__( 'Mode â€” Mobile (<768px)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'slider',
+				'options' => [
+					'slider' => esc_html__( 'Slider', 'NOVA-addons' ),
+					'grid'   => esc_html__( 'Grille', 'NOVA-addons' ),
+				],
+				'condition' => [
+					'enable_slider' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'brands_display_mode_tablet',
+			[
+				'label' => esc_html__( 'Mode â€” Tablette (768â€“1024px)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'slider',
+				'options' => [
+					'slider' => esc_html__( 'Slider', 'NOVA-addons' ),
+					'grid'   => esc_html__( 'Grille', 'NOVA-addons' ),
+				],
+				'condition' => [
+					'enable_slider' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'brands_display_mode_desktop',
+			[
+				'label' => esc_html__( 'Mode â€” Bureau (>1024px)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'slider',
+				'options' => [
+					'slider' => esc_html__( 'Slider', 'NOVA-addons' ),
+					'grid'   => esc_html__( 'Grille', 'NOVA-addons' ),
+				],
+				'condition' => [
+					'enable_slider' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'slider_marquee_heading',
+			[
+				'type' => Controls_Manager::HEADING,
+				'label' => esc_html__( 'DÃ©filement continu (type bandeau d\'actualitÃ©s)', 'NOVA-addons' ),
+				'condition' => [
+					'enable_slider' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'slider_marquee_enable',
+			[
+				'label' => esc_html__( 'DÃ©filement automatique continu', 'NOVA-addons' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
+				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
+				'default' => '',
+				'description' => esc_html__( 'Les logos dÃ©filent en boucle sans pause entre chaque slide (style fil d\'actualitÃ©s). DÃ©sactive l\'autoplay classique.', 'NOVA-addons' ),
+				'condition' => [
+					'enable_slider' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'slider_marquee_speed',
+			[
+				'label' => esc_html__( 'DurÃ©e d\'un passage (ms)', 'NOVA-addons' ),
+				'type' => Controls_Manager::NUMBER,
+				'default' => 8000,
+				'min' => 2000,
+				'max' => 60000,
+				'step' => 500,
+				'description' => esc_html__( 'Plus la valeur est Ã©levÃ©e, plus le dÃ©filement est lent.', 'NOVA-addons' ),
+				'condition' => [
+					'enable_slider' => 'yes',
+					'slider_marquee_enable' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'slider_marquee_pause_hover',
+			[
+				'label' => esc_html__( 'Pause au survol', 'NOVA-addons' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
+				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
+				'default' => 'yes',
+				'condition' => [
+					'enable_slider' => 'yes',
+					'slider_marquee_enable' => 'yes',
+				],
 			]
 		);
 
@@ -205,6 +322,7 @@ class Brands_Widget extends Widget_Base {
 				'default' => 'yes',
 				'condition' => [
 					'enable_slider' => 'yes',
+					'slider_marquee_enable' => '',
 				],
 			]
 		);
@@ -212,7 +330,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'slider_autoplay_delay',
 			[
-				'label' => esc_html__( 'Délai autoplay (ms)', 'NOVA-addons' ),
+				'label' => esc_html__( 'DÃ©lai autoplay (ms)', 'NOVA-addons' ),
 				'type' => Controls_Manager::NUMBER,
 				'default' => 3000,
 				'min' => 1000,
@@ -221,6 +339,7 @@ class Brands_Widget extends Widget_Base {
 				'condition' => [
 					'enable_slider' => 'yes',
 					'slider_autoplay' => 'yes',
+					'slider_marquee_enable' => '',
 				],
 			]
 		);
@@ -269,7 +388,7 @@ class Brands_Widget extends Widget_Base {
 			]
 		);
 
-		// Un seul add_responsive_control : génère desktop + _tablet + _mobile (évite "Cannot redeclare control")
+		// Un seul add_responsive_control : gÃ©nÃ¨re desktop + _tablet + _mobile (Ã©vite "Cannot redeclare control")
 		$this->add_responsive_control(
 			'slider_slides_per_view',
 			[
@@ -280,7 +399,7 @@ class Brands_Widget extends Widget_Base {
 				'mobile_default' => 2,
 				'min' => 1,
 				'max' => 12,
-				'description' => esc_html__( 'Nombre de logos visibles. Ignoré si "Largeur automatique" est activé.', 'NOVA-addons' ),
+				'description' => esc_html__( 'Nombre de logos visibles. IgnorÃ© si "Largeur automatique" est activÃ©.', 'NOVA-addons' ),
 				'condition' => [
 					'enable_slider' => 'yes',
 					'slider_auto_width' => '',
@@ -305,7 +424,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'slider_navigation',
 			[
-				'label' => esc_html__( 'Navigation (flèches)', 'NOVA-addons' ),
+				'label' => esc_html__( 'Navigation (flÃ¨ches)', 'NOVA-addons' ),
 				'type' => Controls_Manager::SWITCHER,
 				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
 				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
@@ -332,14 +451,11 @@ class Brands_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// Section Grid (quand slider désactivé)
+		// Section Grid (breakpoints en mode grille ou slider global dÃ©sactivÃ©)
 		$this->start_controls_section(
 			'section_grid',
 			[
-				'label' => esc_html__( 'Grid', 'NOVA-addons' ),
-				'condition' => [
-					'enable_slider' => '',
-				],
+				'label' => esc_html__( 'Grille', 'NOVA-addons' ),
 			]
 		);
 
@@ -461,7 +577,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_responsive_control(
 			'text_margin_bottom',
 			[
-				'label' => esc_html__( 'Marge inférieure', 'NOVA-addons' ),
+				'label' => esc_html__( 'Marge infÃ©rieure', 'NOVA-addons' ),
 				'type' => Controls_Manager::SLIDER,
 				'size_units' => [ 'px', 'em' ],
 				'range' => [
@@ -543,7 +659,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'logo_opacity',
 			[
-				'label' => esc_html__( 'Opacité', 'NOVA-addons' ),
+				'label' => esc_html__( 'OpacitÃ©', 'NOVA-addons' ),
 				'type' => Controls_Manager::SLIDER,
 				'range' => [
 					'px' => [
@@ -564,7 +680,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'logo_opacity_hover',
 			[
-				'label' => esc_html__( 'Opacité au survol', 'NOVA-addons' ),
+				'label' => esc_html__( 'OpacitÃ© au survol', 'NOVA-addons' ),
 				'type' => Controls_Manager::SLIDER,
 				'range' => [
 					'px' => [
@@ -585,10 +701,10 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'logo_filter_normal',
 			[
-				'label' => esc_html__( 'Filtre CSS (état normal)', 'NOVA-addons' ),
+				'label' => esc_html__( 'Filtre CSS (Ã©tat normal)', 'NOVA-addons' ),
 				'type' => Controls_Manager::TEXT,
 				'placeholder' => 'grayscale(1) brightness(0.6)',
-				'description' => esc_html__( 'Filtre CSS appliqué aux logos au repos. Exemple : grayscale(1), brightness(0.7) contrast(1.2), ou une chaîne complète de filtre pour recoloriser les logos.', 'NOVA-addons' ),
+				'description' => esc_html__( 'Filtre CSS appliquÃ© aux logos au repos. Exemple : grayscale(1), brightness(0.7) contrast(1.2), ou une chaÃ®ne complÃ¨te de filtre pour recoloriser les logos.', 'NOVA-addons' ),
 				'dynamic' => [
 					'active' => false,
 				],
@@ -604,7 +720,7 @@ class Brands_Widget extends Widget_Base {
 				'label' => esc_html__( 'Filtre CSS au survol', 'NOVA-addons' ),
 				'type' => Controls_Manager::TEXT,
 				'placeholder' => 'none',
-				'description' => esc_html__( 'Filtre CSS appliqué lorsque l’utilisateur survole le logo. Exemple : none, grayscale(0) brightness(1), ou un filtre qui change la couleur (via invert, sepia, hue-rotate, etc.).', 'NOVA-addons' ),
+				'description' => esc_html__( 'Filtre CSS appliquÃ© lorsque lâ€™utilisateur survole le logo. Exemple : none, grayscale(0) brightness(1), ou un filtre qui change la couleur (via invert, sepia, hue-rotate, etc.).', 'NOVA-addons' ),
 				'dynamic' => [
 					'active' => false,
 				],
@@ -709,7 +825,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_responsive_control(
 			'brand_item_text_margin_top',
 			[
-				'label' => esc_html__( 'Marge supérieure', 'NOVA-addons' ),
+				'label' => esc_html__( 'Marge supÃ©rieure', 'NOVA-addons' ),
 				'type' => Controls_Manager::SLIDER,
 				'size_units' => [ 'px', 'em' ],
 				'range' => [
@@ -779,7 +895,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'animation_delay',
 			[
-				'label' => esc_html__( 'Délai entre logos (ms)', 'NOVA-addons' ),
+				'label' => esc_html__( 'DÃ©lai entre logos (ms)', 'NOVA-addons' ),
 				'type' => Controls_Manager::NUMBER,
 				'default' => 100,
 				'min' => 0,
@@ -799,7 +915,7 @@ class Brands_Widget extends Widget_Base {
 				'min' => 0,
 				'max' => 9999,
 				'step' => 5,
-				'description' => esc_html__( 'Distance de translation verticale au démarrage de l\'animation', 'NOVA-addons' ),
+				'description' => esc_html__( 'Distance de translation verticale au dÃ©marrage de l\'animation', 'NOVA-addons' ),
 				'condition' => [
 					'animation_enable' => 'yes',
 				],
@@ -809,7 +925,7 @@ class Brands_Widget extends Widget_Base {
 		$this->add_control(
 			'animation_duration',
 			[
-				'label' => esc_html__( 'Durée (ms)', 'NOVA-addons' ),
+				'label' => esc_html__( 'DurÃ©e (ms)', 'NOVA-addons' ),
 				'type' => Controls_Manager::NUMBER,
 				'default' => 800,
 				'min' => 0,
@@ -825,6 +941,90 @@ class Brands_Widget extends Widget_Base {
 	}
 
 	/**
+	 * Mode d'affichage par breakpoint (slider|grid).
+	 *
+	 * @param array $settings Widget settings.
+	 * @return array<string,string>
+	 */
+	protected function get_brands_display_mode_config( array $settings ) {
+		$sanitize = function ( $value ) {
+			return in_array( $value, [ 'slider', 'grid' ], true ) ? $value : 'slider';
+		};
+
+		if ( empty( $settings['enable_slider'] ) || 'yes' !== $settings['enable_slider'] ) {
+			return [
+				'mobile'  => 'grid',
+				'tablet'  => 'grid',
+				'desktop' => 'grid',
+			];
+		}
+
+		return [
+			'mobile'  => $sanitize( $settings['brands_display_mode_mobile'] ?? 'slider' ),
+			'tablet'  => $sanitize( $settings['brands_display_mode_tablet'] ?? 'slider' ),
+			'desktop' => $sanitize( $settings['brands_display_mode_desktop'] ?? 'slider' ),
+		];
+	}
+
+	/**
+	 * Markup Swiper (variante slider).
+	 *
+	 * @param array $brands_list Liste des marques.
+	 * @param array $slider_config Config slider pour le JS.
+	 * @return void
+	 */
+	protected function render_brands_slider_variant( array $brands_list, array $slider_config ) {
+		$marquee_class = ! empty( $slider_config['marquee'] ) ? ' nova-brands-swiper--marquee' : '';
+		?>
+		<div class="nova-brands-variant nova-brands-variant--slider">
+			<div class="nova-brands-container nova-brands-slider">
+				<div class="swiper nova-brands-swiper<?php echo esc_attr( $marquee_class ); ?>">
+					<div class="swiper-wrapper">
+						<?php foreach ( $brands_list as $brand ) : ?>
+							<div class="swiper-slide">
+								<?php $this->render_brand_item( $brand ); ?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<?php if ( ! empty( $slider_config['navigation'] ) && empty( $slider_config['marquee'] ) ) : ?>
+						<div class="swiper-button-next"></div>
+						<div class="swiper-button-prev"></div>
+					<?php endif; ?>
+					<?php if ( ! empty( $slider_config['pagination'] ) && empty( $slider_config['marquee'] ) ) : ?>
+						<div class="swiper-pagination"></div>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Markup grille (variante grid).
+	 *
+	 * @param array $brands_list Liste des marques.
+	 * @param int   $grid_columns Colonnes desktop.
+	 * @param int   $grid_columns_tablet Colonnes tablette.
+	 * @param int   $grid_columns_mobile Colonnes mobile.
+	 * @return void
+	 */
+	protected function render_brands_grid_variant( array $brands_list, $grid_columns, $grid_columns_tablet, $grid_columns_mobile ) {
+		?>
+		<div class="nova-brands-variant nova-brands-variant--grid">
+			<div class="nova-brands-container nova-brands-grid">
+				<div class="nova-brands-grid-inner" style="--grid-cols:<?php echo esc_attr( $grid_columns ); ?>;--grid-cols-tablet:<?php echo esc_attr( $grid_columns_tablet ); ?>;--grid-cols-mobile:<?php echo esc_attr( $grid_columns_mobile ); ?>;--grid-cols-current:<?php echo esc_attr( $grid_columns ); ?>;">
+					<?php foreach ( $brands_list as $index => $brand ) : ?>
+						<div class="nova-brands-item" data-index="<?php echo esc_attr( $index ); ?>">
+							<?php $this->render_brand_item( $brand ); ?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Rendu du widget
 	 */
 	protected function render() {
@@ -835,7 +1035,7 @@ class Brands_Widget extends Widget_Base {
 		$enable_slider = $settings['enable_slider'] === 'yes';
 		$animation_enable = $settings['animation_enable'] === 'yes';
 
-		// Configuration grid (quand slider désactivé)
+		// Configuration grid (quand slider dÃ©sactivÃ©)
 		$grid_columns        = isset( $settings['grid_columns'] ) ? intval( $settings['grid_columns'] ) : 4;
 		$grid_columns_tablet = isset( $settings['grid_columns_tablet'] ) ? intval( $settings['grid_columns_tablet'] ) : 3;
 		$grid_columns_mobile = isset( $settings['grid_columns_mobile'] ) ? intval( $settings['grid_columns_mobile'] ) : 2;
@@ -846,7 +1046,7 @@ class Brands_Widget extends Widget_Base {
 		// Configuration slider
 		$auto_width = $settings['slider_auto_width'] === 'yes';
 		
-		// Récupérer les valeurs responsive (peuvent être un tableau avec 'size', 'tablet', 'mobile' ou directement un nombre)
+		// RÃ©cupÃ©rer les valeurs responsive (peuvent Ãªtre un tableau avec 'size', 'tablet', 'mobile' ou directement un nombre)
 		$slides_per_view = isset( $settings['slider_slides_per_view'] ) ? $settings['slider_slides_per_view'] : 4;
 		$slides_per_view_tablet = isset( $settings['slider_slides_per_view_tablet'] ) ? $settings['slider_slides_per_view_tablet'] : 3;
 		$slides_per_view_mobile = isset( $settings['slider_slides_per_view_mobile'] ) ? $settings['slider_slides_per_view_mobile'] : 2;
@@ -870,19 +1070,26 @@ class Brands_Widget extends Widget_Base {
 			$slides_per_view_mobile = intval( $slides_per_view_mobile );
 		}
 
+		$marquee_enable = $enable_slider && ! empty( $settings['slider_marquee_enable'] ) && 'yes' === $settings['slider_marquee_enable'];
+
 		$slider_config = [
-			'autoplay' => $settings['slider_autoplay'] === 'yes',
+			'autoplay' => ! $marquee_enable && $settings['slider_autoplay'] === 'yes',
 			'autoplayDelay' => intval( $settings['slider_autoplay_delay'] ),
-			'loop' => $settings['slider_loop'] === 'yes',
+			'loop' => $marquee_enable ? true : ( $settings['slider_loop'] === 'yes' ),
 			'speed' => intval( $settings['slider_speed'] ),
-			'autoWidth' => $auto_width,
-			'slidesPerView' => $auto_width ? 'auto' : $slides_per_view,
-			'slidesPerViewTablet' => $auto_width ? 'auto' : $slides_per_view_tablet,
-			'slidesPerViewMobile' => $auto_width ? 'auto' : $slides_per_view_mobile,
+			'autoWidth' => $auto_width || $marquee_enable,
+			'slidesPerView' => ( $auto_width || $marquee_enable ) ? 'auto' : $slides_per_view,
+			'slidesPerViewTablet' => ( $auto_width || $marquee_enable ) ? 'auto' : $slides_per_view_tablet,
+			'slidesPerViewMobile' => ( $auto_width || $marquee_enable ) ? 'auto' : $slides_per_view_mobile,
 			'spaceBetween' => intval( $settings['slider_space_between'] ),
-			'navigation' => $settings['slider_navigation'] === 'yes',
-			'pagination' => $settings['slider_pagination'] === 'yes',
+			'navigation' => ! $marquee_enable && $settings['slider_navigation'] === 'yes',
+			'pagination' => ! $marquee_enable && $settings['slider_pagination'] === 'yes',
+			'marquee' => $marquee_enable,
+			'marqueeSpeed' => isset( $settings['slider_marquee_speed'] ) ? intval( $settings['slider_marquee_speed'] ) : 8000,
+			'marqueePauseOnHover' => ! isset( $settings['slider_marquee_pause_hover'] ) || 'yes' === $settings['slider_marquee_pause_hover'],
 		];
+
+		$display_mode_config = $this->get_brands_display_mode_config( $settings );
 
 		// Animation config
 		$animation_config = [
@@ -893,11 +1100,14 @@ class Brands_Widget extends Widget_Base {
 		];
 
 		?>
-		<div class="nova-brands-widget" 
+		<?php
+		$brands_fallback_mode = $enable_slider ? ( $display_mode_config['desktop'] ?? 'slider' ) : 'grid';
+		?>
+		<div class="nova-brands-widget nova-brands-fallback-<?php echo esc_attr( sanitize_html_class( $brands_fallback_mode ) ); ?>"
 			data-enable-slider="<?php echo esc_attr( $enable_slider ? '1' : '0' ); ?>"
-			data-slider-config='<?php echo wp_json_encode( $slider_config ); ?>'
-			data-animation-config='<?php echo wp_json_encode( $animation_config ); ?>'>
-			
+			data-display-mode-config="<?php echo esc_attr( wp_json_encode( $display_mode_config ) ); ?>"
+			data-slider-config="<?php echo esc_attr( wp_json_encode( $slider_config ) ); ?>"
+			data-animation-config="<?php echo esc_attr( wp_json_encode( $animation_config ) ); ?>">
 			<?php if ( ! empty( $content_text ) ) : ?>
 				<div class="nova-brands-text">
 					<?php echo wp_kses_post( $content_text ); ?>
@@ -905,34 +1115,10 @@ class Brands_Widget extends Widget_Base {
 			<?php endif; ?>
 
 			<?php if ( ! empty( $brands_list ) ) : ?>
-				<div class="nova-brands-container<?php echo $enable_slider ? ' nova-brands-slider' : ' nova-brands-grid'; ?>">
-					<?php if ( $enable_slider ) : ?>
-						<div class="swiper nova-brands-swiper">
-							<div class="swiper-wrapper">
-								<?php foreach ( $brands_list as $brand ) : ?>
-									<div class="swiper-slide">
-										<?php $this->render_brand_item( $brand ); ?>
-									</div>
-								<?php endforeach; ?>
-							</div>
-							<?php if ( $slider_config['navigation'] ) : ?>
-								<div class="swiper-button-next"></div>
-								<div class="swiper-button-prev"></div>
-							<?php endif; ?>
-							<?php if ( $slider_config['pagination'] ) : ?>
-								<div class="swiper-pagination"></div>
-							<?php endif; ?>
-						</div>
-					<?php else : ?>
-						<div class="nova-brands-grid-inner" style="--grid-cols:<?php echo esc_attr( $grid_columns ); ?>;--grid-cols-tablet:<?php echo esc_attr( $grid_columns_tablet ); ?>;--grid-cols-mobile:<?php echo esc_attr( $grid_columns_mobile ); ?>;--grid-cols-current:<?php echo esc_attr( $grid_columns ); ?>;">
-							<?php foreach ( $brands_list as $index => $brand ) : ?>
-								<div class="nova-brands-item" data-index="<?php echo esc_attr( $index ); ?>">
-									<?php $this->render_brand_item( $brand ); ?>
-								</div>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
-				</div>
+				<?php
+				$this->render_brands_slider_variant( $brands_list, $slider_config );
+				$this->render_brands_grid_variant( $brands_list, $grid_columns, $grid_columns_tablet, $grid_columns_mobile );
+				?>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -942,12 +1128,12 @@ class Brands_Widget extends Widget_Base {
 	 * Rendu d'un item de logo
 	 */
 	private function render_brand_item( $brand ) {
-		// Vérifier différentes structures possibles pour l'image
+		// VÃ©rifier diffÃ©rentes structures possibles pour l'image
 		$logo_url = '';
 		if ( isset( $brand['brand_logo']['url'] ) ) {
 			$logo_url = $brand['brand_logo']['url'];
 		} elseif ( isset( $brand['brand_logo']['id'] ) ) {
-			// Si on a un ID, récupérer l'URL
+			// Si on a un ID, rÃ©cupÃ©rer l'URL
 			$logo_url = wp_get_attachment_image_url( $brand['brand_logo']['id'], 'full' );
 		} elseif ( is_numeric( $brand['brand_logo'] ) ) {
 			// Si c'est directement un ID

@@ -76,7 +76,8 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 		// Loading NOVA Title assets conditionnellement ici peut créer des boucles internes
 		// avec get_settings_for_display() → get_style_depends().
 		// Les assets de NOVA Title sont donc gérés par le widget NOVA Title lui‑même.
-		return [ 'nova-stacking-cards-2-style' ];
+		// Owl : mode slider responsive (même stack que NOVA Carousel).
+		return [ 'owl-carousel', 'owl-carousel-theme', 'nova-stacking-cards-2-style' ];
 	}
 
 	/**
@@ -87,7 +88,7 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 	public function get_script_depends() {
 		// Même logique que pour les styles : éviter d'appeler get_settings_for_display()
 		// ici pour ne pas provoquer de récursion avec l'initialisation Elementor.
-		return [ 'gsap', 'gsap-scrolltrigger', 'nova-stacking-cards-2-script' ];
+		return [ 'owl-carousel', 'gsap', 'gsap-scrolltrigger', 'nova-stacking-cards-2-script' ];
 	}
 
 	/**
@@ -143,6 +144,7 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 					'unit' => 'px',
 				],
 				'selectors' => [
+					'{{WRAPPER}} .nova-stacking-cards-2-wrapper' => '--card-height: {{SIZE}}{{UNIT}};',
 					'{{WRAPPER}} .nova-stacking-cards-2' => '--card-height: {{SIZE}}{{UNIT}};',
 				],
 			]
@@ -299,6 +301,158 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 					'stacked_offset_enable' => 'yes',
 				],
 				'description' => esc_html__( 'Espace en Y entre chaque carte (ex. 20px : 1ère à 0, 2e à 20px, 3e à 40px…).', 'NOVA-addons' ),
+			]
+		);
+
+		$this->end_controls_section();
+
+		/**
+		 * Responsive display: stacking vs horizontal slider vs grid (HTML séparé par variante).
+		 */
+		$this->start_controls_section(
+			'section_sc2_responsive_display',
+			[
+				'label' => esc_html__( 'Affichage responsive (stacking / slider / grille)', 'NOVA-addons' ),
+			]
+		);
+
+		$this->add_control(
+			'sc2_responsive_display_hint',
+			[
+				'type' => Controls_Manager::HEADING,
+				'label' => esc_html__( 'Le stacking utilise GSAP ; slider et grille = balisage séparé.', 'NOVA-addons' ),
+			]
+		);
+
+		$this->add_control(
+			'sc2_responsive_mode_mobile',
+			[
+				'label' => esc_html__( 'Mode — Mobile (<768px)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'stacking',
+				'options' => [
+					'stacking' => esc_html__( 'Stacking (scroll)', 'NOVA-addons' ),
+					'slider' => esc_html__( 'Slider horizontal', 'NOVA-addons' ),
+					'grid' => esc_html__( 'Grille', 'NOVA-addons' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'sc2_responsive_mode_tablet',
+			[
+				'label' => esc_html__( 'Mode — Tablette (768–1024px)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'stacking',
+				'options' => [
+					'stacking' => esc_html__( 'Stacking (scroll)', 'NOVA-addons' ),
+					'slider' => esc_html__( 'Slider horizontal', 'NOVA-addons' ),
+					'grid' => esc_html__( 'Grille', 'NOVA-addons' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'sc2_responsive_mode_desktop',
+			[
+				'label' => esc_html__( 'Mode — Bureau (>1024px)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'stacking',
+				'options' => [
+					'stacking' => esc_html__( 'Stacking (scroll)', 'NOVA-addons' ),
+					'slider' => esc_html__( 'Slider horizontal', 'NOVA-addons' ),
+					'grid' => esc_html__( 'Grille', 'NOVA-addons' ),
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'sc2_owl_slide_width',
+			[
+				'label' => esc_html__( 'Largeur fixe d\'une slide (Owl)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px' ],
+				'range' => [
+					'px' => [ 'min' => 200, 'max' => 900 ],
+				],
+				'default' => [
+					'size' => 400,
+					'unit' => 'px',
+				],
+				'tablet_default' => [
+					'size' => 360,
+					'unit' => 'px',
+				],
+				'mobile_default' => [
+					'size' => 300,
+					'unit' => 'px',
+				],
+				'description' => esc_html__( 'Chaque carte a cette largeur ; le nombre de cartes visibles suit automatiquement la largeur du bloc (Owl autoWidth).', 'NOVA-addons' ),
+			]
+		);
+
+		$this->add_responsive_control(
+			'sc2_owl_margin',
+			[
+				'label' => esc_html__( 'Marge entre slides (Owl)', 'NOVA-addons' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px' ],
+				'range' => [
+					'px' => [ 'min' => 0, 'max' => 80 ],
+				],
+				'default' => [
+					'size' => 16,
+					'unit' => 'px',
+				],
+			]
+		);
+
+		$this->add_control(
+			'sc2_owl_nav',
+			[
+				'label' => esc_html__( 'Flèches Owl', 'NOVA-addons' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
+				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
+				'return_value' => 'yes',
+				'default' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'sc2_owl_dots',
+			[
+				'label' => esc_html__( 'Points Owl', 'NOVA-addons' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
+				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
+				'return_value' => 'yes',
+				'default' => '',
+			]
+		);
+
+		$this->add_control(
+			'sc2_owl_loop',
+			[
+				'label' => esc_html__( 'Boucle Owl', 'NOVA-addons' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Oui', 'NOVA-addons' ),
+				'label_off' => esc_html__( 'Non', 'NOVA-addons' ),
+				'return_value' => 'yes',
+				'default' => '',
+			]
+		);
+
+		$this->add_responsive_control(
+			'sc2_grid_columns',
+			[
+				'label' => esc_html__( 'Colonnes (grille)', 'NOVA-addons' ),
+				'type' => Controls_Manager::NUMBER,
+				'min' => 1,
+				'max' => 4,
+				'default' => 3,
+				'tablet_default' => 2,
+				'mobile_default' => 1,
 			]
 		);
 
@@ -1841,6 +1995,361 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 	}
 
 	/**
+	 * Sanitize responsive display mode value.
+	 *
+	 * @param mixed $value Raw setting.
+	 * @return string stacking|slider|grid
+	 */
+	protected function sanitize_sc2_display_mode( $value ) {
+		$v = is_string( $value ) ? $value : 'stacking';
+		return in_array( $v, [ 'stacking', 'slider', 'grid' ], true ) ? $v : 'stacking';
+	}
+
+	/**
+	 * Display mode per breakpoint for JS (same keys as carousel Swiper).
+	 *
+	 * @param array $settings Widget settings.
+	 * @return array<string,string>
+	 */
+	protected function get_sc2_display_mode_config( array $settings ) {
+		return [
+			'mobile'  => $this->sanitize_sc2_display_mode( $settings['sc2_responsive_mode_mobile'] ?? 'stacking' ),
+			'tablet'  => $this->sanitize_sc2_display_mode( $settings['sc2_responsive_mode_tablet'] ?? 'stacking' ),
+			'desktop' => $this->sanitize_sc2_display_mode( $settings['sc2_responsive_mode_desktop'] ?? 'stacking' ),
+		];
+	}
+
+	/**
+	 * Grid column counts per breakpoint.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return array{desktop:int,tablet:int,mobile:int}
+	 */
+	protected function get_sc2_grid_columns_triple( array $settings ) {
+		$d = isset( $settings['sc2_grid_columns'] ) && $settings['sc2_grid_columns'] !== '' ? (int) $settings['sc2_grid_columns'] : 3;
+		$t = isset( $settings['sc2_grid_columns_tablet'] ) && $settings['sc2_grid_columns_tablet'] !== '' ? (int) $settings['sc2_grid_columns_tablet'] : $d;
+		$m = isset( $settings['sc2_grid_columns_mobile'] ) && $settings['sc2_grid_columns_mobile'] !== '' ? (int) $settings['sc2_grid_columns_mobile'] : $t;
+		$d = max( 1, min( 4, $d ) );
+		$t = max( 1, min( 4, $t ) );
+		$m = max( 1, min( 4, $m ) );
+		return [
+			'desktop' => $d,
+			'tablet'  => $t,
+			'mobile'  => $m,
+		];
+	}
+
+	/**
+	 * CSS variables on the outer wrapper (slider slide width + grid columns).
+	 *
+	 * @param array $settings Widget settings.
+	 * @return string Safe for style="" via esc_attr().
+	 */
+	protected function get_sc2_wrapper_css_vars_attr( array $settings ) {
+		$cols = $this->get_sc2_grid_columns_triple( $settings );
+
+		$w_d = isset( $settings['sc2_owl_slide_width']['size'] ) ? max( 200, min( 900, (float) $settings['sc2_owl_slide_width']['size'] ) ) : 400;
+		$w_t = isset( $settings['sc2_owl_slide_width_tablet']['size'] ) && $settings['sc2_owl_slide_width_tablet']['size'] !== '' ? max( 200, min( 900, (float) $settings['sc2_owl_slide_width_tablet']['size'] ) ) : $w_d;
+		$w_m = isset( $settings['sc2_owl_slide_width_mobile']['size'] ) && $settings['sc2_owl_slide_width_mobile']['size'] !== '' ? max( 200, min( 900, (float) $settings['sc2_owl_slide_width_mobile']['size'] ) ) : $w_t;
+
+		return sprintf(
+			'--sc2-owl-slide-w-d:%1$s;--sc2-owl-slide-w-t:%2$s;--sc2-owl-slide-w-m:%3$s;--sc2-grid-cols-d:%4$d;--sc2-grid-cols-t:%5$d;--sc2-grid-cols-m:%6$d;',
+			esc_attr( $w_d ) . 'px',
+			esc_attr( $w_t ) . 'px',
+			esc_attr( $w_m ) . 'px',
+			$cols['desktop'],
+			$cols['tablet'],
+			$cols['mobile']
+		);
+	}
+
+	/**
+	 * Configuration Owl pour le mode slider (JSON sur data-sc2-owl-config).
+	 *
+	 * @param array $settings Widget settings.
+	 * @return array<string,mixed>
+	 */
+	protected function get_sc2_owl_config_for_js( array $settings ) {
+		$m_d = isset( $settings['sc2_owl_margin']['size'] ) ? max( 0, (int) $settings['sc2_owl_margin']['size'] ) : 16;
+		$m_t = isset( $settings['sc2_owl_margin_tablet']['size'] ) && $settings['sc2_owl_margin_tablet']['size'] !== '' ? max( 0, (int) $settings['sc2_owl_margin_tablet']['size'] ) : $m_d;
+		$m_m = isset( $settings['sc2_owl_margin_mobile']['size'] ) && $settings['sc2_owl_margin_mobile']['size'] !== '' ? max( 0, (int) $settings['sc2_owl_margin_mobile']['size'] ) : $m_t;
+
+		return [
+			'autoWidth'    => true,
+			'marginDesktop'=> $m_d,
+			'marginTablet' => $m_t,
+			'marginMobile' => $m_m,
+			'nav'          => ! empty( $settings['sc2_owl_nav'] ) && 'yes' === $settings['sc2_owl_nav'],
+			'dots'         => ! empty( $settings['sc2_owl_dots'] ) && 'yes' === $settings['sc2_owl_dots'],
+			'loop'         => ! empty( $settings['sc2_owl_loop'] ) && 'yes' === $settings['sc2_owl_loop'],
+		];
+	}
+
+	/**
+	 * Re-init NOVA Title widgets injected inside this stacking wrapper (toutes variantes).
+	 *
+	 * @param string $wrapper_id DOM id of .nova-stacking-cards-2-wrapper.
+	 * @param string $selected_nova_title_widget_id Elementor data-id.
+	 * @return void
+	 */
+	protected function render_sc2_nova_title_reinit_script( $wrapper_id, $selected_nova_title_widget_id ) {
+		if ( empty( $wrapper_id ) || empty( $selected_nova_title_widget_id ) ) {
+			return;
+		}
+		?>
+		<script>
+		(function($) {
+			'use strict';
+			function initInjectedNovaTitleSc2() {
+				var $wrapper = $('#<?php echo esc_js( $wrapper_id ); ?>');
+				var $widgets = $wrapper.find('.elementor-widget-nova-title[data-id="<?php echo esc_js( $selected_nova_title_widget_id ); ?>"] .nova-title-widget');
+				if ($widgets.length && typeof window.NOVATitle !== 'undefined') {
+					$widgets.each(function() {
+						var $w = $(this);
+						$w.data('nova-title-initialized', false);
+						window.NOVATitle.initInstance($w);
+					});
+					if (window.NOVATitle.initStyledWordsAnimations) {
+						$wrapper.find('.elementor-widget-nova-title[data-id="<?php echo esc_js( $selected_nova_title_widget_id ); ?>"]').each(function() {
+							window.NOVATitle.initStyledWordsAnimations($(this));
+						});
+					}
+				}
+			}
+			$(document).ready(function() {
+				setTimeout(initInjectedNovaTitleSc2, 100);
+				setTimeout(initInjectedNovaTitleSc2, 500);
+				$(window).on('load', function() {
+					setTimeout(initInjectedNovaTitleSc2, 200);
+				});
+			});
+			if (typeof elementorFrontend !== 'undefined') {
+				$(window).on('elementor/frontend/init', function() {
+					setTimeout(initInjectedNovaTitleSc2, 200);
+				});
+			}
+		})(jQuery);
+		</script>
+		<?php
+	}
+
+	/**
+	 * Carte répétée pour variantes slider / grille : mêmes classes que le mode stacking
+	 * pour que les contrôles Elementor ({{WRAPPER}} .nova-stacking-card-2…) s’appliquent.
+	 *
+	 * @param array  $card Repeater item.
+	 * @param int    $index Repeater index.
+	 * @param bool   $alternate Alternate layout.
+	 * @param bool   $use_nova_title_for_first_card NOVA Title en première « carte ».
+	 * @param string $nova_title_html HTML du titre (non vide si injecté).
+	 * @return void
+	 */
+	protected function render_sc2_variant_repeater_card( array $card, $index, $alternate, $use_nova_title_for_first_card, $nova_title_html ) {
+		$card_icon_type = isset( $card['card_icon_type'] ) ? $card['card_icon_type'] : 'icon';
+
+		$card_class = [
+			'nova-stacking-card-2',
+			'nova-stacking-card-2--index-' . ( $index + 1 ),
+		];
+		if ( ! empty( $card['_id'] ) ) {
+			$card_class[] = 'elementor-repeater-item-' . esc_attr( $card['_id'] );
+		}
+		if ( 0 === $index && ! ( $use_nova_title_for_first_card && ! empty( $nova_title_html ) ) ) {
+			$card_class[] = 'is-active';
+		}
+		if ( $alternate && ( $index % 2 === 1 ) ) {
+			$card_class[] = 'nova-stacking-card-2--reversed';
+		}
+
+		$image_html = '';
+		if ( ! empty( $card['card_media']['id'] ) ) {
+			$image_html = wp_get_attachment_image(
+				intval( $card['card_media']['id'] ),
+				'large',
+				false,
+				[
+					'class'   => 'nova-stacking-card-2__image',
+					'loading' => 0 === $index ? 'eager' : 'lazy',
+				]
+			);
+		} elseif ( ! empty( $card['card_media']['url'] ) ) {
+			$image_url  = esc_url( $card['card_media']['url'] );
+			$image_html = '<img class="nova-stacking-card-2__image" src="' . $image_url . '" alt="" loading="' . ( 0 === $index ? 'eager' : 'lazy' ) . '"/>';
+		}
+
+		$icon_html = '';
+		if ( 'icon' === $card_icon_type && ! empty( $card['card_icon']['value'] ) ) {
+			$icon_value = $card['card_icon']['value'];
+			if ( is_array( $icon_value ) && ! empty( $icon_value['url'] ) ) {
+				$icon_html = sprintf( '<img src="%1$s" alt="" />', esc_url( $icon_value['url'] ) );
+			} else {
+				ob_start();
+				Icons_Manager::render_icon( $card['card_icon'], [ 'aria-hidden' => 'true' ] );
+				$icon_html = ob_get_clean();
+			}
+		} elseif ( 'image' === $card_icon_type && ! empty( $card['card_icon_image']['url'] ) ) {
+			$icon_html = sprintf( '<img src="%1$s" alt="" />', esc_url( $card['card_icon_image']['url'] ) );
+		}
+
+		$button_text          = isset( $card['card_button_text'] ) ? $card['card_button_text'] : '';
+		$button_link          = isset( $card['card_button_link'] ) ? $card['card_button_link'] : [];
+		$button_icon          = isset( $card['card_button_icon'] ) ? $card['card_button_icon'] : [];
+		$button_icon_position = isset( $card['card_button_icon_position'] ) ? $card['card_button_icon_position'] : 'before';
+		$button_key           = 'stacking-card-2-vcard-' . $this->get_id() . '-' . $index;
+		$has_button           = ! empty( $button_text ) && ! empty( $button_link['url'] );
+
+		$button_icon_html = '';
+		if ( ! empty( $button_icon['value'] ) ) {
+			$icon_value = $button_icon['value'];
+			if ( is_array( $icon_value ) && ! empty( $icon_value['url'] ) ) {
+				$button_icon_html = sprintf( '<img src="%1$s" alt="" />', esc_url( $icon_value['url'] ) );
+			} else {
+				ob_start();
+				Icons_Manager::render_icon( $button_icon, [ 'aria-hidden' => 'true' ] );
+				$button_icon_html = ob_get_clean();
+			}
+		}
+
+		if ( $has_button ) {
+			$this->add_render_attribute( $button_key, 'class', 'nova-stacking-card-2__button' );
+			$this->add_link_attributes( $button_key, $button_link );
+		}
+		?>
+		<article class="<?php echo esc_attr( implode( ' ', $card_class ) ); ?>" data-card-index="<?php echo esc_attr( $index ); ?>">
+			<div class="nova-stacking-card-2__inner">
+				<div class="nova-stacking-card-2__content">
+					<?php if ( ! empty( $icon_html ) ) : ?>
+						<div class="nova-stacking-card-2__icon">
+							<?php echo $icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( ! empty( $card['card_title'] ) ) : ?>
+						<div class="nova-stacking-card-2__title">
+							<?php echo wp_kses_post( $card['card_title'] ); ?>
+						</div>
+					<?php endif; ?>
+
+					<div class="nova-stacking-card-2__content_2">
+						<?php if ( ! empty( $card['card_description'] ) ) : ?>
+							<div class="nova-stacking-card-2__description">
+								<?php echo wp_kses_post( $card['card_description'] ); ?>
+							</div>
+						<?php endif; ?>
+
+						<?php if ( $has_button ) : ?>
+							<a <?php echo $this->get_render_attribute_string( $button_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+								<?php if ( ! empty( $button_icon_html ) && 'before' === $button_icon_position ) : ?>
+									<span class="nova-stacking-card-2__button-icon icon-before">
+										<?php echo $button_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									</span>
+								<?php endif; ?>
+								<span class="nova-stacking-card-2__button-text"><?php echo esc_html( $button_text ); ?></span>
+								<?php if ( ! empty( $button_icon_html ) && 'after' === $button_icon_position ) : ?>
+									<span class="nova-stacking-card-2__button-icon icon-after">
+										<?php echo $button_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									</span>
+								<?php endif; ?>
+							</a>
+						<?php endif; ?>
+					</div>
+				</div>
+				<div class="nova-stacking-card-2__media">
+					<?php echo $image_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+			</div>
+		</article>
+		<?php
+	}
+
+	/**
+	 * Variante slider : Owl Carousel (balisage distinct du stacking, mêmes classes carte).
+	 *
+	 * @param array  $settings Widget settings.
+	 * @param array  $cards Cards repeater.
+	 * @param bool   $alternate Alternate layout.
+	 * @param bool   $use_nova_title_for_first_card Use NOVA Title as first slide.
+	 * @param string $selected_nova_title_widget_id Elementor widget id.
+	 * @param string $nova_title_html Rendered title HTML.
+	 * @return void
+	 */
+	protected function render_sc2_variant_slider( array $settings, array $cards, $alternate, $use_nova_title_for_first_card, $selected_nova_title_widget_id, $nova_title_html ) {
+		$owl_cfg = $this->get_sc2_owl_config_for_js( $settings );
+		?>
+		<div class="nova-stacking-cards-2-variant nova-stacking-cards-2-variant--slider">
+			<div
+				class="nova-sc2-slider owl-carousel"
+				data-sc2-owl-config="<?php echo esc_attr( wp_json_encode( $owl_cfg ) ); ?>"
+			>
+				<?php if ( $use_nova_title_for_first_card && ! empty( $nova_title_html ) && ! empty( $selected_nova_title_widget_id ) ) : ?>
+					<div class="item">
+						<article class="nova-stacking-card-2 nova-stacking-card-2--index-1 nova-stacking-card-2--nova-title-replaced is-active" data-card-index="0">
+							<div class="nova-stacking-card-2__inner nova-stacking-card-2__inner--nova-title">
+								<div class="nova-stacking-card-2__nova-title-content">
+									<div class="elementor-widget elementor-widget-nova-title" data-id="<?php echo esc_attr( $selected_nova_title_widget_id ); ?>">
+										<div class="elementor-widget-container">
+											<?php echo $nova_title_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+										</div>
+									</div>
+								</div>
+							</div>
+						</article>
+					</div>
+				<?php endif; ?>
+				<?php
+				foreach ( $cards as $index => $card ) {
+					echo '<div class="item">';
+					$this->render_sc2_variant_repeater_card( $card, $index, $alternate, $use_nova_title_for_first_card, $nova_title_html );
+					echo '</div>';
+				}
+				?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Variante grille (mêmes classes carte que le stacking).
+	 *
+	 * @param array  $cards Cards repeater.
+	 * @param bool   $alternate Alternate layout.
+	 * @param bool   $use_nova_title_for_first_card Use NOVA Title as first cell.
+	 * @param string $selected_nova_title_widget_id Elementor widget id.
+	 * @param string $nova_title_html Rendered title HTML.
+	 * @return void
+	 */
+	protected function render_sc2_variant_grid( array $cards, $alternate, $use_nova_title_for_first_card, $selected_nova_title_widget_id, $nova_title_html ) {
+		?>
+		<div class="nova-stacking-cards-2-variant nova-stacking-cards-2-variant--grid">
+			<div class="nova-sc2-grid">
+				<?php if ( $use_nova_title_for_first_card && ! empty( $nova_title_html ) && ! empty( $selected_nova_title_widget_id ) ) : ?>
+					<div class="nova-sc2-grid__cell">
+						<article class="nova-stacking-card-2 nova-stacking-card-2--index-1 nova-stacking-card-2--nova-title-replaced is-active" data-card-index="0">
+							<div class="nova-stacking-card-2__inner nova-stacking-card-2__inner--nova-title">
+								<div class="nova-stacking-card-2__nova-title-content">
+									<div class="elementor-widget elementor-widget-nova-title" data-id="<?php echo esc_attr( $selected_nova_title_widget_id ); ?>">
+										<div class="elementor-widget-container">
+											<?php echo $nova_title_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+										</div>
+									</div>
+								</div>
+							</div>
+						</article>
+					</div>
+				<?php endif; ?>
+				<?php
+				foreach ( $cards as $index => $card ) {
+					echo '<div class="nova-sc2-grid__cell">';
+					$this->render_sc2_variant_repeater_card( $card, $index, $alternate, $use_nova_title_for_first_card, $nova_title_html );
+					echo '</div>';
+				}
+				?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Render widget output.
 	 *
 	 * @return void
@@ -1854,6 +2363,8 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 		}
 
 		$wrapper_id = 'nova-stacking-cards-2-' . wp_unique_id();
+		$display_mode_config = $this->get_sc2_display_mode_config( $settings );
+		$wrapper_style_attr  = $this->get_sc2_wrapper_css_vars_attr( $settings );
 
 		// Animation settings
 		$scrub     = isset( $settings['animation_scrub']['size'] ) ? (float) $settings['animation_scrub']['size'] : 1.2;
@@ -1918,7 +2429,10 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 				}
 			</style>
 		<?php endif; ?>
-		<div class="nova-stacking-cards-2-wrapper" id="<?php echo esc_attr( $wrapper_id ); ?>">
+		<div class="nova-stacking-cards-2-wrapper" id="<?php echo esc_attr( $wrapper_id ); ?>"
+			data-display-mode-config="<?php echo esc_attr( wp_json_encode( $display_mode_config ) ); ?>"
+			style="<?php echo esc_attr( $wrapper_style_attr ); ?>">
+			<div class="nova-stacking-cards-2-variant nova-stacking-cards-2-variant--stacking">
 			<div
 				class="nova-stacking-cards-2<?php echo $stacked ? ' nova-stacking-cards-2--stacked' : ''; ?>"
 				data-card-count="<?php echo esc_attr( $visual_cards_count ); ?>"
@@ -1965,52 +2479,6 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 							</div>
 						</div>
 					</article>
-					<?php
-					// Add script to reinitialize NOVA Title widget after injection
-					?>
-					<script>
-					(function($) {
-						'use strict';
-						function initInjectedNovaTitle() {
-							// Find the injected NOVA Title widget
-							var $wrapper = $('#<?php echo esc_js( $wrapper_id ); ?>');
-							var $injectedWidget = $wrapper.find('.elementor-widget-nova-title[data-id="<?php echo esc_js( $selected_nova_title_widget_id ); ?>"] .nova-title-widget');
-							
-							if ($injectedWidget.length > 0 && typeof window.NOVATitle !== 'undefined') {
-								// Reset initialization flag and reinitialize
-								$injectedWidget.data('nova-title-initialized', false);
-								window.NOVATitle.initInstance($injectedWidget);
-								
-								// Also try to initialize styled words animations if needed
-								if (window.NOVATitle.initStyledWordsAnimations) {
-									var $widgetContainer = $injectedWidget.closest('.elementor-widget-nova-title');
-									if ($widgetContainer.length) {
-										window.NOVATitle.initStyledWordsAnimations($widgetContainer);
-									}
-								}
-							}
-						}
-						
-						// Try multiple times to ensure scripts are loaded
-						$(document).ready(function() {
-							// Try immediately
-							setTimeout(initInjectedNovaTitle, 100);
-							// Try after a delay
-							setTimeout(initInjectedNovaTitle, 500);
-							// Try after window load
-							$(window).on('load', function() {
-								setTimeout(initInjectedNovaTitle, 200);
-							});
-						});
-						
-						// Also try when Elementor frontend is ready
-						if (typeof elementorFrontend !== 'undefined') {
-							$(window).on('elementor/frontend/init', function() {
-								setTimeout(initInjectedNovaTitle, 200);
-							});
-						}
-					})(jQuery);
-					</script>
 					<?php
 				}
 
@@ -2148,8 +2616,16 @@ class Stacking_Cards_2_Widget extends Widget_Base {
 				endforeach;
 				?>
 				</div><!-- /.nova-stacking-cards-2__holder -->
-			</div>
-		</div>
+			</div><!-- /.nova-stacking-cards-2 -->
+			</div><!-- /.nova-stacking-cards-2-variant stacking -->
+			<?php
+			$this->render_sc2_variant_slider( $settings, $cards, $alternate, $use_nova_title_for_first_card, $selected_nova_title_widget_id, $nova_title_html );
+			$this->render_sc2_variant_grid( $cards, $alternate, $use_nova_title_for_first_card, $selected_nova_title_widget_id, $nova_title_html );
+			if ( $use_nova_title_for_first_card && ! empty( $selected_nova_title_widget_id ) ) {
+				$this->render_sc2_nova_title_reinit_script( $wrapper_id, $selected_nova_title_widget_id );
+			}
+			?>
+		</div><!-- /.nova-stacking-cards-2-wrapper -->
 		<?php
 	}
 }

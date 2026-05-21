@@ -16,6 +16,9 @@
 	const NOVAStackingCards2 = {
 		selectors: {
 			wrapper: '.nova-stacking-cards-2-wrapper',
+			variantStacking: '.nova-stacking-cards-2-variant--stacking',
+			variantSlider: '.nova-stacking-cards-2-variant--slider',
+			owlSlider: '.nova-sc2-slider.owl-carousel',
 			widget: '.nova-stacking-cards-2',
 			holder: '.nova-stacking-cards-2__holder',
 			card: '.nova-stacking-card-2'
@@ -29,9 +32,6 @@
 		 * Entry point
 		 */
 		onDocumentReady: function () {
-			if (window.NOVA_NATIVE_SCROLL_MODE === true) {
-				return;
-			}
 			if (!this.dependenciesReady()) {
 				return;
 			}
@@ -70,8 +70,20 @@
 			}
 
 			elementorFrontend.hooks.addAction('frontend/element_ready/nova-stacking-cards-2.default', ($scope) => {
+				const $wrapper = $scope.find(this.selectors.wrapper);
+				if ($wrapper.length) {
+					const stackingEl = $wrapper[0].querySelector(
+						this.selectors.variantStacking + ' ' + this.selectors.widget
+					);
+					if (stackingEl) {
+						this.destroyInstance(stackingEl);
+					}
+					this.destroySc2Owl($wrapper[0]);
+					delete $wrapper[0].dataset.novaSc2DisplayMode;
+					this.applyDisplayMode($wrapper[0]);
+					return;
+				}
 				const widgetEl = $scope.find(this.selectors.widget)[0] || $scope[0];
-				// Destroy previous instance before re-initializing (handles editor re-renders)
 				this.destroyInstance(widgetEl);
 				this.init($scope[0]);
 			});
@@ -114,9 +126,21 @@
 		 * Initialize widgets in context
 		 */
 		init: function (context) {
-			return; // TEMPORARILY DISABLED TO DEBUG SCROLL
 			const scope = context || document;
 			const $scope = scope instanceof jQuery ? scope : $(scope);
+			let wrappers = $scope.find(this.selectors.wrapper).toArray();
+
+			if ($scope.length && $scope.is(this.selectors.wrapper)) {
+				wrappers.push($scope[0]);
+			}
+
+			if (wrappers.length) {
+				wrappers.forEach((wrapper) => {
+					this.applyDisplayMode(wrapper);
+				});
+				return;
+			}
+
 			let widgets = $scope.find(this.selectors.widget).toArray();
 
 			if ($scope.length && $scope.is(this.selectors.widget)) {
@@ -131,6 +155,340 @@
 			widgets.forEach((widget) => {
 				this.createInstance(widget);
 			});
+		},
+
+		/**
+		 * Parse JSON from data attribute (string or object).
+		 */
+		parseJsonMaybe: function (raw) {
+			if (!raw) {
+				return null;
+			}
+			if (typeof raw === 'object') {
+				return raw;
+			}
+			try {
+				return JSON.parse(raw);
+			} catch (e) {
+				return null;
+			}
+		},
+
+		/**
+		 * Active mode for current viewport (aligné sur le carrousel Swiper / Elementor preview).
+		 */
+		getViewportMode: function (wrapperEl) {
+			const cfg =
+				this.parseJsonMaybe(
+					wrapperEl && wrapperEl.getAttribute('data-display-mode-config')
+				) || {};
+			const body = document.body;
+			if (body && body.classList) {
+				if (body.classList.contains('elementor-device-mobile')) {
+					return cfg.mobile || cfg.tablet || cfg.desktop || 'stacking';
+				}
+				if (body.classList.contains('elementor-device-tablet')) {
+					return cfg.tablet || cfg.desktop || 'stacking';
+				}
+				if (body.classList.contains('elementor-device-desktop')) {
+					return cfg.desktop || 'stacking';
+				}
+			}
+			const width = window.innerWidth || document.documentElement.clientWidth || 0;
+			if (width <= 767) {
+				return cfg.mobile || cfg.tablet || cfg.desktop || 'stacking';
+			}
+			if (width <= 1024) {
+				return cfg.tablet || cfg.desktop || 'stacking';
+			}
+			return cfg.desktop || 'stacking';
+		},
+
+		/**
+		 * Affiche la bonne variante HTML et ne lance GSAP que sur le mode stacking.
+		 */
+		applyDisplayMode: function (wrapperEl) {
+			if (!wrapperEl || !wrapperEl.classList || !wrapperEl.classList.contains('nova-stacking-cards-2-wrapper')) {
+				return;
+			}
+			const desired = this.getViewportMode(wrapperEl);
+			const prev = wrapperEl.dataset.novaSc2DisplayMode || '';
+			const stackingEl = wrapperEl.querySelector(
+				this.selectors.variantStacking + ' ' + this.selectors.widget
+			);
+
+			if (prev === desired) {
+				return;
+			}
+
+			if (prev === 'slider') {
+				this.destroySc2Owl(wrapperEl);
+			}
+
+			if (prev === 'stacking' && stackingEl) {
+				this.destroyInstance(stackingEl);
+			}
+
+			wrapperEl.classList.remove(
+				'nova-stacking-cards-2-wrapper--mode-stacking',
+				'nova-stacking-cards-2-wrapper--mode-slider',
+				'nova-stacking-cards-2-wrapper--mode-grid'
+			);
+			wrapperEl.classList.add('nova-stacking-cards-2-wrapper--mode-' + desired);
+			wrapperEl.dataset.novaSc2DisplayMode = desired;
+			wrapperEl.setAttribute('data-sc2-mode-applied', '1');
+
+			if (desired === 'stacking' && stackingEl) {
+				this.createInstance(stackingEl);
+			} else if (stackingEl) {
+				this.destroyInstance(stackingEl);
+			}
+
+			if (desired === 'slider') {
+				this.scheduleInitSc2Owl(wrapperEl);
+			} else {
+				this.destroySc2Owl(wrapperEl);
+			}
+
+			if (typeof ScrollTrigger !== 'undefined') {
+				ScrollTrigger.refresh();
+			}
+		},
+
+		/**
+		 * Détruit Owl sur la variante slider du wrapper.
+		 */
+		destroySc2Owl: function (wrapperEl) {
+			if (!wrapperEl) {
+				return;
+			}
+			delete wrapperEl.dataset.sc2SliderImgEqBound;
+			this.clearSc2SliderEqualHeights(wrapperEl);
+			const $slider = $(wrapperEl).find(this.selectors.owlSlider);
+			if (!$slider.length) {
+				return;
+			}
+			if ($slider.hasClass('owl-loaded')) {
+				try {
+					$slider.trigger('destroy.owl.carousel');
+				} catch (e) {
+					try {
+						$slider.owlCarousel('destroy');
+					} catch (e2) {}
+				}
+				$slider.removeClass('owl-loaded');
+			}
+		},
+
+		/**
+		 * Retire les hauteurs inline imposées par l’égalisation slider.
+		 */
+		clearSc2SliderEqualHeights: function (wrapperEl) {
+			if (!wrapperEl) {
+				return;
+			}
+			wrapperEl.querySelectorAll('.nova-stacking-cards-2-variant--slider .nova-stacking-card-2').forEach((el) => {
+				el.style.minHeight = '';
+				el.style.height = '';
+			});
+		},
+
+		/**
+		 * Slider : toutes les cartes prennent la hauteur de la plus haute (toutes slides du carrousel).
+		 */
+		equalizeSc2SliderCardHeights: function (wrapperEl) {
+			if (!wrapperEl) {
+				return;
+			}
+			const sliderRoot = wrapperEl.querySelector('.nova-stacking-cards-2-variant--slider');
+			if (!sliderRoot) {
+				return;
+			}
+			const cards = sliderRoot.querySelectorAll('.owl-item > .item > .nova-stacking-card-2');
+			if (!cards.length) {
+				return;
+			}
+			cards.forEach((el) => {
+				el.style.minHeight = '';
+				el.style.height = '';
+			});
+			window.requestAnimationFrame(function () {
+				let max = 0;
+				cards.forEach((el) => {
+					const h = Math.ceil(el.getBoundingClientRect().height);
+					if (h > max) {
+						max = h;
+					}
+				});
+				if (max < 2) {
+					return;
+				}
+				cards.forEach((el) => {
+					el.style.minHeight = max + 'px';
+				});
+				const $owl = $(sliderRoot).find('.owl-carousel.owl-loaded');
+				if ($owl.length) {
+					try {
+						$owl.trigger('refresh.owl.carousel');
+					} catch (e) {}
+				}
+				if (typeof ScrollTrigger !== 'undefined') {
+					ScrollTrigger.refresh();
+				}
+			});
+		},
+
+		/**
+		 * Recalcul hauteur quand les images du slider finissent de charger.
+		 */
+		bindSc2SliderEqualizeOnImages: function (wrapperEl) {
+			if (!wrapperEl || wrapperEl.dataset.sc2SliderImgEqBound === '1') {
+				return;
+			}
+			const sliderRoot = wrapperEl.querySelector('.nova-stacking-cards-2-variant--slider');
+			if (!sliderRoot) {
+				return;
+			}
+			const imgs = sliderRoot.querySelectorAll('img');
+			const self = this;
+			const run = function () {
+				self.equalizeSc2SliderCardHeights(wrapperEl);
+			};
+			imgs.forEach((img) => {
+				if (img.complete) {
+					return;
+				}
+				img.addEventListener('load', run, { once: true });
+				img.addEventListener('error', run, { once: true });
+			});
+			wrapperEl.dataset.sc2SliderImgEqBound = '1';
+		},
+
+		/**
+		 * Attendre Owl (chargement async des scripts).
+		 */
+		waitForOwl: function (callback) {
+			let attempts = 0;
+			const timer = setInterval(() => {
+				if (typeof $.fn.owlCarousel !== 'undefined') {
+					clearInterval(timer);
+					callback();
+				} else if (++attempts >= 40) {
+					clearInterval(timer);
+				}
+			}, 100);
+		},
+
+		/**
+		 * Initialise Owl sur .nova-sc2-slider.owl-carousel (une fois visible).
+		 */
+		initSc2Owl: function (wrapperEl) {
+			const self = this;
+			if (!wrapperEl) {
+				return;
+			}
+			const run = () => {
+				const $slider = $(wrapperEl).find(self.selectors.owlSlider);
+				if (!$slider.length || $slider.hasClass('owl-loaded')) {
+					return;
+				}
+				const cfg = self.parseJsonMaybe($slider.attr('data-sc2-owl-config')) || {};
+				const navIconPrev =
+					'<span class="nova-sc2-owl-nav-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+				const navIconNext =
+					'<span class="nova-sc2-owl-nav-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+
+				const marginDesktop = Math.max(0, parseInt(cfg.marginDesktop, 10) || 0);
+				const marginTablet = Math.max(0, parseInt(cfg.marginTablet, 10) || marginDesktop);
+				const marginMobile = Math.max(0, parseInt(cfg.marginMobile, 10) || marginTablet);
+
+				const owlBase = {
+					nav: !!cfg.nav,
+					dots: !!cfg.dots,
+					loop: !!cfg.loop,
+					smartSpeed: 480,
+					navText: [navIconPrev, navIconNext],
+					navRewind: false,
+					onResized: function () {
+						const wrap = $slider.closest('.nova-stacking-cards-2-wrapper')[0];
+						if (wrap) {
+							self.equalizeSc2SliderCardHeights(wrap);
+						}
+						if (typeof ScrollTrigger !== 'undefined') {
+							ScrollTrigger.refresh();
+						}
+					}
+				};
+
+				try {
+					$slider.owlCarousel(
+						Object.assign({}, owlBase, {
+							items: 1,
+							autoWidth: true,
+							margin: marginDesktop,
+							responsive: {
+								0: {
+									margin: marginMobile,
+									autoWidth: true
+								},
+								768: {
+									margin: marginTablet,
+									autoWidth: true
+								},
+								1024: {
+									margin: marginDesktop,
+									autoWidth: true
+								}
+							},
+							onInitialized: function () {
+								window.setTimeout(function () {
+									$slider.find('.owl-item').css('width', '');
+									$slider.trigger('refresh.owl.carousel');
+									const wrap = $slider.closest('.nova-stacking-cards-2-wrapper')[0];
+									window.setTimeout(function () {
+										if (wrap) {
+											self.equalizeSc2SliderCardHeights(wrap);
+											self.bindSc2SliderEqualizeOnImages(wrap);
+										}
+										window.setTimeout(function () {
+											if (wrap) {
+												self.equalizeSc2SliderCardHeights(wrap);
+											}
+										}, 200);
+									}, 90);
+									if (typeof ScrollTrigger !== 'undefined') {
+										ScrollTrigger.refresh();
+									}
+								}, 50);
+							}
+						})
+					);
+				} catch (e) {
+					return;
+				}
+
+				if (typeof ScrollTrigger !== 'undefined') {
+					ScrollTrigger.refresh();
+				}
+			};
+
+			if (typeof $.fn.owlCarousel === 'undefined') {
+				this.waitForOwl(run);
+				return;
+			}
+			run();
+		},
+
+		/**
+		 * Laisser le navigateur appliquer display:block sur la variante avant init Owl.
+		 */
+		scheduleInitSc2Owl: function (wrapperEl) {
+			const self = this;
+			window.setTimeout(() => {
+				window.requestAnimationFrame(() => {
+					self.initSc2Owl(wrapperEl);
+				});
+			}, 60);
 		},
 
 		/**
@@ -249,8 +607,6 @@
 					end: scrollDistanceFn,
 					scrub: config.scrub,
 					pin: true,
-					pinSpacing: true,
-					pinType: 'fixed',
 					anticipatePin: 1,
 					markers: config.debug,
 					invalidateOnRefresh: true,
@@ -577,20 +933,19 @@
 		 */
 		handleResize: function () {
 			if (typeof ScrollTrigger !== 'undefined') {
-				// this.debugLog(null, 'Fenêtre redimensionnée → ScrollTrigger.refresh()');
 				ScrollTrigger.refresh();
 			}
 
 			if (window.NOVALenisScroll && NOVALenisScroll.lenis) {
-				// this.debugLog(null, 'Fenêtre redimensionnée → Lenis.resize()');
 				NOVALenisScroll.lenis.resize();
 			}
 
-		/**
-		 * Check if debug is enabled
-		 */dgets.forEach((widget) => {
-				this.destroyInstance(widget);
-				this.createInstance(widget);
+			document.querySelectorAll(this.selectors.wrapper).forEach((wrapper) => {
+				this.applyDisplayMode(wrapper);
+			});
+
+			document.querySelectorAll('.nova-stacking-cards-2-wrapper--mode-slider').forEach((wrapper) => {
+				this.equalizeSc2SliderCardHeights(wrapper);
 			});
 		},
 

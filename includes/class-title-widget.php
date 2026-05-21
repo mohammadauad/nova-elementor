@@ -442,9 +442,10 @@ class Title_Widget extends Widget_Base {
 			'badge_text',
 			[
 				'label' => esc_html__( 'Texte du badge', 'NOVA-addons' ),
-				'type' => Controls_Manager::TEXT,
+				'type' => Controls_Manager::WYSIWYG,
 				'default' => '',
 				'placeholder' => esc_html__( 'Entrez le texte du badge', 'NOVA-addons' ),
+				'dynamic' => [ 'active' => true ],
 				'condition' => [
 					'badge_show' => 'yes',
 				],
@@ -1234,120 +1235,6 @@ class Title_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
-		// Section Style - Groupe Gauche (Badge + Texte 1)
-		$this->start_controls_section(
-			'section_style_left_group',
-			[
-				'label' => esc_html__( 'Groupe Gauche (Badge + Texte 1)', 'NOVA-addons' ),
-				'tab' => Controls_Manager::TAB_STYLE,
-			]
-		);
-
-		$this->add_responsive_control(
-			'left_group_display',
-			[
-				'label' => esc_html__( 'Display', 'NOVA-addons' ),
-				'type' => Controls_Manager::SELECT,
-				'default' => 'flex',
-				'options' => [
-					'flex' => 'Flex',
-					'block' => 'Block',
-					'inline-block' => 'Inline Block',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-title-left-group' => 'display: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'left_group_flex_direction',
-			[
-				'label' => esc_html__( 'Direction Flex', 'NOVA-addons' ),
-				'type' => Controls_Manager::CHOOSE,
-				'options' => [
-					'row' => [
-						'title' => esc_html__( 'Ligne', 'NOVA-addons' ),
-						'icon' => 'eicon-arrow-right',
-					],
-					'column' => [
-						'title' => esc_html__( 'Colonne', 'NOVA-addons' ),
-						'icon' => 'eicon-arrow-down',
-					],
-				],
-				'default' => 'column',
-				'condition' => [
-					'left_group_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-title-left-group' => 'flex-direction: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'left_group_justify_content',
-			[
-				'label' => esc_html__( 'Justifier', 'NOVA-addons' ),
-				'type' => Controls_Manager::SELECT,
-				'default' => 'flex-start',
-				'options' => [
-					'flex-start' => esc_html__( 'Début', 'NOVA-addons' ),
-					'flex-end' => esc_html__( 'Fin', 'NOVA-addons' ),
-					'center' => esc_html__( 'Centre', 'NOVA-addons' ),
-					'space-between' => esc_html__( 'Espace entre', 'NOVA-addons' ),
-					'space-around' => esc_html__( 'Espace autour', 'NOVA-addons' ),
-				],
-				'condition' => [
-					'left_group_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-title-left-group' => 'justify-content: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'left_group_align_items',
-			[
-				'label' => esc_html__( 'Alignement vertical', 'NOVA-addons' ),
-				'type' => Controls_Manager::SELECT,
-				'default' => 'flex-start',
-				'options' => [
-					'flex-start' => esc_html__( 'Début', 'NOVA-addons' ),
-					'flex-end' => esc_html__( 'Fin', 'NOVA-addons' ),
-					'center' => esc_html__( 'Centre', 'NOVA-addons' ),
-					'stretch' => esc_html__( 'Étirer', 'NOVA-addons' ),
-				],
-				'condition' => [
-					'left_group_display' => 'flex',
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-title-left-group' => 'align-items: {{VALUE}};',
-				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'left_group_gap',
-			[
-				'label' => esc_html__( 'Espacement (Gap)', 'NOVA-addons' ),
-				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em' ],
-				'range' => [
-					'px' => [
-						'min' => 0,
-						'max' => 100,
-					],
-				],
-				'selectors' => [
-					'{{WRAPPER}} .nova-title-left-group' => 'gap: {{SIZE}}{{UNIT}};',
-				],
-			]
-		);
-
-		$this->end_controls_section();
-
 		// Section Style - Texte 1
 		$this->start_controls_section(
 			'section_style_text_1',
@@ -1816,7 +1703,7 @@ class Title_Widget extends Widget_Base {
 				'type' => Controls_Manager::COLOR,
 				'default' => '#ffffff',
 				'selectors' => [
-					'{{WRAPPER}} .nova-title-badge-text' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'color: {{VALUE}} !important;',
 				],
 			]
 		);
@@ -1825,7 +1712,54 @@ class Title_Widget extends Widget_Base {
 			Group_Control_Typography::get_type(),
 			[
 				'name'     => 'badge__typography',
-				'selector' => '{{WRAPPER}} .nova-title-badge, {{WRAPPER}} .nova-title-badge .nova-title-badge-text, {{WRAPPER}} .nova-title-badge span, {{WRAPPER}} .nova-title-badge strong',
+				'selector' => '{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text',
+				'fields_options' => [
+					'font_family' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'font-family: "{{VALUE}}", Sans-serif !important;',
+						],
+					],
+					'font_size' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'font-size: {{SIZE}}{{UNIT}} !important;',
+						],
+					],
+					'font_weight' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'font-weight: {{VALUE}} !important;',
+						],
+					],
+					'text_transform' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'text-transform: {{VALUE}} !important;',
+						],
+					],
+					'font_style' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'font-style: {{VALUE}} !important;',
+						],
+					],
+					'text_decoration' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'text-decoration: {{VALUE}} !important;',
+						],
+					],
+					'line_height' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'line-height: {{SIZE}}{{UNIT}} !important;',
+						],
+					],
+					'letter_spacing' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'letter-spacing: {{SIZE}}{{UNIT}} !important;',
+						],
+					],
+					'word_spacing' => [
+						'selectors' => [
+							'{{WRAPPER}} .nova-title-badge-text *, {{WRAPPER}} .nova-title-badge-text' => 'word-spacing: {{SIZE}}{{UNIT}} !important;',
+						],
+					],
+				],
 			]
 		);
 
@@ -2865,9 +2799,11 @@ class Title_Widget extends Widget_Base {
 	 */
 	protected function render() {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( '[NOVA-Title] render() start' );
 		}
 		$settings = $this->get_settings_for_display();
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( '[NOVA-Title] get_settings_for_display() ok' );
 		}
 
 		$text_1 = isset( $settings['text_1'] ) ? $settings['text_1'] : '';
@@ -2927,15 +2863,18 @@ class Title_Widget extends Widget_Base {
 		if ( count( $title_icons_list ) > 50 ) {
 			$title_icons_list = array_slice( $title_icons_list, 0, 50 );
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				error_log( '[NOVA-Title] WARNING: Plus de 50 icônes détectées, limité à 50' );
 			}
 		}
 		
 		$icons_config      = [];
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( '[NOVA-Title] title_icons_show=' . ( $title_icons_show ? 'yes' : 'no' ) . ' title_icons_list count=' . count( $title_icons_list ) );
 		}
 		foreach ( $title_icons_list as $idx => $icon_item ) {
 			if ( ! is_array( $icon_item ) ) {
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+					error_log( '[NOVA-Title] skip item idx=' . $idx . ' (not array)' );
 				}
 				continue;
 			}
@@ -2953,6 +2892,7 @@ class Title_Widget extends Widget_Base {
 				continue;
 			}
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				error_log( '[NOVA-Title] building icons_config for idx=' . $idx );
 			}
 			
 			// Récupérer les valeurs pour chaque device
@@ -3027,6 +2967,7 @@ class Title_Widget extends Widget_Base {
 			];
 		}
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( '[NOVA-Title] icons_config built, count=' . count( $icons_config ) . ' about to output HTML' );
 		}
 		
 		// Debug: Préparer les données pour JavaScript
@@ -3078,6 +3019,7 @@ class Title_Widget extends Widget_Base {
 				$icons_config_json = wp_json_encode( $icons_config );
 				$data_title_icons_attr = ( $icons_config_json !== false ) ? ' data-title-icons-config="' . esc_attr( $icons_config_json ) . '"' : '';
 				if ( $icons_config_json === false && defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+					error_log( '[NOVA-Title] wp_json_encode(icons_config) failed' );
 				}
 			}
 		}
@@ -3253,33 +3195,30 @@ class Title_Widget extends Widget_Base {
 			<?php endif; ?>
 			
 			<div class="nova-title-overlay-content">
-				<div class="nova-title-left-group">
-					<?php if ( $badge_show ) : ?>
-						<div class="nova-title-badge">
-							<?php if ( $badge_has_icon ) : ?>
-								<span class="nova-title-badge-icon">
-									<?php Icons_Manager::render_icon( $badge_icon, [ 'aria-hidden' => 'true' ] ); ?>
-								</span>
-							<?php endif; ?>
-							<?php if ( ! empty( $badge_text ) ) : ?>
-								<span class="nova-title-badge-text"><?php echo esc_html( $badge_text ); ?></span>
-							<?php endif; ?>
-						</div>
-					<?php endif; ?>
-					
-					<?php if ( ! empty( $text_1 ) ) : ?>
-						<div class="nova-title-text nova-title-text-left nova-title-text-1">
-							<?php 
-							// Le HTML est déjà sécurisé via esc_attr() et esc_html() dans process_styled_words()
-							// wp_kses() filtre le contenu de l'attribut style et supprime transform et !important
-							// Utiliser directement le HTML sécurisé sans wp_kses() pour préserver les styles CSS
-							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo $text_1; 
-							?>
-						</div>
-					<?php endif; ?>
-				</div>
+				<?php if ( $badge_show ) : ?>
+					<div class="nova-title-badge">
+						<?php if ( $badge_has_icon ) : ?>
+							<span class="nova-title-badge-icon">
+								<?php Icons_Manager::render_icon( $badge_icon, [ 'aria-hidden' => 'true' ] ); ?>
+							</span>
+						<?php endif; ?>
+						<?php if ( ! empty( $badge_text ) ) : ?>
+							<span class="nova-title-badge-text"><?php echo wp_kses_post( $this->parse_text_editor( $badge_text ) ); ?></span>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 				
+				<?php if ( ! empty( $text_1 ) ) : ?>
+					<div class="nova-title-text nova-title-text-left nova-title-text-1">
+						<?php 
+						// Le HTML est déjà sécurisé via esc_attr() et esc_html() dans process_styled_words()
+						// wp_kses() filtre le contenu de l'attribut style et supprime transform et !important
+						// Utiliser directement le HTML sécurisé sans wp_kses() pour préserver les styles CSS
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo $text_1; 
+						?>
+					</div>
+				<?php endif; ?>
 				
 				<?php if ( ! empty( $text_2 ) ) : ?>
 					<div class="nova-title-text nova-title-text-right">
@@ -3315,6 +3254,7 @@ class Title_Widget extends Widget_Base {
 		</script>
 		<?php
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+			error_log( '[NOVA-Title] render() end OK' );
 		}
 	}
 }

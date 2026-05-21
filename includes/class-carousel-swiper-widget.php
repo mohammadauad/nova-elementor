@@ -64,7 +64,7 @@ class Carousel_Swiper_Widget extends Carousel_Widget {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'nova-carousel-swiper-script' ];
+		return [ 'nova-swiper-bundle', 'nova-carousel-swiper-script' ];
 	}
 
 	/**
@@ -76,7 +76,34 @@ class Carousel_Swiper_Widget extends Carousel_Widget {
 	 * @return array
 	 */
 	public function get_style_depends() {
-		return [ 'nova-carousel-style' ];
+		return [ 'nova-swiper-bundle', 'nova-carousel-style' ];
+	}
+
+	/**
+	 * Nettoie la config JSON du slider : uniquement Swiper (pas de clés Owl).
+	 *
+	 * @param array $slider_config Config brute partagée avec le widget Owl.
+	 * @param array $settings      Réglages Elementor du widget.
+	 * @return array
+	 */
+	protected function prepare_swiper_slider_config( array $slider_config, array $settings ) {
+		foreach ( array_keys( $slider_config ) as $key ) {
+			if ( 0 === stripos( (string) $key, 'owl' ) ) {
+				unset( $slider_config[ $key ] );
+			}
+		}
+
+		if ( ! empty( $settings['owl_auto_width'] ) && 'yes' === $settings['owl_auto_width'] ) {
+			$slider_config['swiperSlidesPerViewMode'] = 'auto';
+		}
+
+		// slidesToScroll = slideBy Owl : sur Swiper on force 1 slide par geste.
+		$slider_config['slidesToScroll']        = 1;
+		$slider_config['slidesToScrollTablet']  = 1;
+		$slider_config['slidesToScrollMobile'] = 1;
+		$slider_config['carouselEngine']        = 'swiper';
+
+		return $slider_config;
 	}
 
 	/**

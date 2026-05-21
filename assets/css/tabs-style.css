@@ -4,60 +4,6 @@
 	width: 100%;
 }
 
-/* ── Animation fade du contenu (option « content_fade ») ───────────── */
-/* CSS Custom Properties posées en inline-style depuis le widget :
- *   --nova-tabs-fade-duration : durée totale
- *   --nova-tabs-fade-delay    : délai avant lancement
- *   --nova-tabs-fade-translate-y : translation initiale
- *
- * Trois classes pour piloter le cycle :
- *   .nova-tabs--content-fade        : flag racine (présent = fade activé)
- *   .nova-tabs--fade-armed          : état caché (avant déclenchement)
- *   .nova-tabs--fade-in             : état animé (transition vers visible)
- */
-.nova-tabs--content-fade .nova-tabs-content {
-	transition:
-		opacity var(--nova-tabs-fade-duration, 700ms) cubic-bezier(0.21, 0.61, 0.36, 1) var(--nova-tabs-fade-delay, 0ms),
-		transform var(--nova-tabs-fade-duration, 700ms) cubic-bezier(0.21, 0.61, 0.36, 1) var(--nova-tabs-fade-delay, 0ms);
-	will-change: opacity, transform;
-}
-.nova-tabs--content-fade.nova-tabs--fade-armed .nova-tabs-content {
-	opacity: 0;
-	transform: translateY(var(--nova-tabs-fade-translate-y, 20px));
-}
-.nova-tabs--content-fade.nova-tabs--fade-in .nova-tabs-content {
-	opacity: 1;
-	transform: translateY(0);
-}
-
-/* Replay au changement de tab : on cible uniquement le panel actif */
-.nova-tabs--content-fade[data-content-fade-replay="1"] .nova-tab-panel-active {
-	animation: nova-tabs-panel-fade var(--nova-tabs-fade-duration, 700ms) cubic-bezier(0.21, 0.61, 0.36, 1) both;
-}
-
-@keyframes nova-tabs-panel-fade {
-	0% {
-		opacity: 0;
-		transform: translateY(calc(var(--nova-tabs-fade-translate-y, 20px) * 0.6));
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.nova-tabs--content-fade .nova-tabs-content,
-	.nova-tabs--content-fade.nova-tabs--fade-armed .nova-tabs-content,
-	.nova-tabs--content-fade.nova-tabs--fade-in .nova-tabs-content,
-	.nova-tabs--content-fade[data-content-fade-replay="1"] .nova-tab-panel-active {
-		transition: none;
-		animation: none;
-		opacity: 1;
-		transform: none;
-	}
-}
-
 /* Nav */
 .nova-tabs-nav {
 	display: flex;
@@ -73,17 +19,13 @@
 	align-items: center;
 	gap: 6px;
 	cursor: pointer;
-	border-style: solid;
-	border-width: 0;
-	border-color: transparent;
+	border: none;
 	background: none;
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
 	transition: all 0.25s ease;
 	white-space: nowrap;
-	position: relative;
-	/* overflow: hidden; */ /* Remove overflow hidden to allow progress bar on border */
 }
 
 .nova-tab-btn:focus-visible {
@@ -98,50 +40,17 @@
 	flex-shrink: 0;
 }
 
-/* Progress Bar */
-.nova-tab-progress {
-	position: absolute;
-	bottom: calc(-1 * var(--nova-tab-border-width, 0px));
-	left: 0;
-	width: 100%;
-	height: 3px; /* Controlled by Elementor slider eventually, or fixed here */
-	background: transparent;
-	opacity: 0;
-	transition: opacity 0.3s ease;
-	pointer-events: none;
-	z-index: 5;
-}
-
-.nova-tab-active .nova-tab-progress {
-	opacity: 1;
-}
-
-.nova-tab-progress-fill {
-	display: block;
-	height: 100%;
-	width: 100%;
-	background-color: #007cba; /* Default fallback */
-	transform: scaleX(var(--nova-tab-progress, 0));
-	transform-origin: left center;
-}
-
 /* Content */
 .nova-tabs-content {
 	width: 100%;
-	display: grid;
-	grid-template-columns: 1fr;
 }
 
 .nova-tab-panel {
-	grid-area: 1 / 1;
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 0.4s ease, visibility 0.4s ease;
+	display: none;
 }
 
 .nova-tab-panel.nova-tab-panel-active {
-	opacity: 1;
-	visibility: visible;
+	display: block;
 }
 
 .nova-tab-panel-inner {
@@ -149,33 +58,21 @@
 	flex-direction: column;
 }
 
+/* Transition */
+.nova-tab-panel.nova-tab-panel-active {
+	animation: novaTabFadeIn 0.25s ease;
+}
+
+@keyframes novaTabFadeIn {
+	from { opacity: 0; transform: translateY(6px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Content elements */
-.nova-tab-content-image {
-	display: grid;
-	grid-template-columns: repeat(1, 1fr);
-	gap: 12px;
-}
-
-.nova-tab-image-item {
-	display: flex;
-	flex-direction: column;
-	margin: 0;
-	box-sizing: border-box;
-	overflow: hidden;
-}
-
-.nova-tab-image-item img {
+.nova-tab-content-image img {
 	max-width: 100%;
 	height: auto;
 	display: block;
-	width: 100%;
-}
-
-.nova-tab-image-caption {
-	margin-top: 8px;
-	font-size: 0.9em;
-	line-height: 1.4;
-	color: inherit;
 }
 
 .nova-tab-content-icon {

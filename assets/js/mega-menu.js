@@ -311,23 +311,19 @@
 				return;
 			}
 
-			// Mesure sans flash : on force visibility:hidden + position:absolute
-			// sans toucher à display, pour que le CSS display:none !important ne cause pas de flash
-			$panel[0].style.setProperty('visibility', 'hidden', 'important');
-			$panel[0].style.setProperty('opacity', '0', 'important');
-			$panel[0].style.setProperty('pointer-events', 'none', 'important');
-			$panel[0].style.setProperty('display', 'block', 'important');
-			$panel[0].style.setProperty('position', 'fixed', 'important');
-
+			$panel.css({
+				'display': 'block',
+				'visibility': 'hidden',
+				'opacity': '0',
+				'pointer-events': 'none'
+			});
 			var panelWidth = $panel.outerWidth();
-
-			// Remettre dans l'état caché CSS (on retire les styles inline — le CSS reprend)
-			$panel[0].style.removeProperty('display');
-			$panel[0].style.removeProperty('visibility');
-			$panel[0].style.removeProperty('opacity');
-			$panel[0].style.removeProperty('pointer-events');
-			$panel[0].style.removeProperty('position');
-
+			$panel.css({
+				'display': '',
+				'visibility': '',
+				'opacity': '',
+				'pointer-events': ''
+			});
 			debugLog('[NOVA Mega Menu] STEP 1: measured panelWidth=' + panelWidth);
 
 			// STEP 2: Resize header to panelWidth with GSAP
@@ -409,12 +405,14 @@
 						$('body').removeClass('nova-mega-menu-displayed');
 						$li.removeClass('nova-mega-menu-displayed');
 
-						// Reset panel inline styles — laisser le CSS display:none !important reprendre
-						$panel[0].style.removeProperty('display');
-						$panel[0].style.removeProperty('visibility');
-						$panel[0].style.removeProperty('opacity');
-						$panel[0].style.removeProperty('pointer-events');
-						$panel[0].style.removeProperty('transition');
+						// Reset panel inline styles
+						$panel.css({
+							'display': '',
+							'visibility': '',
+							'opacity': '',
+							'pointer-events': '',
+							'transition': ''
+						});
 						gsap.set(panelEl, { clearProps: 'height,overflow,opacity,willChange' });
 
 						// Collapse header with GSAP
@@ -472,13 +470,13 @@
 				this.clearHeaderWidthImportant();
 			}
 
-			// Reset panels — laisser le CSS display:none !important reprendre
-			$('.nova-mega-menu-panel').each(function () {
-				this.style.removeProperty('display');
-				this.style.removeProperty('visibility');
-				this.style.removeProperty('opacity');
-				this.style.removeProperty('pointer-events');
-				this.style.removeProperty('transition');
+			// Reset panels
+			$('.nova-mega-menu-panel').css({
+				'display': '',
+				'visibility': '',
+				'opacity': '',
+				'pointer-events': '',
+				'transition': ''
 			});
 
 			this.isExpanded = false;
@@ -529,7 +527,7 @@
 			if ((isMobile || isInMobilePopup)) {
 				if (isTitleClick) {
 					// Clic sur le titre : on laisse la redirection naturelle se faire
-					return true;
+					return true; 
 				} else {
 					// Clic ailleurs (icône, etc) : on fait le toggle
 					e.preventDefault();

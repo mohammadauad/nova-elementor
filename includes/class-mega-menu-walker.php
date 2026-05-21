@@ -42,11 +42,6 @@ class Mega_Menu_Walker extends \Walker_Nav_Menu {
 
 		$classes   = empty( $item->classes ) ? [] : (array) $item->classes;
 		$classes[] = 'menu-item-' . $item->ID;
-		// Détecte les enfants soit via l'arg natif WP (display_element), soit via la classe
-		// `menu-item-has-children` (ajoutée par _wp_menu_item_classes_by_context) au cas où
-		// l'arg ne serait pas propagé (rendus partiels Elementor, fragments, etc.).
-		$has_children = ( is_object( $args ) && ! empty( $args->has_children ) )
-			|| in_array( 'menu-item-has-children', (array) $item->classes, true );
 
 		// Vérifier si cet élément de menu a un contenu de mega menu associé.
 		$is_mega_menu_item = false;
@@ -151,8 +146,7 @@ class Mega_Menu_Walker extends \Walker_Nav_Menu {
 		$item_output .= $args->link_before . '<span class="nova-mega-menu-title">' . $title . '</span>' . $args->link_after;
 
 		// Si c'est un élément de méga menu de premier niveau, ajouter les icônes.
-		$should_show_dropdown_icon = ( 0 === $depth && ! empty( $mega_icon ) && ( $is_mega_menu_item || $has_children ) );
-		if ( $should_show_dropdown_icon ) {
+		if ( $is_mega_menu_item || ( 0 === $depth && ! empty( $mega_icon ) ) ) {
 			$icon_wrapper = '<span class="nova-mega-menu-icon-wrapper">';
 			
 			// Icône normale (toujours affichée par défaut)

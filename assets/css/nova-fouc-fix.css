@@ -16,49 +16,49 @@
    ============================================================ */
 
 /* Features Widget */
-/* html.nova-js .nova-features-widget .nova-feature-item {
+html.nova-js .nova-features-widget .nova-feature-item {
     opacity: 0;
-} */
+}
 
 /* Cards Widget */
-/* html.nova-js .nova-cards-widget .nova-card-item {
+html.nova-js .nova-cards-widget .nova-card-item {
     opacity: 0;
-} */
+}
 
 /* Title Widget - hide entire widget block */
-/* html.nova-js .nova-title-widget {
+html.nova-js .nova-title-widget {
     opacity: 0;
-} */
+}
 
 /* Gallery Widget items */
-/* html.nova-js .nova-gallery-widget .nova-gallery-item {
+html.nova-js .nova-gallery-widget .nova-gallery-item {
     opacity: 0;
-} */
+}
 
 /* Stacking Cards - individual cards */
-/* html.nova-js .nova-stacking-cards .nova-stacking-card {
+html.nova-js .nova-stacking-cards .nova-stacking-card {
     opacity: 0;
-} */
+}
 
 /* Stacking Cards 2 - individual cards */
-/* html.nova-js .nova-stacking-cards-2 .nova-stacking-cards-2__card {
+html.nova-js .nova-stacking-cards-2 .nova-stacking-cards-2__card {
     opacity: 0;
-} */
+}
 
 /* Scroll Hero - image container only (overlay is already opacity:0 in its CSS) */
-/* html.nova-js .NOVA-scroll-hero .NOVA-scroll-hero-image-container {
+html.nova-js .NOVA-scroll-hero .NOVA-scroll-hero-image-container {
     opacity: 0;
-} */
+}
 
 /* Slider News */
-/* html.nova-js .nova-slider-news-wrapper {
+html.nova-js .nova-slider-news-wrapper {
     opacity: 0;
-} */
+}
 
 /* FAQ items */
-/* html.nova-js .nova-faq-widget .nova-faq-item {
+html.nova-js .nova-faq-widget .nova-faq-item {
     opacity: 0;
-} */
+}
 
 /* ============================================================
    REVEAL — once JS initialises and adds .nova-js-ready
